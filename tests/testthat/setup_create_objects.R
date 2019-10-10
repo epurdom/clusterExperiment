@@ -49,7 +49,7 @@ colnames(gData)<-c("a","b","c")
 mData<-list(first=c(1,2,3),second=c("Information"))
 se <- SummarizedExperiment(mat,colData=sData,rowData=gData,metadata=mData)
 cc <- ClusterExperiment(mat, labMat, transformation = function(x){x})
-ccSE<-ClusterExperiment(se,labMat,transformation=function(x){x})
+ccSE<-ClusterExperiment(se, labMat, transformation=function(x){x})
 
 
 #################################

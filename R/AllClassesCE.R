@@ -121,12 +121,12 @@ setClass(
     primaryIndex = "numeric",
     clusterInfo = "list",
     clusterTypes = "character",
+    clusterLegend="list",
+    orderSamples="numeric",
     dendro_samples = "phylo4OrNULL",
     dendro_clusters = "phylo4OrNULL",
     dendro_index = "numeric",
     coClustering = "sparseOrHDF5OrNULL",
-    clusterLegend="list",
-    orderSamples="numeric",
 	merge_index="numeric",
 	merge_dendrocluster_index="numeric",
 	merge_method="character",
@@ -135,7 +135,21 @@ setClass(
 	merge_nodeProp="data.frameOrNULL",
 	merge_nodeMerge="data.frameOrNULL"
 
-    )
+    ),
+    prototype = prototype(    
+        dendro_samples = NULL,
+        dendro_clusters = NULL,
+        dendro_index=NA_real_, 
+        merge_index=NA_real_,
+    	merge_dendrocluster_index=NA_real_,
+        coClustering = NULL,
+    	merge_method=NA_character_,
+    	merge_demethod=NA_character_,
+    	merge_cutoff=NA_real_,
+        merge_nodeProp=NULL,
+    	merge_nodeMerge=NULL
+        
+        )
 )
 
 setValidity("ClusterExperiment", function(object) {
@@ -352,14 +366,14 @@ setMethod(
 	    colnames(clustersNum)<-colnames(clusters)
 		
     }
-		else{
-			clustersNum<-clusters
-			clusterLegend<-lapply(seq_len(ncol(clusters)),function(ii){
-				out<-matrix(nrow=0,ncol=3)
-				colnames(out)<-c("clusterIds","color","name")
-				return(out)
-			})
-		}
+	else{
+		clustersNum<-clusters
+		clusterLegend<-lapply(seq_len(ncol(clusters)),function(ii){
+			out<-matrix(nrow=0,ncol=3)
+			colnames(out)<-c("clusterIds","color","name")
+			return(out)
+		})
+	}
     #can just give object in constructor, and then don't loose any information!
     out <- new("ClusterExperiment",
                object,
@@ -379,7 +393,7 @@ setMethod(
                merge_nodeProp=merge_nodeProp,
                merge_nodeMerge=merge_nodeMerge,
                merge_method=merge_method,
-							 merge_demethod=merge_demethod,
+			   merge_demethod=merge_demethod,
                coClustering=coClustering
                
     )

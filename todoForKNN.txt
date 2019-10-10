@@ -11,4 +11,5 @@ MINOR TO DO:
     * that diss are at least symmetric dimensions!
     * inputs are actually matrices? (e.g. in subsamplingCluster)
 -- check in seqCluster status of verbose versus checking arguments. 
+-- updateObject doesn't actually do anything for coClustering.
 

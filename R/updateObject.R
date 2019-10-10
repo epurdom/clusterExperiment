@@ -41,7 +41,7 @@ setMethod(
   f = "updateObject",
   signature = signature(object = "ClusterExperiment"),
   definition = function(object, checkTransformAndAssay=FALSE,...,verbose=FALSE){
-	#create snames, which is the slots the object actually has
+    #create snames, which is the slots the object actually has
 	#and will eventually be narrowed down to only those slots will pass to `ClusterExperiment`
 	#list names of all current required slots
 	ceSlots<-slotNames(object)
@@ -69,14 +69,16 @@ setMethod(
 	#extract either SE or SCE object
 	#--------
 	# if(canCoerce(object,"SummarizedExperiment")) se<-updateObject(as(object,"SummarizedExperiment"))
-	if(canCoerce(object,"SingleCellExperiment")){
-		#if object was from before SCE requirement (2.0.0)
-		se<-updateObject(as(object,"SingleCellExperiment"))
-	}
-	else{
-		if(canCoerce(object,"SummarizedExperiment")) se<-updateObject(as(object,"SummarizedExperiment"))
-		else stop("cannot coerce object to SummarizedExperiment")
-	}
+    se<-callNextMethod(object)
+    # if(canCoerce(object,"SingleCellExperiment")){
+    #     callNextMethod(se)
+    #         #se<-updateObject(as(object,"SingleCellExperiment"))
+    # }
+    # else{
+    #     #if object was from before SCE requirement (2.0.0)
+    #         if(canCoerce(object,"SummarizedExperiment")) se<-updateObject(as(object,"SummarizedExperiment"))
+    #     else stop("cannot coerce object to SummarizedExperiment")
+    # }
 
 	#--------
 	# Ignore slots that have to come together, with warnings
@@ -270,13 +272,21 @@ setMethod(
 		}
 	}
 
-	##Fix class of coClustering -- will save it as sparse
+	##Fix class of coClustering -- have turned this off for now after changed coClustering.
 	if(!is.null(object@coClustering) &&
         inherits(object@coClustering,"matrix")){
 		coClustering(object)<-object@coClustering
 	}
-
-	object<-try(do.call("ClusterExperiment",c(list(object=se,clusters=object@clusterMatrix,checkTransformAndAssay=checkTransformAndAssay),attributes(object)[snames])),silent=TRUE)
+    passedSlots<-attributes(object)[snames]
+    ### NULL values will be turned into `\001NULL\001` (class 'name', but appears to work to compare to character value)
+    whNotNULL<-which(!sapply(passedSlots,function(x){inherits(x,"name") && 
+            x=="\001NULL\001"}))
+    object<-try(do.call("ClusterExperiment",c(list(
+        object=se,
+        clusters=object@clusterMatrix,
+        checkTransformAndAssay=checkTransformAndAssay), 
+        passedSlots[whNotNULL])
+        ),silent=TRUE)
 	if(!inherits(object,"try-error")){
 		return(object)
 	} 

@@ -146,82 +146,88 @@
 
 
 .checkMerge<-function(object){
-    ############
-    ##Check merge related slots
-    ############
-    #these slots must all be same (either all empty or all set)	
-    if(is.na(object@merge_index) & !is.na(object@merge_method)) return("merge_index NA but merge_method has value")
-    if(!is.na(object@merge_index) & is.na(object@merge_method)) return("if merge_index not NA, must have value for merge_method")
-    if(is.na(object@merge_index) & !is.na(object@merge_cutoff)) return("merge_index NA but merge_cutoff has value")
-    if(!is.na(object@merge_index) & is.na(object@merge_cutoff)) return("if merge_index not NA, must have value for merge_cutoff")
-    if(is.na(object@merge_index) & !is.null(object@merge_nodeMerge)) return("merge_index NA but merge_nodeMerge has value")
-    if(!is.na(object@merge_index) & is.null(object@merge_nodeMerge)) return("if merge_index not NA, must have value for merge_nodeMerge")
+  ############
+  ##Check merge related slots
+  ############
+  #these slots must all be same (either all empty or all set)
+  emptyMergeMethod<-is.na(object@merge_method) || length(object@merge_method)==0
+  emptyMergeIndex<- is.na(object@merge_index) || length(object@merge_index)==0
+  if(emptyMergeIndex & !emptyMergeMethod) return("merge_index NA but merge_method has value")
+  if(!emptyMergeIndex & emptyMergeMethod) return("if merge_index not NA, must have value for merge_method")
+  emptyCutoff<-is.na(object@merge_cutoff) || length(object@merge_cutoff)==0
+  if(emptyMergeIndex & !emptyCutoff) return("merge_index NA but merge_cutoff has value")
+  if(!emptyMergeIndex & emptyCutoff) return("if merge_index not NA, must have value for merge_cutoff")
+  if(emptyMergeIndex & !is.null(object@merge_nodeMerge)) return("merge_index NA but merge_nodeMerge has value")
+  if(!emptyMergeIndex & is.null(object@merge_nodeMerge)) return("if merge_index not NA, must have value for merge_nodeMerge")
+  
+  #these slots can be set even if no merge, but not vice versa
+  emptyDEMethod<-is.na(object@merge_demethod) || length(object@merge_demethod)==0
+  if(!emptyMergeIndex & emptyDEMethod) return("if merge_index not NA, must have value for merge_demethod") 
+  emptyDendroIndex<-is.na(object@merge_dendrocluster_index) || length(object@merge_dendrocluster_index)==0
+  if(!emptyMergeIndex & emptyDendroIndex) return("if merge_index not NA, must have value for merge_dendrocluster_index")
+  
+  ##Check when there is actual merging:
+  if(!emptyMergeIndex){
+    if(object@merge_cutoff>1 || object@merge_cutoff<0) return("merge_cutoff should be between 0 and 1")
+    if(object@merge_index==object@merge_dendrocluster_index) return("merge_index should not be same as merge_dendrocluster_index")
+    if(!length(object@merge_method)==1) return("merge_method must be of length 1")
     
-    #these slots can be set even if no merge, but not vice versa
-    if(!is.na(object@merge_index) & is.na(object@merge_demethod)) return("if merge_index not NA, must have value for merge_demethod")  
-    if(!is.na(object@merge_index) & is.na(object@merge_dendrocluster_index)) return("if merge_index not NA, must have value for merge_dendrocluster_index")
+    #deal with possible FC
+    baseMergeMethod<-sapply(strsplit(object@merge_method,"_"),.subset2,1)
+    if(!baseMergeMethod %in% .availMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=",")," (with possibility of fold-change added to method name for 'adjP')"))
+    allowMergeColumns<-c('Contrast','isMerged','mergeClusterId','NodeId')
+    if(!identical(sort(colnames(object@merge_nodeMerge)),sort(allowMergeColumns)) ) {
+      return(paste("merge_nodeMerge must have 5 columns and column names equal to:",paste(allowMergeColumns,collapse=",")))
+    }
+    if(!is.character(object@merge_nodeMerge[,"NodeId"])) return("'NodeId' column of merge_nodeMerge must be character")
+    if(!is.character(object@merge_nodeMerge[,"Contrast"])) return("'Contrast' column of merge_nodeMerge must be character")
+    if(!is.logical(object@merge_nodeMerge[,"isMerged"])) return("'isMerged' column of merge_nodeMerge must be logical")
+    if(!is.numeric(object@merge_nodeMerge[,"mergeClusterId"]) & !all(is.na(object@merge_nodeMerge[,"mergeClusterId"]))) return("'mergeClusterId' column of merge_nodeMerge must be numeric")
+    if(any(object@merge_nodeMerge[,"isMerged"])){
+      wh<-which(object@merge_nodeMerge[,"isMerged"])
+      if(all(is.na(object@merge_nodeMerge[wh,"mergeClusterId"]))) return("mergeClusterId entries of merge_nodeMerge cannot be all NA if there isMerged column that is TRUE")
+    }    
+    id<-object@merge_nodeMerge[,"mergeClusterId"]
+    merg<-object@merge_nodeMerge[,"isMerged"]
+    if(length(unique(na.omit(id))) != length(na.omit(id))) return("'mergeClusterId values in merge_nodeMerge not unique")
+    if(any(!is.na(id) & !merg)) return("Cannot have values 'mergeClusterId' where 'isMerged' is FALSE")
+    cl<-clusterMatrix(object)[,object@merge_index]
+    if(any(!na.omit(id)%in% cl)) return("Values in 'mergeClusterId' not match cluster id values")
+	
+  }
+  if(!is.null(object@merge_nodeProp)){
+    if(emptyDendroIndex){return("merge_nodeProp is not NULL but merge_dendrocluster_index has no value")
+      
+    }
+    if(length(object@merge_demethod)!=1 || !object@merge_demethod %in% .demethods)
+      return(paste("merge_demethod must be one of:",paste(.demethods,collapse=",")))
+		
+    requireColumns<-c("NodeId","Contrast",.availMergeMethods)
+    #need to allow for log fold change columns of adjP
+    allCnames<-colnames(object@merge_nodeProp)
+    whFC<-grep("adjP_",allCnames)
+    whNode<-which(allCnames %in% c("NodeId","Contrast"))
+    namesToCheck<-if(length(whFC)>0) allCnames[-whFC] else allCnames
+    if(!identical(sort(namesToCheck),sort(requireColumns)) ) 
+      return(paste("merge_nodeProp must be data.frame with at least",length(requireColumns),"columns that have column names equal to:",paste(requireColumns,sep="",collapse=",")))
     
-    ##Check when there is actual merging:
-    if(!is.na(object@merge_index)){
-        if(object@merge_cutoff>1 || object@merge_cutoff<0) return("merge_cutoff should be between 0 and 1")
-        if(object@merge_index==object@merge_dendrocluster_index) return("merge_index should not be same as merge_dendrocluster_index")
-        if(!length(object@merge_method)==1) return("merge_method must be of length 1")
-        
-        #deal with possible FC
-        baseMergeMethod<-sapply(strsplit(object@merge_method,"_"),.subset2,1)
-        if(!baseMergeMethod %in% .availMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=",")," (with possibility of fold-change added to method name for 'adjP')"))
-        allowMergeColumns<-c('Contrast','isMerged','mergeClusterId','NodeId')
-        if(!identical(sort(colnames(object@merge_nodeMerge)),sort(allowMergeColumns)) ) {
-            return(paste("merge_nodeMerge must have 5 columns and column names equal to:",paste(allowMergeColumns,collapse=",")))
-        }
-        if(!is.character(object@merge_nodeMerge[,"NodeId"])) return("'NodeId' column of merge_nodeMerge must be character")
-        if(!is.character(object@merge_nodeMerge[,"Contrast"])) return("'Contrast' column of merge_nodeMerge must be character")
-        if(!is.logical(object@merge_nodeMerge[,"isMerged"])) return("'isMerged' column of merge_nodeMerge must be logical")
-        if(!is.numeric(object@merge_nodeMerge[,"mergeClusterId"]) & !all(is.na(object@merge_nodeMerge[,"mergeClusterId"]))) return("'mergeClusterId' column of merge_nodeMerge must be numeric")
-        if(any(object@merge_nodeMerge[,"isMerged"])){
-            wh<-which(object@merge_nodeMerge[,"isMerged"])
-            if(all(is.na(object@merge_nodeMerge[wh,"mergeClusterId"]))) return("mergeClusterId entries of merge_nodeMerge cannot be all NA if there isMerged column that is TRUE")
-        }    
-        id<-object@merge_nodeMerge[,"mergeClusterId"]
-        merg<-object@merge_nodeMerge[,"isMerged"]
-        if(length(unique(na.omit(id))) != length(na.omit(id))) return("'mergeClusterId values in merge_nodeMerge not unique")
-        if(any(!is.na(id) & !merg)) return("Cannot have values 'mergeClusterId' where 'isMerged' is FALSE")
-        cl<-clusterMatrix(object)[,object@merge_index]
-        if(any(!na.omit(id)%in% cl)) return("Values in 'mergeClusterId' not match cluster id values")
-        
+    if(!is.character(object@merge_nodeProp[,"NodeId"])) return("'Node' column of merge_nodeProp must be character")
+    if(!is.character(object@merge_nodeProp[,"Contrast"])) return("'Contrast' column of merge_nodeProp must be character")
+    for(method in allCnames[-whNode]){
+      if(!is.numeric(object@merge_nodeProp[,method])) return(paste(method,"column of merge_nodeProp must be numeric"))
     }
-    if(!is.null(object@merge_nodeProp)){
-        if(is.na(object@merge_dendrocluster_index)){return("merge_nodeProp is NULL but merge_dendrocluster_index has value")
-            
-        }
-        if(length(object@merge_demethod)!=1 || !object@merge_demethod %in% .demethods)
-            return(paste("merge_demethod must be one of:",paste(.demethods,collapse=",")))
-        
-        requireColumns<-c("NodeId","Contrast",.availMergeMethods)
-        #need to allow for log fold change columns of adjP
-        allCnames<-colnames(object@merge_nodeProp)
-        whFC<-grep("adjP_",allCnames)
-        whNode<-which(allCnames %in% c("NodeId","Contrast"))
-        namesToCheck<-if(length(whFC)>0) allCnames[-whFC] else allCnames
-        if(!identical(sort(namesToCheck),sort(requireColumns)) ) 
-            return(paste("merge_nodeProp must be data.frame with at least",length(requireColumns),"columns that have column names equal to:",paste(requireColumns,sep="",collapse=",")))
-        
-        if(!is.character(object@merge_nodeProp[,"NodeId"])) return("'Node' column of merge_nodeProp must be character")
-        if(!is.character(object@merge_nodeProp[,"Contrast"])) return("'Contrast' column of merge_nodeProp must be character")
-        for(method in allCnames[-whNode]){
-            if(!is.numeric(object@merge_nodeProp[,method])) return(paste(method,"column of merge_nodeProp must be numeric"))
-        }
-        
-    }
-    #Check that dendro node ids match those in merge tables.
-    if(!is.na(object@merge_dendrocluster_index) && !is.na(object@dendro_index) && object@merge_dendrocluster_index==object@dendro_index){
-        dendroNodes<-phylobase::tdata(object@dendro_clusters,type="internal")[,"NodeId"]
-        nodes<-object@merge_nodeMerge[,"NodeId"]
-        if(!all(sort(nodes) == sort(dendroNodes))) return("Not all of nodes in dendro_clusters have a value in merge_nodeMerge")
-        nodes<-object@merge_nodeProp[,"NodeId"]
-        if(!all(sort(nodes) == sort(dendroNodes))) return("Not all of nodes in dendro_clusters have a value in merge_nodeProp")		
-    }
-    return(TRUE)
+	
+  }
+  #Check that dendro node ids match those in merge tables.
+  emptyDendro<-is.na(object@dendro_index) || length(object@dendro_index)==0
+  if(!emptyDendroIndex && !emptyDendro && object@merge_dendrocluster_index==object@dendro_index){
+	dendroNodes<-phylobase::tdata(object@dendro_clusters,type="internal")[,"NodeId"]
+	nodes<-object@merge_nodeMerge[,"NodeId"]
+	if(!all(sort(nodes) == sort(dendroNodes))) return("Not all of nodes in dendro_clusters have a value in merge_nodeMerge")
+	nodes<-object@merge_nodeProp[,"NodeId"]
+	if(!all(sort(nodes) == sort(dendroNodes))) return("Not all of nodes in dendro_clusters have a value in merge_nodeProp")		
+  }
+  return(TRUE)
 }
 .checkCoClustering<-function(object){
     ## FIXME: this needs to be changed if now return NxB matrix. 
