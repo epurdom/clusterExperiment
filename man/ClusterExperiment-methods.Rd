@@ -234,7 +234,7 @@ show(rsecFluidigm)
 #Number of clusterings
 nClusterings(rsecFluidigm)
 # Number of clusters per clustering
-nCluster(rsecFluidigm)
+nClusters(rsecFluidigm)
 # Number of features/samples
 nSamples(rsecFluidigm)
 nFeatures(rsecFluidigm)
