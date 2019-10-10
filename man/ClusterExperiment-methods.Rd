@@ -229,7 +229,7 @@ Note that redefining the transformation function via
 }
 \examples{
 # load data:
-load(rsecFluidigm)
+data(rsecFluidigm)
 show(rsecFluidigm)
 #Number of clusterings
 nClusterings(rsecFluidigm)
