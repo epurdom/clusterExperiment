@@ -3,6 +3,8 @@
 #' Find sets of samples that stay together across clusterings in order to define 
 #' a new clustering vector.
 #'
+#' @name makeConsensus
+#' @rdname makeConsensus
 #' @param x a matrix with samples on the rows and different clusterings on the
 #'   columns or \code{\link{ClusterExperiment}} object.
 #' @param clusterFunction the clustering function to use (passed to 
@@ -102,7 +104,6 @@
 #' par(oldpar)
 #'
 #' @aliases makeConsensus,matrix-method
-#' @rdname makeConsensus
 #' @export
 setMethod(
     f = "makeConsensus",
