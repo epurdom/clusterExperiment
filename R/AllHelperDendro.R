@@ -84,6 +84,25 @@
 #'   clustering hierarchy.
 #' @importMethodsFrom phylobase nodeLabels nodeLabels<- nTips nNodes
 #' @export
+#' @examples
+#' load(rsecFluidigm)
+#' # retrieve the dendrogram of the clusters:
+#' clusterDendrogram(rsecFluidigm)
+#' # retrieve the dendrogram of the samples:
+#' sampleDendrogram(rsecFluidigm)
+#' # Return # internal nodes from cluster hierarchy
+#' nInternalNodes(rsecFluidigm)
+#' # Return # tips from cluster hierarchy (i.e. # clusters)
+#' nTips(rsecFluidigm)
+#' # Return internal node ids
+#' nodeIds(rsecFluidigm,type="internal")
+#' # Labels assigned to internal nodes
+#' nodeLabels(rsecFluidigm)
+#' # Assign new labels to the internal nodes of the cluster hierarchy
+#' l1<-paste("A", 1:nInternalNodes(rsecFluidigm),sep=":")
+#' names(l1)<-nodeIds(rsecFluidigm,type="internal")
+#' nodeLabels(rsecFluidigm)<-ll
+#' nodeLabels(rsecFluidigm)
 #' @aliases clusterDendrogram,ClusterExperiment-method
 setMethod(
   f = "clusterDendrogram",

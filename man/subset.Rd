@@ -91,3 +91,14 @@ These functions are used to subset ClusterExperiment objects,
 Note that when subsetting the data, the dendrogram information and
 the co-clustering matrix are lost.
 }
+\examples{
+#load CE object
+data(rsecFluidigm)
+# remove the mergeClusters step from the object
+clusterLabels(rsecFluidigm)
+test<-removeClusterings(rsecFluidigm,whichClusters="mergeClusters")
+clusterLabels(test)
+tableClusters(rsecFluidigm)
+test<-removeClusters(rsecFluidigm,whichCluster="mergeClusters",clustersToRemove=c("m01","m04"))
+tableClusters(test,whichCluster="mergeClusters")
+}

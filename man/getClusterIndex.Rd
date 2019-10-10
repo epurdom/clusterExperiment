@@ -57,3 +57,11 @@ If \code{whichClusters} is a character value, then it the function attempts to u
 }
  @details If \code{whichClusters} is a character value, but its first element does not match these predesignated values, then all the values of \code{whichClusters} are attempted to be matched to the \code{\link{clusterTypes}} of the object. Note that there may be more than one clustering that matches a given type. For any entries that do not match a value in  \code{clusterTypes(object)} are then matched based on the value of \code{\link{clusterLabels}} of the object.
 }
+\examples{
+#load CE object
+data(rsecFluidigm)
+# get the cluster index from mergeClusters step
+getClusterIndex(rsecFluidigm,whichClusters="mergeClusters")
+# get the cluster indices from mergeClusters step
+getClusterIndex(rsecFluidigm,whichClusters="clusterMany")
+}

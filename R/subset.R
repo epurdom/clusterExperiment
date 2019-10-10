@@ -14,6 +14,16 @@
 #' @return \code{removeClusterings} returns a \code{ClusterExperiment} object,
 #'   unless all clusters are removed, in which case it returns a
 #'   \code{\link{SingleCellExperiment}} object.
+#' @examples
+#' #load CE object
+#' data(rsecFluidigm)
+#' # remove the mergeClusters step from the object
+#' clusterLabels(rsecFluidigm)
+#' test<-removeClusterings(rsecFluidigm,whichClusters="mergeClusters")
+#' clusterLabels(test)
+#' tableClusters(rsecFluidigm)
+#' test<-removeClusters(rsecFluidigm,whichCluster="mergeClusters",clustersToRemove=c("m01","m04"))
+#' tableClusters(test,whichCluster="mergeClusters")
 #' @export
 #' @aliases removeClusterings,ClusterExperiment-method
 setMethod(

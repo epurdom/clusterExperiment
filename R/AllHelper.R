@@ -10,6 +10,30 @@
 #'   objects may be passed to these functions.
 #' @rdname ClusterExperiment-methods
 #' @aliases show show,ClusterExperiment-method
+#' @examples
+#' # load data:
+#' load(rsecFluidigm)
+#' show(rsecFluidigm)
+#' #Number of clusterings
+#' nClusterings(rsecFluidigm)
+#' # Number of clusters per clustering
+#' nCluster(rsecFluidigm)
+#' # Number of features/samples
+#' nSamples(rsecFluidigm)
+#' nFeatures(rsecFluidigm)
+#' # retrieve all clustering assignments
+#' # (either as cluster ids, cluster names or cluster colors)
+#' head(clusterMatrix(rsecFluidigm))
+#' head(clusterMatrixNamed(rsecFluidigm))
+#' head(clusterMatrixColors(rsecFluidigm))
+#' # clustering Types/Labels
+#' clusterTypes(rsecFluidigm)
+#' clusterLabels(rsecFluidigm)
+#' # Add a clustering assignment to the colData of the object
+#' # (useful if working with function that relies on colData)
+#' colData(rsecFluidigm)
+#' test<-addToColData(rsecFluidigm,whichCluster="primary")
+#' colData(test)
 #' @export
 setMethod(
   f = "show",
@@ -518,12 +542,12 @@ setMethod(
 #' @inheritParams ClusterExperiment-methods
 #' @aliases renameClusters,ClusterExperiment,character-method
 #' @examples
-#' #load CE object
+#' #create CE object
 #' data(simData)
-#'
 #' cl1 <- clusterSingle(simData, subsample=FALSE,
 #' sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), 
 #' clusterFunction="pam"))
+#' #Give names to the clusters
 #' clusterLegend(cl1)
 #' cl1<-renameClusters(cl1, c("1"="A","2"="B","3"="C"), matchTo="clusterIds")
 #' clusterLegend(cl1)

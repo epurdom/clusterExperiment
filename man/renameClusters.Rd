@@ -39,12 +39,12 @@ Change the assigned names or colors of the clusters in a
   clustering stored in the clusterLegend slot of the object.
 }
 \examples{
-#load CE object
+#create CE object
 data(simData)
-
 cl1 <- clusterSingle(simData, subsample=FALSE,
 sequential=FALSE, mainClusterArgs=list(clusterArgs=list(k=3), 
 clusterFunction="pam"))
+#Give names to the clusters
 clusterLegend(cl1)
 cl1<-renameClusters(cl1, c("1"="A","2"="B","3"="C"), matchTo="clusterIds")
 clusterLegend(cl1)

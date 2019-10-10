@@ -227,3 +227,28 @@ Note that redefining the transformation function via
   using a call to ClusterExperiment, which has the option as to whether to
   check the validity of the transformation.
 }
+\examples{
+# load data:
+load(rsecFluidigm)
+show(rsecFluidigm)
+#Number of clusterings
+nClusterings(rsecFluidigm)
+# Number of clusters per clustering
+nCluster(rsecFluidigm)
+# Number of features/samples
+nSamples(rsecFluidigm)
+nFeatures(rsecFluidigm)
+# retrieve all clustering assignments
+# (either as cluster ids, cluster names or cluster colors)
+head(clusterMatrix(rsecFluidigm))
+head(clusterMatrixNamed(rsecFluidigm))
+head(clusterMatrixColors(rsecFluidigm))
+# clustering Types/Labels
+clusterTypes(rsecFluidigm)
+clusterLabels(rsecFluidigm)
+# Add a clustering assignment to the colData of the object
+# (useful if working with function that relies on colData)
+colData(rsecFluidigm)
+test<-addToColData(rsecFluidigm,whichCluster="primary")
+colData(test)
+}

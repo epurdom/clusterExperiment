@@ -1,17 +1,21 @@
 #----------------------------
 # Git and SVN related
 ^.svn
-^.git
+^\\.git
 
 ^.*\\.md$
+^\\.DS_Store$
+todoForKNN.txt
 
 # Travis-CI et al.
+^.*\\.yml$
 ^[.]travis[.]yml$
 ^travis-tool[.]sh$
 ^pkg-build[.]sh$
 ^appveyor[.]yml$
 ^covr-utils.R$
 ^[.]coveralls[.]R$
+
 # R related
 ^cran-comments[.].*$
 ^vignettes/.*[.](pdf|PDF)$

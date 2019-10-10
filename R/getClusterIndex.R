@@ -27,6 +27,13 @@
 #' @export
 #' @return \code{getClusterIndex} returns a vector of all numeric indices that are indicated by the requested \code{whichClusters}. Note that there is not a one-to-one match between input values and returned values since there may be more than one value for a given value of \code{whichClusters} or no value at all.  
 #' @aliases getClusterIndex,ClusterExperiment-method
+#' @examples
+#' #load CE object
+#' data(rsecFluidigm)
+#' # get the cluster index from mergeClusters step
+#' getClusterIndex(rsecFluidigm,whichClusters="mergeClusters")
+#' # get the cluster indices from mergeClusters step
+#' getClusterIndex(rsecFluidigm,whichClusters="clusterMany")
 setMethod(
 	f="getClusterIndex",
 	signature="ClusterExperiment",
