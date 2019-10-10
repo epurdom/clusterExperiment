@@ -480,18 +480,16 @@ setMethod(
 	definition=function(object,whichClusters="primary",useNames=TRUE,makeFactor=TRUE,...){
 		if(useNames){
 			cm<-clusterMatrixNamed(object,whichClusters=whichClusters)
-			if(!makeFactor) cm<-DataFrame(data.frame(cm,stringsAsFactors=FALSE),check.names=FALSE)
-			else cm<-DataFrame(cm,check.names=FALSE)
 		}
 		else{
-			cm<-clusterMatrix(object,whichClusters=whichClusters)
-			if(makeFactor){
-				cnames<-colnames(cm)
-				cm<-do.call("DataFrame",c(lapply(seq_len(ncol(cm)),function(i){factor(cm[,i])}),list(check.names=FALSE))) 
-				colnames(cm)<-cnames		
-			}
-			else cm<-DataFrame(cm,check.names=FALSE)
+			cm<-clusterMatrix(object,whichClusters=whichClusters)			
 		}
+		if(makeFactor){
+			cnames<-colnames(cm)
+			cm<-do.call("DataFrame",c(lapply(seq_len(ncol(cm)),function(i){factor(cm[,i])}),list(check.names=FALSE))) 
+			colnames(cm)<-cnames		
+		}
+		else cm<-DataFrame(cm,check.names=FALSE)
 		return(cbind(colData(object),cm))
 	})
 	
