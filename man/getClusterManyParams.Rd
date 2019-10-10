@@ -54,8 +54,8 @@ Specifically, it splits the label of each clustering by the
 \examples{
 data(simData)
 
-cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
-clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
-removeSil=c(TRUE,FALSE))
+cl <- clusterMany(simData, nReducedDims=c(5, 10), reduceMethod="PCA",
+     clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE), 
+     makeMissingDiss=TRUE, removeSil=c(TRUE,FALSE))
 getClusterManyParams(cl)
 }

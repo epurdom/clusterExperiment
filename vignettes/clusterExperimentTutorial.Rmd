@@ -8,6 +8,8 @@ output:
     toc: true
 vignette: >
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{clusterExperiment Vignette}
 editor_options: 
   chunk_output_type: console
 ---
@@ -138,10 +140,10 @@ metadata(rsecFluidigm)$packageVersion
 ```{r include=FALSE}
 # #check still valid object, in case updated class definitions
 # if(!validObject(rsecFluidigm)) stop("rsecFluidigm is not a valid ClusterExperiment object")
-# checkRsecFluidigmObject(rsecFluidigm)
+# clusterExperiment:::checkRsecFluidigmObject(rsecFluidigm)
 ```
 
-However, it doesn't take very long (roughly 1-2 minutes) so we recommend users try it themselves. The following code is the basic RSEC call corresponding to the above object (the vignette does not run this code but the user can): 
+However, it doesn't take very long (roughly 1-2 minutes or less) so we recommend users try it themselves. The following code is the basic RSEC call corresponding to the above object (the vignette does not run this code but the user can): 
 
 ```{r RSEC, eval=FALSE}
 ## Example of RSEC call (not run by vignette)
@@ -153,7 +155,6 @@ system.time(rsecFluidigm<-RSEC(se, isCount = TRUE,
     alphas=c(0.1, 0.2, 0.3),
     ncores=1, random.seed=176201))
 ```
-
 
 However, to exactly replicate the data object `rsecFluidigm` that is provided in the package, you would need to set a large number of parameters to be exactly the same as this object (in different versions of the package, some defaults have changed and we try to not change the `rsecFluidigm` object everytime). The code that creates `rsecFluidigm` can be found by typing `makeRsecFluidigmObject` in the command line (see `?rsecFluidigm`).
 
@@ -313,10 +314,10 @@ In the next section, we will describe more about the options we could adjust in 
  * decide to use a different method of estimating the proportion differential for merge by setting `mergeMethod="Storey"` instead of the default ("adjP"). 
  * no longer adjust the minimum cluster size and use the default (`consensusMinSize=5`).
  
- These are the main parameters we might frequently want to tweak in `RSEC`.
+ These are common parameters we might frequently want to tweak in `RSEC`.
  
 ```{r recallRSEC}
-rsecFluidigm<-RSEC(rsecFluidigm,isCount=TRUE,consensusProportion=0.6,mergeMethod="JC",mergeCutoff=0.05)
+rsecFluidigm<-RSEC(rsecFluidigm,isCount=TRUE,consensusProportion=0.6,mergeMethod="JC",mergeCutoff=0.05,stopOnErrors =TRUE)
 ```
 
 Notice that we save the output over our original object. This is the standard way to work with the `ClusterExperiment` objects, since the package's commands just continues to add the clusterings, without deleting anything from before. In this way, we do not duplicate the actual data in our workspace (which is often large).
@@ -331,8 +332,6 @@ plotClusters(rsecFluidigm,main="Clusters from RSEC", whichClusters=c("mergeClust
 ```
 
 The clusterings with the `.1` appended to the labels are the previous `makeConsensus` and `mergeClusters` clusterings from the default setting (see [Rerunning](#rerun) to see how different versions are labeled and stored internally). We can see that we lost several clusters with these options. 
-
-
 
 In practice, it can be useful to interactively make choices about these parameters by rerunning each the individual steps of the workflow separately and visualizing the changes before moving to the next step, as we do below during our [overview](#workover) of the steps.
 
@@ -358,13 +357,20 @@ pairsAllRSEC<-getBestFeatures(rsecFluidigm,contrastType="Pairs",p.value=0.05,
 head(pairsAllRSEC)
 ```
 
-We can visualize only these significantly different pair-wise features with `plotHeatmap` by using the column "IndexInOriginal" in the result of `getBestFeatures` to quickly identify the genes to be used in the heatmap. Notice that the same genes can be replicated across different contrasts, so we will not always have unique genes:
+### Heatmaps of features
+
+We can visualize only these significantly different pair-wise features with a heatmap using the `plotHeatmap` function. 
+
+First we need to identify the genes to plot for the heatmap. Our output `pairsAllRSEC` has a column `IndexInOriginal` that identifies the index of the genes in the original data matrix. 
+
+However, notice that the same genes can be found in different contrasts, meaning our list of significant genes will not be unique:
 
 ```{r getBestFeatures_size}
-length(pairsAllRSEC$Feature)==length(unique(pairsAllRSEC$Feature))
+# We have duplicates of some genes:
+any(duplicated(pairsAllRSEC$Feature))
 ```
 
-In this case they are not unique because the same gene can be significant for different pairs tests. Hence, we will make sure we take only unique gene values so that they are not plotted multiple times in our heatmap. (This is a good practice even if in a particular case the genes are unique).
+So some genes are significant for multiple of the tests. For our heatmap, we will descide to show only unique gene values so that they are not plotted multiple times in our heatmap. We will signify which genes to plot with the argument `clusterFeaturesData` (i.e. which data to use for the rows of the heatmap). 
 
 ```{r getBestFeatures_heatmap}
 plotHeatmap(rsecFluidigm, whichClusters=c("makeConsensus","mergeClusters"),clusterSamplesData="dendrogramValue",
@@ -373,9 +379,10 @@ plotHeatmap(rsecFluidigm, whichClusters=c("makeConsensus","mergeClusters"),clust
             breaks=.99)
 ```
 
-Notice that the samples clustered into the `-1` cluster (i.e. not assigned) are clustered as an outgroup. This is a choice that is made when the dendrogram (described below). These samples can also be mixed into the dendrogram (see [makeDendrogram](#makeDendrogram))
+Notice that the samples clustered into the `-1` cluster (i.e. not assigned) are clustered as an outgroup. This is a choice that is made when the dendrogram of the clusters was created (described below). These samples can also be mixed into the dendrogram at the time of creation (see [makeDendrogram](#makeDendrogram))
 
-We can identify the genes corresponding to the different contrasts with the `plotContrastHeatmap` function where the genes (rows) are organized by what contrast for which they are significant. The option `nBlankLines` controls the space between the groups of genes from each contrast. We also give the argument `whichCluster="primary"` to indicate that the contrasts were created with the primary clustering -- this means that the legend will put in the names of the clusters rather than their (internal) numeric id. 
+
+We can alternatively show a heatmap that will sort the genes by the different contrasts they correspond to using the `plotContrastHeatmap` function. The genes (rows) will be grouped by what contrast they are with. The option `nBlankLines` controls the space between the groups of genes from each contrast. We also give the argument `whichCluster="primary"` to indicate that the contrasts were created with the primary clustering (this means that the legend will put in the names of the clusters rather than their (internal) numeric id). 
 
 ```{r plotContrastHeatmap}
 plotContrastHeatmap(rsecFluidigm, signif=pairsAllRSEC,nBlankLines=40,whichCluster="primary")
@@ -428,13 +435,6 @@ We can visualize the resulting clusterings using the `plotClusters` command as w
 defaultMar<-par("mar")
 par(mar=plotCMar)
 plotClusters(ce,main="Clusters from clusterMany", whichClusters="workflow", colData=c("Biological_Condition","Published2"), axisLine=-1)
-
-ce<-clusterMany(se, clusterFunction="pam",ks=5:10, minSizes=5,
-      isCount=TRUE,reduceMethod=c("PCA","var"),nFilterDims=c(100,500,1000),
-      nReducedDims=c(5,15,50),run=TRUE)
-test<-getClusterManyParams(ce)
-ord<-order(test[,"k"],test[,"nFilterDims"],test[,"nReducedDims"])
-plotClusters(ce,main="Clusters from clusterMany", whichClusters=test$clusteringIndex[ord], colData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
 We can see that some clusters are fairly stable across different choices of dimensions while others can vary dramatically. 
@@ -444,17 +444,19 @@ Notice that again some samples are white (i.e the value -1, meaning they were no
 
 We have set `whichClusters="workflow"` to only plot clusters created from the workflow. Right now that's all there are anyway, but as commands get rerun with different options, other clusterings can build up in the object (see discussion in [this section](#rerun) about how multiple calls to workflow are stored). So setting `whichClusters="workflow"` means that we are only going to see our most recent calls to the workflow (so far we only have the 1 step, which is the `clusterMany` step). We seen already that `whichClusters` can be set to limit to specific clusterings or specific steps in the workflow .
 
-We cal also give to the `whichClusters` an argument indices of clusters stored in the `ClusterExperiment` object, which can allow us to show the clusters in a different order. Here we'll pick an order which corresponds to varying the number of dimensions, rather than k. We can find the parameters for each clustering using the `getClusterManyParams`
+*Using `whichClusters` to reorder the clusterings in `plotClusters`* We can also give to the `whichClusters` an vector argument corresponding to the indices of clusters stored in the `ClusterExperiment` object. This can allow us to show the clusters in a different order. Here we'll pick an order which corresponds to varying the number of dimensions, rather than varying $k$.
+
+We first find the parameters for each clustering using the `getClusterManyParams`
 
 ```{r plotCluster_params}
 cmParams<-getClusterManyParams(ce)
 head(cmParams)
 ```
 
-`getClusterManyParams` returns the parameter values, as well as the index of the corresponding clustering (i.e. what column it is in the matrix of clusterings). It is important to note that the index will change if we add additional clusterings, as we will do later.
+`getClusterManyParams` returns the parameter values, as well as the index of the corresponding clustering (i.e. what column it is in the matrix of clusterings). It is important to note that the index will change if we add additional clusterings, as we will do later, in which case we'd need to recall `getClusterManyParams`.
 
 
-We will set an order with first the PCA, ordered by number of dimensions, then the Var, ordered by number of diminsions
+We will set an order to show first the PCA, ordered by number of dimensions, then the Var, ordered by number of diminsions
 
 ```{r plotCluster_newOrder}
 ord<-order(cmParams[,"reduceMethod"],cmParams[,"nReducedDims"])
@@ -463,8 +465,9 @@ par(mar=plotCMar)
 plotClusters(ce,main="Clusters from clusterMany", whichClusters=ind, colData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
-We see that the order in which the clusters are given to `plotClusters` changes the plot greatly. 
-The labels shown are those given automatically by `clusterMany` but can be a bit much for plotting. We choose to remove "Features" as being too wordy:
+We see that the order in which the clusters are given to `plotClusters` changes the plot greatly, since the order of each subsequent clustering depends on the order of the line above it.
+ 
+The labels shown are those given automatically by `clusterMany` (and can be accessed with `clusterLabels`) but can be a bit much for plotting. We choose to remove "Features" as being too wordy:
 
 ```{r plotCluster_newLabels}
 clOrig<-clusterLabels(ce)
@@ -473,7 +476,7 @@ par(mar=plotCMar)
 plotClusters(ce,main="Clusters from clusterMany", whichClusters=ind, clusterLabels=clOrig[ind], colData=c("Biological_Condition","Published2"), axisLine=-1)
 ```
 
-We could also permanently assign new labels in our `ClusterExperiment` object if we prefer, for example to be more succinct, by changing the `clusterLabels` of the object. 
+We could also permanently assign new labels in our `ClusterExperiment` object if we prefer, for example to be more succinct, by changing the `clusterLabels` of the object (`clusterLabels(ce)<- ...`). 
 
 There are many different options for how to run `plotClusters` discussed in in the detailed section on  [plotClusters](#plotClusters), but for now, this plot is good enough for a quick visualization. 
 
@@ -1337,7 +1340,7 @@ To illustrate this point, we show an example of the $D$ matrix from subsampling.
 
 ```{r visualizeSubsamplingD}
 ceSub<-clusterSingle(ce,reduceMethod="mad",nDims=1000,subsample=TRUE,subsampleArgs=list(clusterFunction="pam",clusterArgs=list(k=8)),clusterLabel="subsamplingCluster",mainClusterArgs=list(clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1),minSize=5), saveSubsamplingMatrix=TRUE)
-plotCoClustering(ceSub,colorScale=rev(seqPal5))
+plotCoClustering(ceSub)
 ```
 
 We see even here, the default of $\alpha=0.1$ was perhaps too conservative since only two clusters came out (at leastwith size greater than 5).
@@ -1346,7 +1349,7 @@ However, the distances based on correlation calculated directly on the data, suc
 
 ```{r visualizeSpearmanDist}
 dSp<-spearDist(t(transformData(ce,reduceMethod="mad",nFilterDims=1000)))
-plotHeatmap(dSp,isSymmetric=TRUE,colorScale=rev(seqPal5))
+plotHeatmap(dSp,isSymmetric=TRUE)
 ```
 
 We can see that the choice of $\alpha$ must be much higher (and we are likely to be more sensitive to it).
@@ -1366,9 +1369,10 @@ ceDist
 
 ```{r clusterManyDiffDist,fig.width=15,fig.height=6}
 ceDist<-clusterMany(ceDist, k=7:9, alpha=c(0.35,0.4,0.45), 
-	 clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"),
-	 findBestK=FALSE,removeSil=c(FALSE),dist=c("corDist","spearDist"),
-          reduceMethod=c("mad"),nFilterDims=1000,run=TRUE)
+    clusterFunction=c("tight","hierarchical01","pam","hierarchicalK"),
+    findBestK=FALSE,removeSil=c(FALSE), distFunction=c("corDist","spearDist"),
+    makeMissingDiss=TRUE,
+    reduceMethod=c("mad"),nFilterDims=1000,run=TRUE)
 clusterLabels(ceDist)<-gsub("clusterFunction","alg",clusterLabels(ceDist))
 clusterLabels(ceDist)<-gsub("Dist","",clusterLabels(ceDist))
 clusterLabels(ceDist)<-gsub("distFunction","dist",clusterLabels(ceDist))
@@ -1391,8 +1395,8 @@ First, we need to define a wrapper function that performs the clustering. Here, 
 ```{r custom}
 library(scran)
 library(igraph)
-SNN_wrap <- function(x, k, steps = 4, ...) {
-  snn <- buildSNNGraph(x, k = k, d = NA, transposed = FALSE) ##scran package
+SNN_wrap <- function(inputMatrix, k, steps = 4, ...) {
+  snn <- buildSNNGraph(inputMatrix, k = k, d = NA, transposed = FALSE) ##scran package
   res <- cluster_walktrap(snn, steps = steps) #igraph package
   return(res$membership)
 }
@@ -1431,20 +1435,22 @@ In this example, we use `clusterSingle` to implement a subsample clustering base
 We give `SNN` to the `subsampleArgs` that will be passed to the subsampling. (Note that to create a consensus clustering from the different subsamplings we use a different function, `"hierarchical01"`, that is passed to `mainClusterArgs`),
 
 ```{r custom_clusterSingle}
-ceCustom <- clusterSingle(
-  ce, reduceMethod="PCA", nDims=50,
-  subsample = TRUE, sequential = FALSE,
-  mainClusterArgs = list(clusterFunction = "hierarchical01",
+ceCustom <- clusterSingle(ce, reduceMethod="PCA", 
+    nDims=50, subsample = TRUE, 
+    sequential = FALSE,
+    mainClusterArgs = list(clusterFunction = "hierarchical01",
                          clusterArgs = list(alpha = 0.3),
                          minSize = 1),
-  subsampleArgs = list(resamp.num=100,
+    subsampleArgs = list(resamp.num=100,
                        samp.p = 0.7,
                        clusterFunction = SNN,
                        clusterArgs = list(k = 10),
-                       ncores = 1)
+                       ncores = 1,
+                       classifyMethod='InSample')
 )
 ceCustom
 ```
+
 
 Similarly, we can use `clusterMany` to compute clusters using many different methods, including built-in and custom functions. To mix and match built-in functions, you need to get the actual `ClusterFunction` objects that match their names, using the `getBuiltInFunction` function. 
 
@@ -1479,7 +1485,7 @@ In the following we consider expanding our original clustering choices to consid
 ```{r clusterManyCheckParam}
 checkParam<-clusterMany(se, clusterFunction="pam", ks=2:10,
                         removeSil=c(TRUE,FALSE), isCount=TRUE,
-                        reduceMethod=c("PCA","var"),
+                        reduceMethod=c("PCA","var"), makeMissingDiss=TRUE,
                         nFilterDims=c(100,500,1000),nReducedDims=c(5,15,50),run=FALSE)
 dim(checkParam$paramMatrix) #number of rows is the number of clusterings
 ```
@@ -1509,7 +1515,7 @@ After creating many clusterings, `makeConsensus` finds a single cluster based on
 
 As mentioned in the Quick Start section, the default option for `makeConsensus` is to only define a cluster when *all* of the samples are in the same clusters across *all* clusterings. However, this is generally too conservative and just results in most samples not being assigned to a cluster. 
 
-Instead `makeConsensus` has a parameter `proportion` that governs in what proportion of clusterings the samples should be together. Internally, `makeConsensus` makes a coClustering matrix $D$. Like the $D$ created by subsampling in `clusterMany`, the coClustering matrix takes on values 0-1 for the proportion of times the samples are together in the clustering. This $D$ matrix is saved in the `ce` object and can be visualized with `plotCoClustering` (which is just a call to `plotHeatmap`). Recall the one we last made in the QuickStart, with our last call to `makeConsensus` (`proportion=0.7` and `minSize=3`). 
+Instead `makeConsensus` has a parameter `proportion` that governs in what proportion of clusterings the samples should be together. Internally, `makeConsensus` makes a coClustering matrix $D$. Like the $D$ created by subsampling in `clusterMany`, the coClustering matrix takes on values 0-1 for the proportion of times the samples are together in the clustering. This $D$ matrix can be visualized with `plotCoClustering` (which is just a call to `plotHeatmap`). Recall the one we last made in the QuickStart, with our last call to `makeConsensus` (`proportion=0.7` and `minSize=3`). 
 
 ```{r makeConsensus_detailed}
 plotCoClustering(ce)
@@ -1517,10 +1523,10 @@ plotCoClustering(ce)
 
 `makeConsensus` performs the clustering by running a "01" clustering algorithm on the $D$ matrix of percentage co-clustering (the default being "hierarchical01"). The `alpha` argument to the 01 clustering is `1-proportion`. Also passed to the clustering algorithm is the parameter `minSize` which sets the minimum size of a cluster.
 
-**Treatment of Unclustered assignments** -1 values are treated separately in the calculation. In particular, they are not considered in the calculation of percentage co-clustering -- the percent co-clustering is taken only with respect to  those clusterings where both samples were assigned. However, a post-processing is done to the clusters found from running the clustering on the $D$ matrix. For each sample, the percentage of times that they were marked -1 in the clusterings is calculated. If this percentage is greater than the argument `propUnassigned` then the sample is marked as -1 in the clustering returned by `makeConsensus`.
+**Treatment of Unclustered assignments** -1 values are treated separately in the calculation. In particular, they are not considered in the calculation of percentage co-clustering -- the percent co-clustering is taken only with respect to  those clusterings where both samples were assigned. However, a post-processing is done to the clusters found from running the clustering on the $D$ matrix. For each sample, the percentage of times that they were marked -1 in the clusterings is calculated. If this percentage is greater than the argument `propUnassigned` then the sample is forced to be -1 (unassigned) in the clustering returned by `makeConsensus`.
 
 
-**Good scenarios for running `makeConsensus`** Varying certain parameters result in clusterings better for `makeConsensus` than other sets of parameters. In particular, if there are huge discrepancies in the set of clusterings given to `makeConsensus`, the results will be a shattering of the samples into many small clusters. Similarly, if the number of clusters $K$ is very different, the end result will likely be like that of the large $K$, and how much value that is (rather than just picking the clustering with the largest $K$), is debatable. However, for "01" clustering algorithms or clusterings using the sequential algorithm, varying the underlying parameters $\alpha$ or $k_0$ often results in roughly similar clusterings across the parameters so that creating a consensus across them is highly informative.
+**Good scenarios for running `makeConsensus`** Varying certain parameters result in clusterings better for `makeConsensus` than other sets of parameters. In particular, if there are huge discrepancies in the set of clusterings given to `makeConsensus`, the results will be a shattering of the samples into many small clusters. Similarly, if the number of clusters $K$ is very different, the end result will likely be like that of the large $K$, and how much value that will provide you (rather than just picking the clustering with the largest $K$), is debatable. However, for "01" clustering algorithms or clusterings using the sequential algorithm, varying the underlying parameters $\alpha$ or $k_0$ often results in roughly similar clusterings across the parameters so that creating a consensus across them is highly informative.
 
 ### Consensus from subsets of clusterings
 
@@ -1696,10 +1702,10 @@ descendants(clusterDendrogram(ce),node="NodeId3")
 
 The main reason to really ever work with these dendrograms directly is  to link it back with the (merging results)[#mergeClusters] or (feature extraction results)[#Dendrocontrasts]. In particular, one feature of the cluster dendrogram can be set by the user is the labels for the internal nodes of the cluster hierarchy. Because of this there is a function `nodeLabels` that can be called *directly on the `ClusterExperiment` object* to see and update these values. Unlike our previous code, where we extracted the dendrogram and then used the functions in `phylobase` to look at it, these functions will update the actual dendrograms inside the object.
 
-We'll demonstrate this by giving the nodes new names that are the letters A-Z. The main trick in creating new node labels, is that it is *required* that the new replacement vector of names have names that match the internal node ids (the `NodeId` column). 
+We'll demonstrate this by giving the nodes new names that are the letters A-Z. The main trick in creating new node labels, is that it is *required* that the vector of new names have names that match the internal node ids (the `NodeId` column). These are the default names of the node, we can use the default names (given by `nodeLabels`) to grab them. 
 
 ```{r changeNodeLabels}
-newNodeLabels<-LETTERS[1:6]
+newNodeLabels<-LETTERS[1:nNodes(ce)]
 names(newNodeLabels)<-nodeLabels(ce)
 nodeLabels(ce)<-newNodeLabels
 ```

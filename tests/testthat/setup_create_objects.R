@@ -32,6 +32,7 @@ mat <- matrix(data=rnorm(20*15), ncol=15)
 mat[1,1]<- -1 #force a negative value
 colnames(mat)<-paste("Sample",1:ncol(mat))
 rownames(mat)<-paste("Gene",1:nrow(mat))
+dissMat<-as.matrix(dist(t(mat)))
 numLabels <- as.character(gl(5, 3))
 numLabels[c(1:2)]<- c("-1","-2") #make sure some not assigned
 numLabels<-factor(numLabels)
@@ -66,8 +67,12 @@ colnames(gSimData)<-c("a","b","c")
 seSimData <- SummarizedExperiment(simData,colData=simSData,rowData=gSimData,metadata=mData)
 seSimCount <- SummarizedExperiment(simCount,colData=simSData,rowData=gSimData,metadata=mData)
 
-test<- clusterMany(simCount,reduceMethod="PCA",nReducedDims=c(5,10,50), isCount=TRUE,
-                         clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE))
+test<- clusterMany(simCount,reduceMethod="PCA",
+    nReducedDims=c(5,10,50), 
+    isCount=TRUE, verbose=FALSE,
+    clusterFunction="pam", makeMissingDiss=TRUE,
+    ks=2:4,
+    findBestK=c(TRUE,FALSE))
 						
 test<-addClusterings(test,sample(2:5,size=NCOL(simData),replace=TRUE),clusterTypes="User")
 clMatNew<-apply(clusterMatrix(test),2,function(x){
@@ -121,3 +126,12 @@ clusterExperiment:::filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-m
 #####################
 hdfSCE<-HDF5Array::saveHDF5SummarizedExperiment(sceSimDataDimRed, dir="sceRedDem.h5", replace=TRUE)
 hdfObj<-HDF5Array::saveHDF5SummarizedExperiment(sceSimData, dir="sce.h5", replace=TRUE)
+
+###################
+## Create cat stuff
+###################
+catMat <- matrix(sample(x=1:4,size=20*19,replace=TRUE),ncol=20)
+catMat[1,1]<- -1 #force a negative value
+colnames(catMat)<-paste("Sample",1:ncol(catMat))
+rownames(catMat)<-paste("Gene",1:nrow(catMat))
+

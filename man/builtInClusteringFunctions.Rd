@@ -61,7 +61,7 @@ Documents the built-in clustering options that are available in
 \item{"pam"}{Based on \code{\link[cluster]{pam}} in
   \code{cluster} package. Arguments to that function can be passed via
   \code{clusterArgs}. 
-Input is \code{"either"} (\code{x} or \code{diss}); algorithm type is "K"} 
+Input can be either \code{"x"} or \code{"diss"}; algorithm type is "K"} 
 \item{"clara"}{Based on \code{\link[cluster]{clara}} in
   \code{cluster} package. Arguments to that function can be passed via
   \code{clusterArgs}. Note that we have changed the default arguments of 
@@ -76,6 +76,7 @@ Input is \code{"X"}; algorithm type is "K".}
 Arguments to that function can be passed via \code{clusterArgs} except for
 \code{centers} which is reencoded here to be the argument 'k' Input is
 \code{"X"}; algorithm type is "K"}
+\item{"mbkmeans"}{\code{\link[mbkmeans]{mbkmeans}} runs mini-batch kmeans, a more computationally efficient version of kmeans. }
 \item{"hierarchical01"}{\code{\link[stats]{hclust}} in \code{stats} package
 is used to build hiearchical clustering. Arguments to that function can be
 passed via \code{clusterArgs}. The \code{hierarchical01} cuts the hiearchical

@@ -62,12 +62,8 @@ setGeneric(
     standardGeneric("seqCluster")
   }
 )
-setGeneric(
-  name = "clusterSingle",
-  def = function(x, diss, ...) {
-    standardGeneric("clusterSingle")
-  }
-)
+setGeneric( name = "clusterSingle", 
+    def = function(inputMatrix, ...) { standardGeneric("clusterSingle") })
 setGeneric(
   name = "setToCurrent",
   def = function(x,  ...) {
@@ -331,6 +327,7 @@ setGeneric(
     standardGeneric("inputType")
   }
 )
+
 setGeneric(
   name = "getPostProcessingArgs",
   def = function(clusterFunction, ...) {

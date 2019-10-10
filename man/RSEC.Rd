@@ -27,12 +27,14 @@
   nReducedDims = defaultNDims(x, reduceMethod, type = "reducedDims"),
   k0s = 4:15, subsample = TRUE, sequential = TRUE,
   clusterFunction = "hierarchical01", alphas = c(0.1, 0.2, 0.3),
-  betas = 0.9, minSizes = 1, consensusProportion = 0.7,
-  consensusMinSize, dendroReduce, dendroNDims, mergeMethod = "adjP",
-  mergeCutoff, mergeLogFCcutoff, mergeDEMethod = if (isCount)
-  "limma-voom" else "limma", verbose = FALSE, mainClusterArgs = NULL,
-  subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1, ncores = 1,
-  random.seed = NULL, stopOnErrors = FALSE, run = TRUE)
+  betas = 0.9, minSizes = 1, makeMissingDiss = FALSE,
+  consensusProportion = 0.7, consensusMinSize, dendroReduce, dendroNDims,
+  mergeMethod = "adjP", mergeCutoff, mergeLogFCcutoff,
+  mergeDEMethod = if (isCount) "limma-voom" else "limma",
+  verbose = FALSE, parameterWarnings = FALSE, mainClusterArgs = NULL,
+  subsampleArgs = NULL, seqArgs = NULL, consensusArgs = NULL,
+  whichAssay = 1, ncores = 1, random.seed = NULL,
+  stopOnErrors = FALSE, run = TRUE)
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the
@@ -41,9 +43,9 @@ following classes: matrix (with genes in rows),
 \code{\link[SingleCellExperiment]{SingleCellExperiment}}
 or \code{ClusterExperiment}.}
 
-\item{...}{For signature \code{list}, arguments to be passed on to mclapply
+\item{...}{For signature \code{matrix}, arguments to be passed on to mclapply
 (if ncores>1). For all the other signatures, arguments to be passed to the
-method for signature \code{list}.}
+method for signature \code{matrix}.}
 
 \item{eraseOld}{logical. Only relevant if input \code{x} is of class
 \code{ClusterExperiment}. If TRUE, will erase existing workflow results
@@ -114,6 +116,14 @@ documentation of \code{\link{seqCluster}}.}
 \code{mainClustering} step). Clusters smaller than this are not kept and samples
 are left unassigned.}
 
+\item{makeMissingDiss}{logical. Whether to calculate necessary distance 
+matrices needed when input is not "diss". If TRUE, then when a clustering 
+function calls for a inputType "diss", but the given matrix is of type "X",
+the function will calculate a distance function. A dissimilarity matrix
+will also be calculated if a post-processing argument like \code{findBestK}
+or \code{removeSil} is chosen, since these rely on calcualting silhouette
+widths from distances.}
+
 \item{consensusProportion}{passed to \code{proportion} in
 \code{\link{makeConsensus}}}
 
@@ -142,6 +152,9 @@ on smaller datasets of counts.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
+\item{parameterWarnings}{logical, as to whether warnings and comments 
+from checking the validity of the parameter combinations should be printed.}
+
 \item{mainClusterArgs}{list of arguments to be passed for the mainClustering
 step, see help pages of \code{\link{mainClustering}}.}
 
@@ -150,6 +163,9 @@ step, see help pages of \code{\link{mainClustering}}.}
 \code{\link{subsampleClustering}}.}
 
 \item{seqArgs}{list of arguments to be passed to \code{\link{seqCluster}}.}
+
+\item{consensusArgs}{list of additional arguments to be passed to
+\code{\link{makeConsensus}}}
 
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}

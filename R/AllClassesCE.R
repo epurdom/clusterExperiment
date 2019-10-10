@@ -12,7 +12,7 @@ setClassUnion("functionOrNULL",members=c("function", "NULL"))
 setClassUnion("data.frameOrNULL",members=c("data.frame", "NULL"))
 setClassUnion("matrixOrHDF5",members=c("matrix", "DelayedArray","HDF5Matrix")) #Sometimes it appears necessary to have HDF5Matrix listed separately, not sure why, but otherwise not finding it. 
 setClassUnion("matrixOrHDF5OrNULL",members=c("matrix","DelayedArray","HDF5Matrix","NULL"))
-setClassUnion("sparseOrHDF5OrNULL",members=c("sparseMatrix","DelayedArray","HDF5Matrix","NULL"))
+setClassUnion("sparseOrHDF5OrNULL",members=c("numeric","sparseMatrix","DelayedArray","HDF5Matrix","NULL"))
 
 #############################################################
 #############################################################
@@ -82,11 +82,20 @@ setClassUnion("sparseOrHDF5OrNULL",members=c("sparseMatrix","DelayedArray","HDF5
 #'   \code{\link{sampleDendrogram}} for details).
 #' @slot dendro_index numeric. An integer giving the cluster that was used to
 #'   make the dendrograms. NA_real_ value if no dendrograms are saved.
-#' @slot coClustering \code{\link[Matrix]{sparseMatrix}} object. A sparse 
-#' representation of the matrix with the cluster co-occurrence
-#' information; this can either be based on subsampling or on co-clustering
-#' across parameter sets (see \code{clusterMany}). The matrix is a square matrix
-#' with number of rows/columns equal to the number of samples.
+#' @slot coClustering One of \itemize{ 
+#' \item{\code{NULL}, i.e. empty} 
+#' \item{a
+#'   numeric vector, signifying the indices of the clusterings in the
+#'   clusterMatrix that were used for \code{makeConsensus}. This allows for the
+#'   recreation of the distance matrix (using hamming distance) if needed for
+#'   function \code{plotClusters} but doesn't require storage of full NxN
+#'   matrix.} 
+#' \item{a \code{\link[Matrix]{sparseMatrix}} object -- a sparse 
+#'   representation of the NxN matrix with the cluster co-occurrence 
+#'   information; this can either be based on subsampling or on co-clustering 
+#'   across parameter sets (see \code{clusterMany}). The matrix is a square
+#'   matrix with number of rows/columns equal to the number of samples.}
+#' }
 #' @slot clusterLegend a list, one per cluster in \code{clusterMatrix}. Each
 #' element of the list is a matrix with nrows equal to the number of different
 #' clusters in the clustering, and consisting of at least two columns with the

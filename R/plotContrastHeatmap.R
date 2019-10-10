@@ -34,7 +34,8 @@
 #' data(simData)
 #'
 #' cl <- clusterSingle(simData, subsample=FALSE,
-#' sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
+#' sequential=FALSE, 
+#' mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
 #'
 #' #Do all pairwise, only return significant, try different adjustments:
 #' pairsPerC <- getBestFeatures(cl, contrastType="Pairs", number=5,
@@ -57,9 +58,9 @@ setMethod(
     })
     ##Check names of contrastColors
     if(!is.null(contrastColors)){
-      if(!all(sort(names(contrastColors))==sort(unique(signifTable$Contrast)))){
+      if(!all(sort(names(contrastColors)) == sort(unique(signifTable$Contrast))) ){
         if("ContrastName" %in% colnames(signifTable)){
-          if(!all(sort(names(contrastColors))==sort(unique(signifTable$ContrastName)))){
+          if(!all(sort(names(contrastColors)) == sort(unique(signifTable$ContrastName))) ){
             warning("names of contrastColors do not match 'Contrast' or 'ContrastName' values; will be ignored.")
             contrastColors<-NULL
             
@@ -77,7 +78,7 @@ setMethod(
 	if("ContrastName" %in% colnames(signifTable)){
       #give names to be contrast names
 	  internalNames<-names(geneByContrast) #incase need the Contrast name later in code
-      gpnames<-unique(signifTable[,c("Contrast","ContrastName","InternalName")])
+      gpnames<-unique(signifTable[,c("Contrast", "ContrastName", "InternalName")])
       if(nrow(gpnames)==length(geneByContrast)){
         m<-match(names(geneByContrast),gpnames[,"Contrast"])
         names(geneByContrast)<-gpnames[m,"ContrastName"]
@@ -97,17 +98,26 @@ setMethod(
     
     
     if(!is.null(whichCluster)){
-	  ##Assign colors to the contrasts (only does anything if contrast is oneAgainstAll)
-	  whichCluster<-getSingleClusterIndex(object,whichCluster,passedArgs=list(...))
+      ## Assign colors to the contrasts 
+      ## (only if contrast is oneAgainstAll)
+	  whichCluster<-getSingleClusterIndex(object,
+          whichCluster,passedArgs=list(...))
       cl<-clusterMatrix(object)[,whichCluster]
       clMat<-clusterLegend(object)[[whichCluster]]
       clMat<-clMat[which(clMat[,"clusterIds"]>0),] #remove negatives
-      ###If the contrast is one against all, should have name of cluster so give color
-	  ###Note that need to use InternalId, in case the names are not unique?
-	  internalNames<-gsub("Cl","",internalNames)
-      if(is.null(contrastColors) & identical(sort(as.numeric(internalNames)),unname(sort(as.numeric(clMat[,"clusterIds"]))))){
-        contrastColors<-clMat[,"color"]
-        names(contrastColors)<-names(geneByContrast)
+      ### If the contrast is one against all, should have name of cluster so give color
+      ### Note that need to use InternalId, in case the names are not unique?
+      internalNames<-gsub("Cl","",internalNames)
+      # This can give warnings for NAs, and if option(warn=2) create error...
+      internalNames<-try(sort(as.numeric(internalNames)),silent=TRUE)
+      if(inherits(internalNames, "try-error") ||
+          any(is.na(internalNames))) isOneVAll<-FALSE
+      else isOneVAll<-TRUE
+      clIds<-unname(sort(as.numeric(clMat[,"clusterIds"])))
+      if(is.null(contrastColors) && isOneVAll &&
+          identical(internalNames, clIds)){
+              contrastColors<-clMat[,"color"]
+              names(contrastColors)<-names(geneByContrast)
       }
     }
     if(is.null(contrastColors)){
@@ -116,7 +126,9 @@ setMethod(
       names(contrastColors)<-names(geneByContrast)
     }
     
-    plotHeatmap(object,clusterFeaturesData=geneByContrast,clusterLegend=list("Gene Group"=contrastColors),...)
+    plotHeatmap(object,
+        clusterFeaturesData=geneByContrast,
+        clusterLegend=list("Gene Group"=contrastColors),...)
     
   }
 )

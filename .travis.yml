@@ -22,11 +22,11 @@ r:
   - bioc-devel
 
 # External dependencies
-addons:
-  apt:
-    packages:
-      - gsl-bin
-      - libgsl-dev
+#addons:
+#  apt:
+#    packages:
+#      - gsl-bin
+#      - libgsl-dev
 
 ## Turn this to true before submission to CRAN/Bioconductor
 warnings_are_errors: false

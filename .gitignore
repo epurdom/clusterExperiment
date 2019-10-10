@@ -7,5 +7,7 @@ clusterVignette.md
 vignettes/*_cache
 vignettes/*_figure
 vignettes/*.R
+vignettes/*.html
+vignettes/*.h5
 tests/checkClusterMany/*
 tests/testthat/*.h5

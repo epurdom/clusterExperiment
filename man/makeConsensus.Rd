@@ -3,52 +3,64 @@
 \docType{methods}
 \name{makeConsensus,matrix-method}
 \alias{makeConsensus,matrix-method}
-\alias{makeConsensus}
 \alias{makeConsensus,ClusterExperiment-method}
 \title{Find sets of samples that stay together across clusterings}
 \usage{
 \S4method{makeConsensus}{matrix}(x, proportion,
-  clusterFunction = "hierarchical01", propUnassigned = 0.5,
-  minSize = 5, ...)
+  clusterFunction = "hierarchical01", minSize = 5,
+  propUnassigned = 0.5, whenUnassign = c("before", "after"),
+  clusterArgs = NULL)
 
 \S4method{makeConsensus}{ClusterExperiment}(x, whichClusters,
   eraseOld = FALSE, clusterLabel = "makeConsensus", ...)
 }
 \arguments{
-\item{x}{a matrix or \code{\link{ClusterExperiment}} object.}
+\item{x}{a matrix with samples on the rows and different clusterings on the
+columns or \code{\link{ClusterExperiment}} object.}
 
 \item{proportion}{The proportion of times that two sets of samples should be 
 together in order to be grouped into a cluster (if <1, passed to
 mainClustering via alpha = 1 - proportion)}
 
-\item{clusterFunction}{the clustering to use (passed to 
-\code{\link{mainClustering}}); currently must be of type '01'.}
-
-\item{propUnassigned}{samples with greater than this proportion of assignments
-equal to '-1' are assigned a '-1' cluster value as a last step (only if
-proportion < 1)}
+\item{clusterFunction}{the clustering function to use (passed to 
+\code{\link{mainClustering}}); currently must be of type '01' and accept as
+input matrices of type "cat" (see details of ?ClusterFunction).}
 
 \item{minSize}{minimum size required for a set of samples to be considered in 
 a cluster because of shared clustering, passed to
 \code{\link{mainClustering}}}
 
-\item{...}{arguments to be passed on to the method for signature 
-\code{matrix,missing}.}
+\item{propUnassigned}{samples with greater than this proportion of assignments
+equal to '-1' are assigned a '-1' cluster value as a last step (only if
+proportion < 1)}
+
+\item{whenUnassign}{(provided for back compatibility with previous versions).
+Must be one of "before" or "after", indicating at what point are samples
+with a proportion of assignments of -1 greater than \code{propUnassigned}
+forced to have a '-1' value. If "before", then these samples are removed
+and not used for clustering. If "after", these samples are included in the
+clustering step, but then the cluster values they receive are assigned a
+'-1. These choices may result in different clusterings, because if these
+samples are included in the clustering (i.e. \code{whenUnassign="after"},
+then these samples may affect the cluster assignments of other samples. The
+default is currently "before", but previous to version 2.5.4, there was no
+such option and the code internally set to "after", so for reproducibility
+with older results, users may need to set this option.}
+
+\item{clusterArgs}{list of arguments to be passed to the call to 
+\code{\link{mainClustering}} that is used to cluster the proportion 
+overlap between samples.}
 
 \item{whichClusters}{argument that can be either numeric or character vector
 indicating the clusterings to be used. See details of \code{\link{getClusterIndex}}.}
-
-\item{eraseOld}{logical. Only relevant if input \code{x} is of class
-\code{ClusterExperiment}. If TRUE, will erase existing workflow results
-(clusterMany as well as mergeClusters and makeConsensus). If FALSE, existing
-workflow results will have "\code{_i}" added to the clusterTypes value,
-where \code{i} is one more than the largest such existing workflow
-clusterTypes.}
 
 \item{clusterLabel}{a string used to describe the type of clustering. By
 default it is equal to "makeConsensus", to indicate that this clustering is
 the result of a call to makeConsensus. However, a more informative label can
 be set (see vignette).}
+
+\item{...}{arguments to be passed on to the method for signature 
+\code{matrix,missing}.}
 }
 \value{
 If x is a matrix, a list with values \itemize{ 
@@ -98,7 +110,7 @@ data(simData)
 
 cl <- clusterMany(simData,nReducedDims=c(5,10,50),  reduceMethod="PCA",
 clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
-subsample=FALSE)
+makeMissingDiss=TRUE, subsample=FALSE)
 
 #make names shorter for plotting
 clMat <- clusterMatrix(cl)
@@ -112,10 +124,10 @@ clCommon100 <- makeConsensus(clMat, proportion=1, minSize=10)
 #require 70\% agreement based on clustering of overlap
 clCommon70 <- makeConsensus(clMat, proportion=0.7, minSize=10)
 
-oldpar <- par()
+oldpar <- par(no.readonly = TRUE)
 par(mar=c(1.1, 12.1, 1.1, 1.1))
-plotClusters(cbind("70\%Similarity"=clCommon70$clustering, clMat,
-"100\%Similarity"=clCommon100$clustering), axisLine=-2)
+plotClusters(cbind("70\%Similarity"=clCommon70, clMat,
+"100\%Similarity"=clCommon100), axisLine=-2)
 
 #method for ClusterExperiment object
 clCommon <- makeConsensus(cl, whichClusters="workflow", proportion=0.7,

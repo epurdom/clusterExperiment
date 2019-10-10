@@ -1,0 +1,14 @@
+URGENT TO DO:
+-- Remove/update depricated functions (in develop!!)
+
+MINOR TO DO:
+-- RSEC has no @example! (add one with no run)
+-- Make makeMissingDiss dependent on the dimension (i.e. TRUE for smallish matrices)
+-- Make the default to be `removeDup=FALSE`. 
+-- If run=FALSE in clusterMany, does it still do the transformation/filter/reduceMethod stuff (it shouldn't!)?
+-- clusterSingle -- have intersection between type of data and dimensionality reduction! need to go back to this for what it means for type="cat". 
+-- Add some kind of bare check 
+    * that diss are at least symmetric dimensions!
+    * inputs are actually matrices? (e.g. in subsamplingCluster)
+-- check in seqCluster status of verbose versus checking arguments. 
+

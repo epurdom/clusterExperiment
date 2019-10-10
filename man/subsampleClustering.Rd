@@ -10,10 +10,9 @@
 \S4method{subsampleClustering}{character}(clusterFunction, ...)
 
 \S4method{subsampleClustering}{ClusterFunction}(clusterFunction,
-  x = NULL, diss = NULL, distFunction = NA, clusterArgs = NULL,
-  classifyMethod = c("All", "InSample", "OutOfSample"),
-  resamp.num = 100, samp.p = 0.7, ncores = 1, checkArgs = TRUE,
-  checkDiss = FALSE, ...)
+  inputMatrix, inputType, clusterArgs = NULL, classifyMethod = c("All",
+  "InSample", "OutOfSample"), resamp.num = 100, samp.p = 0.7,
+  ncores = 1, warnings = TRUE, ...)
 }
 \arguments{
 \item{clusterFunction}{a \code{\link{ClusterFunction}} object that defines
@@ -27,14 +26,19 @@ set to "pam".}
 
 \item{...}{arguments passed to mclapply (if ncores>1).}
 
-\item{x}{the data on which to run the clustering (samples in columns).}
+\item{inputMatrix}{numerical matrix on which to run the clustering or a
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
+object.}
 
-\item{diss}{a dissimilarity matrix on which to run the clustering.}
-
-\item{distFunction}{a distance function to be applied to \code{D}. Only
-relevant if input is only \code{x} (a matrix of data), and
-\code{diss=NULL}. See details of \code{\link{clusterSingle}} for the
-required format of the distance function.}
+\item{inputType}{a character vector defining what type of input is given in
+the \code{inputMatrix} argument. Must consist of values "diss","X", or
+"cat" (see details). "X" and "cat" should be indicate
+matrices with features in the row and samples in the column; "cat"
+corresponds to the features being numerical integers corresponding to
+categories, while "X" are continuous valued features. "diss" corresponds to
+an \code{inputMatrix} that is a NxN dissimilarity matrix. "cat" is largely
+used internally for clustering of sets of clusterings.}
 
 \item{clusterArgs}{a list of parameter arguments to be passed to the function
 defined in the \code{clusterFunction} slot of the \code{ClusterFunction}
@@ -54,12 +58,9 @@ for explanation.}
 \item{ncores}{integer giving the number of cores. If ncores>1, mclapply will
 be called.}
 
-\item{checkArgs}{logical as to whether should give warning if arguments given
+\item{warnings}{logical as to whether should give warning if arguments given
 that don't match clustering choices given. Otherwise, inapplicable 
 arguments will be ignored without warning.}
-
-\item{checkDiss}{logical. Whether to check whether the input \code{diss} is
-valid.}
 }
 \value{
 A \code{n x n} matrix of co-occurances, i.e. a symmetric matrix with
@@ -105,7 +106,8 @@ co-occurance.
 \dontrun{
 #takes a bit of time, not run on checks:
 data(simData)
-coOccur <- subsampleClustering(clusterFunction="kmeans", x=simData,
+coOccur <- subsampleClustering( inputMatrix=simData, inputType="X",
+clusterFunction="kmeans",
 clusterArgs=list(k=3,nstart=10), resamp.n=100, samp.p=0.7)
 
 #visualize the resulting co-occurance matrix

@@ -1,6 +1,6 @@
 Package: clusterExperiment
 Title: Compare Clusterings for Single-Cell Sequencing 
-Version: 2.5.4-9002
+Version: 2.5.4-9005
 Description: Provides functionality for running and comparing many
     different clusterings of single-cell sequencing data or other large mRNA Expression data sets.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
@@ -10,10 +10,11 @@ Author: Elizabeth Purdom [aut, cre, cph], Davide Risso [aut]
 Maintainer: Elizabeth Purdom <epurdom@stat.berkeley.edu>
 BugReports: https://github.com/epurdom/clusterExperiment/issues
 License: Artistic-2.0
+Encoding: UTF-8
 Depends:
-    R (>= 3.5.0),
+    R (>= 3.6.0),
     SingleCellExperiment,
-	SummarizedExperiment,
+	SummarizedExperiment (>= 1.15.4),
 	BiocGenerics
 Imports:
 	methods,
@@ -41,7 +42,8 @@ Imports:
 	scales,
 	zinbwave,
 	phylobase,
-	pracma
+	pracma,
+	mbkmeans
 Suggests:
 	BiocStyle,
 	knitr,
@@ -68,6 +70,7 @@ Collate:
     'RcppExports.R'
     'addClusterings.R'
     'assignUnassigned.R'
+    'subsampleClustering.R'
     'internalDendroFunctions.R'
     'internalClusterFunctions.R'
     'internalFunctions.R'
@@ -101,7 +104,6 @@ Collate:
     'plottingHelpers.R'
     'rsec.R'
     'seqCluster.R'
-    'subsampleClustering.R'
     'subsampleLoop.R'
     'subset.R'
     'transformFunction.R'

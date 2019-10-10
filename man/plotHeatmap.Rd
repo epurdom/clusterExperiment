@@ -45,9 +45,8 @@
   isSymmetric = FALSE, overRideClusterLimit = FALSE, plot = TRUE,
   labelTracks = TRUE, ...)
 
-\S4method{plotCoClustering}{ClusterExperiment}(data,
-  invert = ifelse(!is.null(data@coClustering) &&
-  all(diag(data@coClustering) == 0), TRUE, FALSE), ...)
+\S4method{plotCoClustering}{ClusterExperiment}(data, invert,
+  saveDistance = FALSE, ...)
 }
 \arguments{
 \item{data}{data to use to determine the heatmap. Can be a matrix,
@@ -186,6 +185,13 @@ elements are all zero, invert=TRUE, and otherwise invert=FALSE. If
 coClustering matrix is not a 0-1 matrix (e.g. if equal to a distance matrix
 output from \code{\link{clusterSingle}}, then the user should manually set
 this parameter to FALSE.)}
+
+\item{saveDistance}{logical. When the \code{coClustering} slot contains
+indices of the clusterings or a NxB set of clusterings, the hamming
+distance will be calculated before running the plot. This argument
+determines whether the \code{ClusterExperiment} object with that distance
+in \code{coClustering} slot should be returned (so as to avoid
+re-calculating it in the future) or not.}
 }
 \value{
 Returns (invisibly) a list with elements
@@ -331,9 +337,12 @@ Many arguments can be passed on to \code{aheatmap}, however, some are set
  \code{annLegend=FALSE} to suppress the legend of factors shown beside columns/rows, 
  and \code{cexRow=0} or \code{cexCol=0} to suppress plotting of row/column labels.
 
-\code{plotCoClustering} is a convenience function to plot the heatmap
-of the co-clustering matrix stored in the \code{coClustering} slot of a
-\code{ClusterExperiment} object.
+\code{plotCoClustering} is a convenience function to plot the
+  heatmap of the co-clustering distance matrix from the \code{coClustering}
+  slot of a \code{ClusterExperiment} object (either by calculating the
+  hamming distance of the clusterings stored in the \code{coClustering} slot,
+  or the distance stored in the \code{coClustering} slot if it has already
+  been calculated.
 }
 \examples{
 data(simData)

@@ -10,11 +10,14 @@ test_that("saved rsecFluidigm is still valid object", {
     skip_on_bioc()
     data(fluidigmData)
     data(fluidigmColData)
-    expect_silent(se<-SummarizedExperiment(assays=fluidigmData,colData=fluidigmColData))
-    expect_message(rsecFluidigmNew<-makeRsecFluidigmObject(se),"Will calculate all the methods requested")
+    expect_silent(se<-SummarizedExperiment(assays=fluidigmData,
+        colData=fluidigmColData))
+    expect_message(rsecFluidigmNew<-makeRsecFluidigmObject(se),
+        "Will calculate all the methods requested")
     expect_silent(checkRsecFluidigmObject(rsecFluidigmNew))
     data(rsecFluidigm)
-    expect_equal(clusterMatrix(rsecFluidigmNew),clusterMatrix(rsecFluidigm))
+    expect_equal(clusterMatrix(rsecFluidigmNew),
+        clusterMatrix(rsecFluidigm))
     
     
 })

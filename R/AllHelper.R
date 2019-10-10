@@ -282,7 +282,8 @@ setReplaceMethod(
   f = "coClustering",
   signature = signature(object="ClusterExperiment", value="matrix"),
   definition = function(object, value) {
-    object@coClustering <- Matrix::Matrix(value,sparse=TRUE)
+    #This appears to detect if matrix is symmetric without any further effort
+    object@coClustering <- Matrix::Matrix(value,sparse=TRUE)        
     ch<-.checkCoClustering(object)
     if(is.logical(ch) && ch) return(object) else stop(ch)
   }
@@ -293,6 +294,19 @@ setReplaceMethod(
 setReplaceMethod(
   f = "coClustering",
   signature = signature(object="ClusterExperiment", value="dsCMatrix"),
+  definition = function(object, value) {
+    object@coClustering <- value
+    ch<-.checkCoClustering(object)
+    if(is.logical(ch) && ch) return(object) else stop(ch)
+  }
+)
+
+#' @rdname ClusterExperiment-methods
+#' @export
+#' @aliases coClustering<-
+setReplaceMethod(
+  f = "coClustering",
+  signature = signature(object="ClusterExperiment", value="numeric"),
   definition = function(object, value) {
     object@coClustering <- value
     ch<-.checkCoClustering(object)
@@ -498,13 +512,13 @@ setMethod(
 #' @title Change assigned names or colors of clusters
 #' @description Change the assigned names or colors of the clusters in a
 #'   clustering stored in the clusterLegend slot of the object.
-#' @rdname renameClusters
+#' @name renameClusters
 #' @return \code{renameClusters} changes the names assigned to clusters within a
 #'   clustering
 #' @export
 #' @inheritParams subset
 #' @inheritParams ClusterExperiment-methods
-#' @aliases renameClusters
+#' @aliases renameClusters,ClusterExperiment,character-method
 setMethod( 
   f = "renameClusters",
   signature = signature(object="ClusterExperiment", value="character"),

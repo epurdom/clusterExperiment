@@ -11,10 +11,10 @@
 \usage{
 \S4method{mainClustering}{character}(clusterFunction, ...)
 
-\S4method{mainClustering}{ClusterFunction}(clusterFunction, x = NULL,
-  diss = NULL, distFunction = NA, clusterArgs = NULL, minSize = 1,
-  orderBy = c("size", "best"), format = c("vector", "list"),
-  checkArgs = TRUE, checkDiss = FALSE, returnData = FALSE, ...)
+\S4method{mainClustering}{ClusterFunction}(clusterFunction, inputMatrix,
+  inputType, clusterArgs = NULL, minSize = 1, orderBy = c("size",
+  "best"), format = c("vector", "list"), returnData = FALSE,
+  warnings = TRUE, ...)
 
 \S4method{getPostProcessingArgs}{ClusterFunction}(clusterFunction)
 }
@@ -33,16 +33,19 @@ The available post-processing arguments for a \code{ClusterFunction} object
 depend on it's algorithm type and can be found by calling
 \code{getPostProcessingArgs}. See details below for documentation.}
 
-\item{x}{\code{p x n} data matrix on which to run the clustering (samples in 
-columns).}
+\item{inputMatrix}{numerical matrix on which to run the clustering or a
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
+object.}
 
-\item{diss}{\code{n x n} data matrix of dissimilarities between the samples 
-on which to run the clustering}
-
-\item{distFunction}{a distance function to be applied to \code{D}. Only
-relevant if input is only \code{x} (a matrix of data), and
-\code{diss=NULL}. See details of \code{\link{clusterSingle}} for the
-required format of the distance function.}
+\item{inputType}{a character vector defining what type of input is given in
+the \code{inputMatrix} argument. Must consist of values "diss","X", or
+"cat" (see details). "X" and "cat" should be indicate
+matrices with features in the row and samples in the column; "cat"
+corresponds to the features being numerical integers corresponding to
+categories, while "X" are continuous valued features. "diss" corresponds to
+an \code{inputMatrix} that is a NxN dissimilarity matrix. "cat" is largely
+used internally for clustering of sets of clusterings.}
 
 \item{clusterArgs}{arguments to be passed directly to the \code{clusterFUN}
 slot of the \code{ClusterFunction} object}
@@ -62,21 +65,22 @@ ordering is only possible if slot \code{outputType} of the
 clustering assignments. List is mainly for compatibility with sequential 
 part.}
 
-\item{checkArgs}{logical as to whether should give warning if arguments given
-that don't match clustering choices given. Otherwise, inapplicable 
-arguments will be ignored without warning.}
-
-\item{checkDiss}{logical. Whether to check whether the input \code{diss} is
-valid.}
-
 \item{returnData}{logical as to whether to return the \code{diss} or \code{x}
 matrix in the output. If \code{FALSE} only the clustering vector is
 returned.}
+
+\item{warnings}{logical as to whether should give warning if arguments given
+that don't match clustering choices given. Otherwise, inapplicable 
+arguments will be ignored without warning.}
 }
 \value{
-mainClustering returns a vector of cluster assignments (if
+If \code{returnData=FALSE}, mainClustering returns a vector of cluster assignments (if
   format="vector") or a list of indices for each cluster (if format="list").
-  Clusters less than minSize are removed.
+  Clusters less than minSize are removed. If \code{returnData=TRUE}, then mainClustering returns a list
+\itemize{
+\item{results}{The clusterings of each sample.}
+\item{inputMatrix}{The input matrix given to argument \code{inputMatrix}. Useful if input is result of subsampling, in which case input is the set of clusterings found over subsampling.}
+}
 }
 \description{
 Given input data, this function will try to find the clusters
@@ -110,33 +114,35 @@ Post-processing Arguments: For post-processing the clustering,
 }
 \examples{
 data(simData)
-cl1<-mainClustering(x=simData,clusterFunction="pam",clusterArgs=list(k=3))
-cl2<-mainClustering(simData,clusterFunction="hierarchical01",clusterArgs=list(alpha=.1))
-cl3<-mainClustering(simData,clusterFunction="tight",clusterArgs=list(alpha=.1))
-#change distance to manhattan distance
-cl4<-mainClustering(simData,clusterFunction="pam",clusterArgs=list(k=3),
-     distFunction=function(x){dist(x,method="manhattan")})
+cl1<-mainClustering(inputMatrix=simData, inputType="X", 
+    clusterFunction="pam",clusterArgs=list(k=3))
+#supply a dissimilarity, use algorithm type "01"
+diss<-as.matrix(dist(t(simData),method="manhattan"))
+cl2<-mainClustering(diss, inputType="diss", clusterFunction="hierarchical01",
+    clusterArgs=list(alpha=.1))
+cl3<-mainClustering(inputMatrix=diss, inputType="diss", clusterFunction="pam",
+    clusterArgs=list(k=3))
 
-#run hierarchical method for finding blocks, with method of evaluating
-#coherence of block set to evalClusterMethod="average", and the hierarchical
-#clustering using single linkage:
-clustSubHier <- mainClustering(simData, clusterFunction="hierarchical01",
-minSize=5, clusterArgs=list(alpha=0.1,evalClusterMethod="average", method="single"))
+# run hierarchical method for finding blocks, with method of evaluating
+# coherence of block set to evalClusterMethod="average", and the hierarchical
+# clustering using single linkage:
+# (clustering function requires type 'diss'),
+clustSubHier <- mainClustering(diss, inputType="diss",
+    clusterFunction="hierarchical01", minSize=5,
+    clusterArgs=list(alpha=0.1,evalClusterMethod="average", method="single"))
 
-#do tight
-clustSubTight <- mainClustering(simData, clusterFunction="tight", clusterArgs=list(alpha=0.1),
-minSize=5)
-
-#two twists to pam
-clustSubPamK <- mainClustering(simData, clusterFunction="pam", silCutoff=0, minSize=5,
-removeSil=TRUE, clusterArgs=list(k=3))
-clustSubPamBestK <- mainClustering(simData, clusterFunction="pam", silCutoff=0,
-minSize=5, removeSil=TRUE, findBestK=TRUE, kRange=2:10)
+#post-process results of pam -- must pass diss for silhouette calculation
+clustSubPamK <- mainClustering(simData, inputType="X", clusterFunction="pam", 
+    silCutoff=0, minSize=5, diss=diss, removeSil=TRUE, clusterArgs=list(k=3))
+clustSubPamBestK <- mainClustering(simData, inputType="X", clusterFunction="pam", silCutoff=0,
+    minSize=5, diss=diss, removeSil=TRUE, findBestK=TRUE, kRange=2:10)
 
 # note that passing the wrong arguments for an algorithm results in warnings
-# (which can be turned off with checkArgs=FALSE)
-clustSubTight_test <- mainClustering(simData, clusterFunction="tight",
-clusterArgs=list(alpha=0.1), minSize=5, removeSil=TRUE)
-clustSubTight_test2 <- mainClustering(simData, clusterFunction="tight",
-clusterArgs=list(alpha=0.1,evalClusterMethod="average"))
+# (which can be turned off with warnings=FALSE)
+clustSubTight_test <- mainClustering(diss, inputType="diss", 
+   clusterFunction="tight", 
+   clusterArgs=list(alpha=0.1), minSize=5, removeSil=TRUE)
+clustSubTight_test2 <- mainClustering(diss, inputType="diss",
+   clusterFunction="tight",
+   clusterArgs=list(alpha=0.1,evalClusterMethod="average"))
 }

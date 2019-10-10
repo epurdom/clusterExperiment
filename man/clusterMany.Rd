@@ -19,9 +19,11 @@
   type = "reducedDims"), alphas = 0.1, findBestK = FALSE,
   sequential = FALSE, removeSil = FALSE, subsample = FALSE,
   silCutoff = 0, distFunction = NA, betas = 0.9, minSizes = 1,
-  transFun = NULL, isCount = FALSE, verbose = FALSE,
-  mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
-  whichAssay = 1, ncores = 1, random.seed = NULL, run = TRUE, ...)
+  transFun = NULL, isCount = FALSE, verbose = TRUE,
+  parameterWarnings = FALSE, mainClusterArgs = NULL,
+  subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1,
+  makeMissingDiss = FALSE, ncores = 1, random.seed = NULL,
+  run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, reduceMethod = "none",
   nFilterDims = defaultNDims(x, reduceMethod, type = "filterStats"),
@@ -60,9 +62,9 @@ and \code{isCount=FALSE} will give a transformation function
 class \code{ClusterExperiment}, the stored transformation will be used and
 giving this parameter will result in an error.}
 
-\item{...}{For signature \code{list}, arguments to be passed on to mclapply
+\item{...}{For signature \code{matrix}, arguments to be passed on to mclapply
 (if ncores>1). For all the other signatures, arguments to be passed to the
-method for signature \code{list}.}
+method for signature \code{matrix}.}
 
 \item{ks}{the range of k values (see details for the meaning of \code{k} for
 different choices of other parameters).}
@@ -121,6 +123,9 @@ are left unassigned.}
 
 \item{verbose}{logical. If TRUE it will print informative messages.}
 
+\item{parameterWarnings}{logical, as to whether warnings and comments 
+from checking the validity of the parameter combinations should be printed.}
+
 \item{mainClusterArgs}{list of arguments to be passed for the mainClustering
 step, see help pages of \code{\link{mainClustering}}.}
 
@@ -132,6 +137,14 @@ step, see help pages of \code{\link{mainClustering}}.}
 
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
+
+\item{makeMissingDiss}{logical. Whether to calculate necessary distance 
+matrices needed when input is not "diss". If TRUE, then when a clustering 
+function calls for a inputType "diss", but the given matrix is of type "X",
+the function will calculate a distance function. A dissimilarity matrix
+will also be calculated if a post-processing argument like \code{findBestK}
+or \code{removeSil} is chosen, since these rely on calcualting silhouette
+widths from distances.}
 
 \item{ncores}{the number of threads}
 
@@ -156,7 +169,7 @@ where \code{i} is one more than the largest such existing workflow
 clusterTypes.}
 }
 \value{
-If \code{run=TRUE} and the input is not a list of data matrices, will
+If \code{run=TRUE} will
   return a \code{ClusterExperiment} object, where the results are stored as
   clusterings with clusterTypes \code{clusterMany}. Depending on
   \code{eraseOld} argument above, this will either delete existing such
@@ -164,22 +177,18 @@ If \code{run=TRUE} and the input is not a list of data matrices, will
   \code{eraseOld} above. Arbitrarily the first clustering is set as the
   primaryClusteringIndex.
 
-If \code{run=TRUE} and the input is a list of data sets, a list with
-  the following objects: \itemize{ \item{\code{clMat}}{ a matrix with each
-  column corresponding to a clustering and each row to a sample.}
-  \item{\code{clusterInfo}}{ a list with information regarding clustering
-  results (only relevant entries for those clusterings with sequential=TRUE)}
+If \code{run=FALSE} a list with elements:
+\itemize{
   \item{\code{paramMatrix}}{ a matrix giving the parameters of each
   clustering, where each column is a possible parameter set by the user and
   passed to \code{\link{clusterSingle}} and each row of paramMatrix
-  corresponds to a clustering in \code{clMat}} \item{\code{mainClusterArgs}}{
+  corresponds to a clustering in \code{clMat}} 
+  \item{\code{mainClusterArgs}}{
   a list of (possibly modified) arguments to mainClusterArgs}
   \item{\code{seqArgs=seqArgs}}{a list of (possibly modified) arguments to
-  seqArgs} \item{\code{subsampleArgs}}{a list of (possibly modified)
+  seqArgs} 
+  \item{\code{subsampleArgs}}{a list of (possibly modified)
   arguments to subsampleArgs} }
-
-If \code{run=FALSE} a list similar to that described above, but
-  without the clustering results.
 }
 \description{
 Given a range of parameters, this function will return a matrix with the
@@ -242,14 +251,15 @@ data(simData)
 #Example: clustering using pam with different dimensions of pca and different
 #k and whether remove negative silhouette values
 #check how many and what runs user choices will imply:
-checkParams <- clusterMany(simData,reduceMethod="PCA",
-nReducedDims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
-ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
+checkParams <- clusterMany(simData,reduceMethod="PCA", makeMissingDiss=TRUE,
+   nReducedDims=c(5,10,50), clusterFunction="pam", isCount=FALSE,
+   ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE),run=FALSE)
 print(head(checkParams$paramMatrix))
 
 #Now actually run it
 cl <- clusterMany(simData,reduceMethod="PCA", nReducedDims=c(5,10,50),  isCount=FALSE,
-clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),removeSil=c(TRUE,FALSE))
+   clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE),makeMissingDiss=TRUE, 
+   removeSil=c(TRUE,FALSE))
 print(cl)
 head(colnames(clusterMatrix(cl)))
 
@@ -267,9 +277,10 @@ plotClusters(cl, axisLine=-2,clusterLabels=clNames)
 #following code takes around 1+ minutes to run because of the subsampling
 #that is redone each time:
 system.time(clusterTrack <- clusterMany(simData, ks=2:15,
-alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE), sequential=c(FALSE),
-subsample=c(FALSE), removeSil=c(TRUE), clusterFunction="pam",
-mainClusterArgs=list(minSize=5, kRange=2:15), ncores=1, random.seed=48120))
+    alphas=c(0.1,0.2,0.3), findBestK=c(TRUE,FALSE), sequential=c(FALSE),
+    subsample=c(FALSE), removeSil=c(TRUE), clusterFunction="pam", 
+    makeMissingDiss=TRUE,
+     mainClusterArgs=list(minSize=5, kRange=2:15), ncores=1, random.seed=48120))
 }
 
 }

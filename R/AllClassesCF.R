@@ -13,21 +13,26 @@
 #' @aliases ClusterFunction ClusterFunction-class ClusterFunction
 #' @slot clusterFUN a function defining the clustering function. See details for
 #'   required arguments.
-#' @slot inputType a character defining what type of input \code{clusterFUN}
-#'   takes. Must be one of either "diss","X", or "either"
-#' @slot algorithmType a character defining what type of clustering algorithm
-#'   \code{clusterFUN} is. Must be one of either "01" or "K". \code{clusterFUN}
-#'   must take the corresponding required arguments (see details below).
-#' @slot classifyFUN a function that takes as input new data and the output of
-#'   \code{clusterFUN} (when \code{cluster.only=TRUE}) and results in cluster
-#'   assignments of the new data.  Used in
-#'   subsampling clustering. Note that the function should assume that the
-#'   input 'x' is not the same samples that were input to the ClusterFunction
-#'   (but does assume that it is the same number of features/columns).  
-#'   If given value \code{NULL} then subsampling type can
-#'   only be \code{"InSample"}, see \code{\link{subsampleClustering}}.
-#' @slot inputClassifyType the input type for the classification function (if
-#'   not NULL); like \code{inputType}, must be one of "diss","X", or "either"
+#' @slot inputType a character vector defining what type(s) of input
+#'   \code{clusterFUN} takes. Must consist of values "diss","X", or "cat"
+#'   indicating the set of input values that the algorithm can handle (see details
+#'   below).
+#' @slot algorithmType a character defining what type of clustering algorithm 
+#'   \code{clusterFUN} is. Must be one of either "01" or "K". \code{clusterFUN} 
+#'   must take the corresponding required arguments for its type (see details
+#'   below).
+#' @slot classifyFUN a function that has takes as input new data and the output
+#'   of \code{clusterFUN} (where the output is from when
+#'   \code{cluster.only=FALSE}) and results in cluster assignments of the new
+#'   data.  Used in subsampling clustering. Note that the function should assume
+#'   that the data given to the \code{inputMatrix} argument is not the same
+#'   samples that were input to the ClusterFunction (but does assume that it is
+#'   the same number of features/columns). If slot \code{classifyFUN} is given
+#'   value \code{NULL} then subsampling type can only be \code{"InSample"}, see
+#'   \code{\link{subsampleClustering}}.
+#' @slot inputClassifyType the input type for the classification function (if 
+#'   not NULL); like \code{inputType}, must be a vector containing "diss","X",
+#'   or "cat"
 #' @slot outputType the type of output given by \code{clusterFUN}. Must either
 #'   be "vector" or "list". If "vector" then the output should be a vector of
 #'   length equal to the number of observations   with integer-valued elements
@@ -43,15 +48,22 @@
 #'   (default is to order by size).
 #' @slot requiredArgs Any additional required arguments for \code{clusterFUN}
 #'   (beyond those required of all \code{clusterFUN}, described in details).
+#'   Will be used in checking that user provided necessary arguments. 
 #' @slot checkFunctions logical. If TRUE, the validity check of the
 #'   \code{ClusterFunction} object will check the \code{clusterFUN} with simple
 #'   toy data using the function \code{internalFunctionCheck}.
-#' @details Required arguments for \code{clusterFUN}: 
+#' @details clusterFUN: The following arguments are required to be accepted for 
+#'   \code{clusterFUN} -- higher-level code may pass these arguments (but the
+#'   function can ignore them or just have be handled with a ... )
 #' \itemize{ 
-#'	\item{"x or diss"}{either \code{x} and/or \code{diss} must be an argument 
-#'		depending on \code{inputType}. If
-#'   	\code{x}, then \code{x} is assumed to be nfeatures x nsamples (like
-#'   	assay(CEObj) would give)} 
+#'	\item{"inputMatrix"}{will be the matrix of data}
+#'	\item{"inputType"}{one of "X", "diss", or "cat".  If
+#'   	"X", then \code{inputMatrix} is assumed to be nfeatures x nsamples (like
+#'   	assay(CEObj) would give). If "cat" then nfeatures x nsamples, but all 
+#'   	entries should be categorical levels, encoded by positive
+#'   	integers, with -1/-2 types of NA (like a clusterMatrix slot, but with 
+#'   	dimensions switched). If "diss", then \code{inputMatrix} should be a nxn 
+#'   	dissimilarity matrix.}
 #'  \item{"checkArgs"}{logical argument. If
 #'   	\code{checkArgs=TRUE}, the \code{clusterFUN} should check if the arguments
 #'   	passed in \code{...} are valid and return an error if not; otherwise, no
@@ -64,19 +76,30 @@
 #'   	vector of cluster assignments (or list if \code{outputType="list"}). If
 #'   	\code{cluster.only=FALSE} then the \code{clusterFUN} should return a named
 #'   	list where one of the elements entitled \code{clustering} contains the
-#'   	vector described above (no list!); anything else needed by the
+#'   	vector described above (no list allowed!); anything else needed by the
 #'   	\code{classifyFUN} to classify new data should be contained in the output
 #'   	list as well. \code{cluster.only} is set internally depending on whether
-#'   	\code{classifyFUN} will be used by subsampling or only for clustering the
+#'   	\code{classifyFUN} will be later used by subsampling or only for clustering the
 #'   	final product.} 
 #'  \item{"..."}{Any additional arguments specific to the
 #'   algorithm used by \code{clusterFUN} should be passed via \code{...} and NOT
-#'   passed via arguments to \code{clusterFUN}} \item{"Other required
-#'   arguments"}{\code{clusterFUN} must also accept arguments required for its
-#'   \code{algorithmType} (see Details below).} }
-#'
-#'
-#' @details \code{algorithmType}: Type "01" is for clustering functions that
+#'   passed via arguments to \code{clusterFUN}} 
+#'  \item{"Other required arguments"}{\code{clusterFUN} must also accept 
+#'   arguments required for its \code{algorithmType} (see Details below).} }
+#' @details classifyFUN: The following arguments are required to be accepted for 
+#'   \code{classifyFUN} (if not NULL) 
+#'   \itemize{ 
+#'   \item{inputMatrix}{the
+#'   \emph{new} data that will be classified into the clusters} 
+#'   \item{inputType}{the inputType of the new data (see above)} 
+#'   \item{clusterResult}{the result of running \code{clusterFUN} on the
+#'   training data, when \code{cluster.only=FALSE}. Whatever is returned by
+#'   \code{clusterFUN} is assumed to be sufficient for this function to classify
+#'   new objects (e.g. could return the centroids of the clustering, if
+#'   clustering based on nearest centroid).} 
+#'   }
+#' 
+#' @details algorithmType: Type "01" is for clustering functions that
 #'   expect as an input a dissimilarity matrix that takes on 0-1 values (e.g.
 #'   from subclustering) with 1 indicating more dissimilarity between samples.
 #'   "01" algorithm types must also have \code{inputType} equal to
@@ -109,7 +132,7 @@ setClass(
 		checkFunctions="logical"
   	)
 )
-.inputTypes<-c("X","diss","either")
+.inputTypes<-c("X","diss","cat")
 .algTypes<-c("01","K")
 .required01Args<-c("alpha")
 .requiredKArgs<-c("k")
@@ -117,22 +140,19 @@ setClass(
 
 
 setValidity("ClusterFunction", function(object) {
-    if(is.na(object@outputType)) {
-      return("Must define outputType.")
-    }
-	if(!object@outputType%in%.outputTypes) return(paste("outputType must be one of",paste(.outputTypes,collapse=",")))
     #----
 	# inputType
 	#----
-    if(is.na(object@inputType)) {
-      return("Must define inputType.")
-    }
-	if(!object@inputType%in%.inputTypes) return(paste("inputType must be one of",paste(.inputTypes,collapse=",")))
-	if(is.null(object@classifyFUN)& !is.na(object@inputClassifyType)) return("should not define inputClassifyType if classifyFUN is not defined")
-    if(!is.null(object@classifyFUN) & is.na(object@inputClassifyType)) {
-      return("Must define inputClassifyType if define classifyFUN.")
-    }
-	if(!is.null(object@classifyFUN) & !object@inputClassifyType%in%.inputTypes) return(paste("inputClassifyType must be one of",paste(.inputTypes,collapse=",")))
+	if(any(!object@inputType%in%.inputTypes)) return(paste("inputType must be one of",paste(.inputTypes,collapse=",")))
+        
+	if(is.null(object@classifyFUN)&& any(!is.na(object@inputClassifyType))) 
+        return("should not define inputClassifyType if classifyFUN is not defined")
+    if(!is.null(object@classifyFUN)){
+        if(length(object@inputClassifyType)==1 && is.na(object@inputClassifyType))
+            return("Must define inputClassifyType if define classifyFUN.")
+        if(!object@inputClassifyType%in%.inputTypes)
+           return(paste("inputClassifyType must be one of",paste(.inputTypes,collapse=",")))
+    } 
     #----
 	# algorithmType
 	#----
@@ -144,9 +164,7 @@ setValidity("ClusterFunction", function(object) {
 	#----
 	# function arguments are as needed
 	#----
-	if(object@inputType%in%c("X","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="x")) return("inputType is either 'X' or 'either' but arguments to ClusterFunction doesn't contain 'x'")
-		if(object@inputType%in%c("diss","either") & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs="diss")) return("inputType is either 'diss' or 'either' but arguments to ClusterFunction doesn't contain 'diss'")
-	if(object@algorithmType=="K" & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs=.requiredKArgs)) return("algorithmType is 'K' but arguments to ClusterFunction doesn't contain",paste(.requiredKArgs,collapse=","))
+    if(object@algorithmType=="K" & !.checkHasArgs(FUN=object@clusterFUN,requiredArgs=.requiredKArgs)) return("algorithmType is 'K' but arguments to ClusterFunction doesn't contain",paste(.requiredKArgs,collapse=","))
 	if(object@algorithmType=="01" & !.checkHasArgs(FUN=object@clusterFUN, requiredArgs=.required01Args)) return("algorithmType is '01' but arguments to ClusterFunction doesn't contain", paste(.required01Args,collapse=","))
 
 

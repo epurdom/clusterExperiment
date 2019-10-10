@@ -293,7 +293,7 @@ setMethod(
                 clFactor <- factor(cl[-whNeg])
                 medoids <- do.call("rbind", by(t(x[,-whNeg]), clFactor, function(z){apply(z, 2, median)}))
                 rownames(medoids) <- levels(clFactor)
-                classif<-.genericClassify(x=x[,whNeg],centers=medoids) 
+                classif<-.genericClassify(inputMatrix=x[,whNeg],centers=medoids) 
                 cl[whNeg]<-classif
                 whPos<-which(cl>0)
                 whNeg<-which(cl<0)

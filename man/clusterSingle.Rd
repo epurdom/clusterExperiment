@@ -3,42 +3,34 @@
 \docType{methods}
 \name{clusterSingle}
 \alias{clusterSingle}
-\alias{clusterSingle,missing,matrixOrNULL-method}
-\alias{clusterSingle,matrixOrHDF5OrNULL,missing-method}
-\alias{clusterSingle,SummarizedExperiment,missing-method}
-\alias{clusterSingle,ClusterExperiment,missing-method}
-\alias{clusterSingle,SingleCellExperiment,missing-method}
-\alias{clusterSingle,matrixOrHDF5OrNULL,matrixOrNULL-method}
+\alias{clusterSingle,SummarizedExperiment-method}
+\alias{clusterSingle,ClusterExperiment-method}
+\alias{clusterSingle,SingleCellExperiment-method}
+\alias{clusterSingle,matrixOrHDF5OrNULL-method}
 \title{General wrapper method to cluster the data}
 \usage{
-\S4method{clusterSingle}{missing,matrixOrNULL}(x, diss, ...)
+\S4method{clusterSingle}{SummarizedExperiment}(inputMatrix, ...)
 
-\S4method{clusterSingle}{matrixOrHDF5OrNULL,missing}(x, diss, ...)
+\S4method{clusterSingle}{ClusterExperiment}(inputMatrix, ...)
 
-\S4method{clusterSingle}{SummarizedExperiment,missing}(x, diss, ...)
+\S4method{clusterSingle}{SingleCellExperiment}(inputMatrix,
+  reduceMethod = "none", nDims = defaultNDims(inputMatrix,
+  reduceMethod), whichAssay = 1, ...)
 
-\S4method{clusterSingle}{ClusterExperiment,missing}(x, diss, ...)
-
-\S4method{clusterSingle}{SingleCellExperiment,missing}(x,
-  reduceMethod = "none", nDims = defaultNDims(x, reduceMethod),
-  whichAssay = 1, ...)
-
-\S4method{clusterSingle}{matrixOrHDF5OrNULL,matrixOrNULL}(x, diss,
-  subsample = TRUE, sequential = FALSE, mainClusterArgs = NULL,
-  subsampleArgs = NULL, seqArgs = NULL, isCount = FALSE,
-  transFun = NULL, reduceMethod = c("none", listBuiltInReducedDims(),
-  listBuiltInFilterStats()), nDims = defaultNDims(x, reduceMethod),
+\S4method{clusterSingle}{matrixOrHDF5OrNULL}(inputMatrix,
+  inputType = "X", subsample = FALSE, sequential = FALSE,
+  distFunction = NA, mainClusterArgs = NULL, subsampleArgs = NULL,
+  seqArgs = NULL, isCount = FALSE, transFun = NULL,
+  reduceMethod = "none", nDims = defaultNDims(inputMatrix,
+  reduceMethod), makeMissingDiss = FALSE,
   clusterLabel = "clusterSingle", saveSubsamplingMatrix = FALSE,
-  checkDiss = FALSE, verbose = TRUE)
+  checkDiss = FALSE, warnings = TRUE)
 }
 \arguments{
-\item{x}{the data on which to run the clustering (features in rows), or a
+\item{inputMatrix}{numerical matrix on which to run the clustering or a
 \code{\link[SummarizedExperiment]{SummarizedExperiment}},
 \code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
 object.}
-
-\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
-on which to run the clustering.}
 
 \item{...}{arguments to be passed on to the method for signature
 \code{matrix}.}
@@ -55,6 +47,15 @@ in the reduction specified by \code{reduceMethod}. Defaults to output of
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
 
+\item{inputType}{a character vector defining what type of input is given in
+the \code{inputMatrix} argument. Must consist of values "diss","X", or
+"cat" (see details). "X" and "cat" should be indicate
+matrices with features in the row and samples in the column; "cat"
+corresponds to the features being numerical integers corresponding to
+categories, while "X" are continuous valued features. "diss" corresponds to
+an \code{inputMatrix} that is a NxN dissimilarity matrix. "cat" is largely
+used internally for clustering of sets of clusterings.}
+
 \item{subsample}{logical as to whether to subsample via
 \code{\link{subsampleClustering}}. If TRUE, clustering in mainClustering
 step is done on the co-occurance between clusterings in the subsampled
@@ -64,6 +65,11 @@ on \code{x}/\code{diss}}
 \item{sequential}{logical whether to use the sequential strategy (see details
 of \code{\link{seqCluster}}). Can be used in combination with
 \code{subsample=TRUE} or \code{FALSE}.}
+
+\item{distFunction}{a distance function to be applied to \code{inputMatrix}. Only
+  relevant if \code{inputType="X"}. 
+See details of \code{\link{clusterSingle}} for the
+  required format of the distance function.}
 
 \item{mainClusterArgs}{list of arguments to be passed for the mainClustering
 step, see help pages of \code{\link{mainClustering}}.}
@@ -87,28 +93,41 @@ function will throw an error. If object is of class
 \code{ClusterExperiment}, the stored transformation will be used and giving
 this parameter will result in an error.}
 
+\item{makeMissingDiss}{logical. Whether to calculate necessary distance 
+matrices needed when input is not "diss". If TRUE, then when a clustering 
+function calls for a inputType "diss", but the given matrix is of type "X",
+the function will calculate a distance function. A dissimilarity matrix
+will also be calculated if a post-processing argument like \code{findBestK}
+or \code{removeSil} is chosen, since these rely on calcualting silhouette
+widths from distances.}
+
 \item{clusterLabel}{a string used to describe the clustering. By default it
 is equal to "clusterSingle", to indicate that this clustering is the result
 of a call to \code{clusterSingle}.}
 
-\item{saveSubsamplingMatrix}{logical. If TRUE, the co-clustering matrix resulting from
-subsampling is returned in the coClustering slot (and replaces any
-existing coClustering object in the slot \code{coClustering} if input object is a
-   \code{ClusterExperiment} object.)}
+\item{saveSubsamplingMatrix}{logical. If TRUE, the co-clustering matrix
+resulting from subsampling is returned in the coClustering slot (and
+replaces any existing coClustering object in the slot \code{coClustering}
+if input object is a \code{ClusterExperiment} object.)}
 
-\item{checkDiss}{logical. Whether to check whether the input \code{diss} is
-valid.}
+\item{checkDiss}{logical. Whether to check whether the dissimilarities
+matrices  are valid (whether given by the user or calculated because
+\code{makeMissingDiss=TRUE}).}
 
-\item{verbose}{logical. Whether to print out the many possible warnings and messages regarding checking the internal consistency of the parameters.}
+\item{warnings}{logical. Whether to print out the many possible warnings and
+messages regarding checking the internal consistency of the parameters.}
 }
 \value{
-A \code{\link{ClusterExperiment}} object if \code{run=TRUE}.
+A \code{\link{ClusterExperiment}} object if
+  \code{inputType} is of type "X".
 
-If input was \code{diss}, then the result is a list with values
-  \itemize{ \item{clustering: }{The vector of clustering results}
-  \item{clusterInfo: }{A list with information about the parameters run in
-  the clustering} \item{diss: }{The dissimilarity matrix used in the
-  clustering} }
+If input was not of type "X", then the result is a list with values
+  \itemize{ 
+       \item{clustering: }{The vector of clustering results}
+       \item{clusterInfo: }{A list with information about the parameters run in
+  the clustering} 
+       \item{coClusterMatrix: }{(only if \code{saveSubsamplingMatrix=TRUE}, NxB set of clusterings obtained after B subsamples.} 
+  }
 }
 \description{
 Given input data, this function will find clusters, based on a single
@@ -131,14 +150,16 @@ Unlike \code{\link{clusterMany}}, most of the relevant arguments for
   \code{subsampleArgs}, and \code{seqArgs}. These arguments should be
   \emph{named} lists with parameters that match the corresponding functions:
   \code{\link{mainClustering}},\code{\link{subsampleClustering}}, and
-  \code{\link{seqCluster}}. These functions are not meant to be called by the
-  user, but rather accessed via calls to \code{clusterSingle}. But the user
-  can look at the help files of those functions for more information
+  \code{\link{seqCluster}}. These three functions are not meant to be called
+  by the user, but rather accessed via calls to \code{clusterSingle}. But the
+  user can look at the help files of those functions for more information 
   regarding the parameters that they take.
 
 Only certain combinations of parameters are possible for certain
   choices of \code{sequential} and \code{subsample}. These restrictions are
-  documented below. \itemize{ \item{\code{clusterFunction} for
+  documented below. 
+  \itemize{ 
+      \item{\code{clusterFunction} for
   \code{mainClusterArgs}: }{The choice of \code{subsample=TRUE} also controls
   what algorithm type of clustering functions can be used in the
   mainClustering step. When \code{subsample=TRUE}, then resulting
@@ -153,17 +174,20 @@ Only certain combinations of parameters are possible for certain
   \code{algorithmType} 'K'.  When \code{subsample=FALSE} and
   \code{sequential=FALSE}, then there are no restrictions on the
   \code{ClusterFunction} and that clustering is applied directly to the input
-  data. } \item{\code{clusterFunction}  for \code{subsampleArgs}: }{If the
+  data. } 
+  \item{\code{clusterFunction}  for \code{subsampleArgs}: }{If the
   \code{ClusterFunction} object given to the \code{clusterArgs} of
   \code{subsamplingArgs} is missing the algorithm will use the default for
   \code{\link{subsampleClustering}} (currently "pam"). If
   \code{sequential=TRUE}, this \code{ClusterFunction} object must be of type
-  'K'. } \item{Setting \code{k} for subsampling: }{If \code{subsample=TRUE}
+  'K'. } 
+  \item{Setting \code{k} for subsampling: }{If \code{subsample=TRUE}
   and \code{sequential=TRUE}, the current K of the sequential iteration
   determines the 'k' argument passed to \code{\link{subsampleClustering}}  so
   setting 'k=' in the list given to the subsampleArgs will not do anything
   and will produce a warning to that effect (see documentation of
-  \code{\link{seqCluster}}).} \item{Setting \code{k} for mainClustering step:
+  \code{\link{seqCluster}}).} 
+  \item{Setting \code{k} for mainClustering step:
   }{If \code{sequential=TRUE} then the user should not set \code{k} in the
   \code{clusterArgs} argument of \code{mainClusterArgs} because it must be
   set by the sequential code, which has a iterative reseting of the
@@ -172,7 +196,8 @@ Only certain combinations of parameters are possible for certain
   \code{subsample=TRUE}, then the \code{k} in the clustering of
   mainClustering step (assuming the clustering function is of type 'K') will
   use the \code{k} used in the subsampling step to make sure that the
-  \code{k} used in the mainClustering step is reasonable. } \item{Setting
+  \code{k} used in the mainClustering step is reasonable. } 
+  \item{Setting
   \code{findBestK} in \code{mainClusterArgs}: }{If \code{sequential=TRUE} and
   \code{subsample=FALSE}, the user should not set 'findBestK=TRUE' in
   \code{mainClusterArgs}. This is because in this case the sequential method
@@ -215,18 +240,20 @@ data(simData)
 #(same as example in seqCluster only using clusterSingle ...)
 set.seed(44261)
 clustSeqHier_v2 <- clusterSingle(simData,
-sequential=TRUE, subsample=TRUE, subsampleArgs=list(resamp.n=100, samp.p=0.7,
-clusterFunction="kmeans", clusterArgs=list(nstart=10)),
-seqArgs=list(beta=0.8, k0=5), mainClusterArgs=list(minSize=5,
-   clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1)))
+     sequential=TRUE, subsample=TRUE, 
+     subsampleArgs=list(resamp.n=100, samp.p=0.7,
+     clusterFunction="kmeans", clusterArgs=list(nstart=10)),
+     seqArgs=list(beta=0.8, k0=5), mainClusterArgs=list(minSize=5,
+     clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1)))
 }
 
 #use clusterSingle to do just clustering k=3 with no subsampling
-clustNothing <- clusterSingle(simData,
+clustObject <- clusterSingle(simData,
     subsample=FALSE, sequential=FALSE,
     mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=3)))
 #compare to standard pam
-cluster::pam(t(simData),k=3,cluster.only=TRUE)
+pamOut<-cluster::pam(t(simData),k=3,cluster.only=TRUE)
+all(pamOut==primaryCluster(clustObject))
 }
 \seealso{
 \code{\link{clusterMany}} to compare multiple choices of parameters,

@@ -4,17 +4,25 @@
 \alias{seqCluster}
 \title{Program for sequentially clustering, removing cluster, and starting again.}
 \usage{
-seqCluster(x = NULL, diss = NULL, k0, subsample = TRUE, beta,
-  top.can = 5, remain.n = 30, k.min = 3, k.max = k0 + 10,
+seqCluster(inputMatrix, inputType, k0, subsample = TRUE, beta,
+  top.can = 0.01, remain.n = 30, k.min = 3, k.max = k0 + 10,
   verbose = TRUE, subsampleArgs = NULL, mainClusterArgs = NULL,
-  checkDiss = FALSE)
+  warnings = FALSE)
 }
 \arguments{
-\item{x}{\code{p x n} data matrix on which to run the clustering (samples in
-columns).}
+\item{inputMatrix}{numerical matrix on which to run the clustering or a
+\code{\link[SummarizedExperiment]{SummarizedExperiment}},
+\code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
+object.}
 
-\item{diss}{\code{n x n} data matrix of dissimilarities between the samples
-on which to run the clustering}
+\item{inputType}{a character vector defining what type of input is given in
+the \code{inputMatrix} argument. Must consist of values "diss","X", or
+"cat" (see details). "X" and "cat" should be indicate
+matrices with features in the row and samples in the column; "cat"
+corresponds to the features being numerical integers corresponding to
+categories, while "X" are continuous valued features. "diss" corresponds to
+an \code{inputMatrix} that is a NxN dissimilarity matrix. "cat" is largely
+used internally for clustering of sets of clusterings.}
 
 \item{k0}{the value of K at the first iteration of sequential algorithm, see
 details below or vignette.}
@@ -29,10 +37,9 @@ has to be before 'finding' and removing the cluster.}
 
 \item{top.can}{only the top.can clusters from \code{\link{mainClustering}} (ranked
 by 'orderBy' argument given to \code{\link{mainClustering}}) will be compared
-pairwise for stability. Making this very big will effectively remove this
+pairwise for stability. Can be either an integer value, identifying the absolute number of clusters, or a value between 0 and 1, meaning to keep all clusters with at least this proportion of the remaining samples in the cluster. Making this either a very big integer or equal to 0 will effectively remove this
 parameter and all pairwise comparisons of all clusters found will be
-considered. This might result in smaller clusters being found. The current
-default is fairly large, so probably will have little effect.}
+considered; this might result in smaller clusters being found. If top.can is between 0 and 1, then there is still a hard threshold of at least 5 samples in a cluster to be considered as a cluster.}
 
 \item{remain.n}{when only this number of samples are left (i.e. not yet
 clustered) then algorithm will stop.}
@@ -52,8 +59,8 @@ progress.}
 \item{mainClusterArgs}{list of arguments to be passed to
 \code{\link{mainClustering}}).}
 
-\item{checkDiss}{logical. Whether to check whether the input \code{diss} is
-valid.}
+\item{warnings}{logical. Whether to print out the many possible warnings and
+messages regarding checking the internal consistency of the parameters.}
 }
 \value{
 A list with values
@@ -159,10 +166,11 @@ Certain combinations of inputs to \code{mainClusterArgs} and
 data(simData)
 
 set.seed(12908)
-clustSeqHier <- seqCluster(simData, k0=5, subsample=TRUE,
-beta=0.8, subsampleArgs=list(resamp.n=100,
-samp.p=0.7, clusterFunction="kmeans", clusterArgs=list(nstart=10)),
-mainClusterArgs=list(minSize=5,clusterFunction="hierarchical01",clusterArgs=list(alpha=0.1)))
+clustSeqHier <- seqCluster(simData, inputType="X", k0=5, subsample=TRUE,
+   beta=0.8, subsampleArgs=list(resamp.n=100,
+   samp.p=0.7, clusterFunction="kmeans", clusterArgs=list(nstart=10)),
+   mainClusterArgs=list(minSize=5,clusterFunction="hierarchical01",
+   clusterArgs=list(alpha=0.1)))
 }
 }
 \references{

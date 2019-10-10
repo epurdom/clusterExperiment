@@ -37,9 +37,11 @@ makeRsecFluidigmObject
 library(clusterExperiment)
 data(fluidigmData)
 data(fluidigmColData)
-se<-SummarizedExperiment(assays=fluidigmobjectolData=fluidigmColData)
+se<-SummarizedExperiment(assays=fluidigmData, colData=fluidigmColData)
+RNGversion("3.5.0")
 rsecFluidigm<-makeRsecFluidigmObject(se)
-checkRsecFluidigmObject(rsecFluidigm)
+# Internal function for checking got correct results...
+clusterExperiment:::checkRsecFluidigmObject(rsecFluidigm)
 usethis::use_data(rsecFluidigm,overwrite=FALSE)
 }
 }

@@ -36,9 +36,9 @@
 #' @examples
 #' data(simData)
 #'
-#' cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
-#' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
-#' removeSil=c(TRUE,FALSE))
+#' cl <- clusterMany(simData, nReducedDims=c(5, 10), reduceMethod="PCA",
+#'      clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE), 
+#'      makeMissingDiss=TRUE, removeSil=c(TRUE,FALSE))
 #' getClusterManyParams(cl)
 #' @export
 setMethod(
@@ -75,7 +75,7 @@ setMethod(
       notAllSame<-which(apply(params,2,function(z){length(unique(z))>1}))
       params<-params[,notAllSame,drop=FALSE]
     }
-		row.names(params)<-clusterLabels(x)[wh]
+	row.names(params)<-clusterLabels(x)[wh]
     params<-data.frame("clusteringIndex"=wh,params)
     return(params)
   }

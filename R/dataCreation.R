@@ -85,69 +85,75 @@ NULL
 #' library(clusterExperiment)
 #' data(fluidigmData)
 #' data(fluidigmColData)
-#' se<-SummarizedExperiment(assays=fluidigmobjectolData=fluidigmColData)
+#' se<-SummarizedExperiment(assays=fluidigmData, colData=fluidigmColData)
+#' RNGversion("3.5.0")
 #' rsecFluidigm<-makeRsecFluidigmObject(se)
-#' checkRsecFluidigmObject(rsecFluidigm)
+#' # Internal function for checking got correct results...
+#' clusterExperiment:::checkRsecFluidigmObject(rsecFluidigm)
 #' usethis::use_data(rsecFluidigm,overwrite=FALSE)
 #' }
 #' @aliases makeRsecFluidigmObject
 #' @param object object given to functions
 #' @export
 makeRsecFluidigmObject<-function(object){
-    pass_filter <- apply(assay(object), 1, function(x) length(x[x >= 10]) >= 10)
+    pass_filter <- apply(assay(object), 1, 
+        function(x) length(x[x >= 10]) >= 10)
     object <- object[pass_filter,]
     fq <- round(limma::normalizeQuantiles(assay(object)))
     assays(object) <- c(SimpleList(normalized_counts=fq),assays(object))
     wh<-which(colnames(colData(object)) %in% c("Cluster1","Cluster2"))
     colnames(colData(object))[wh]<-c("Published1","Published2")
     ncores<-1
-    system.time(
-      rsecFluidigm<-RSEC(object, 
-                         isCount = TRUE, 
-                         k0s = 4:15, 
-                         alphas=c(0.1, 0.2, 0.3), 
-                         betas = 0.9,
-                         reduceMethod="PCA", 
-                         nReducedDims=10,
-                         minSizes=1, 
-                         clusterFunction="hierarchical01",
-                         consensusMinSize=3,
-                         consensusProportion=0.7,
-                         dendroReduce= "mad",
-                         dendroNDims=1000,
-                         mergeMethod="adjP",
-    	                    mergeDEMethod="limma",
-                         mergeCutoff=0.01,
-                         ncores=ncores, 
-                         random.seed=176201)
+    rsecFluidigm<-RSEC(object,
+                      isCount = TRUE,
+                      k0s = 4:15,
+                      alphas=c(0.1, 0.2, 0.3),
+                      betas = 0.9,
+                      reduceMethod="PCA",
+                      nReducedDims=10,
+                      minSizes=1,
+                      subsample=TRUE,
+                      sequential=TRUE,
+                      clusterFunction="hierarchical01",
+                      consensusMinSize=3,
+                      consensusProportion=0.7,
+                      dendroReduce= "mad",
+                      dendroNDims=1000,
+                      mergeMethod="adjP",
+                      mergeDEMethod="limma",
+                      mergeCutoff=0.01,
+                      ncores=ncores,
+                      makeMissingDiss=TRUE,
+                      mainClusterArgs=list(
+                          clusterArgs=list(removeDup=FALSE)),
+                      #seqArgs=list(top.can=5),
+                      subsampleArgs=list(clusterFunction="kmeans",
+                          classifyMethod="All"),
+                      consensusArgs=list(clusterFunction="hierarchical01",
+                            whenUnassign="before",
+                            clusterArgs=list(
+                                evalClusterMethod=c("average"),
+                                removeDup=FALSE)),
+                      random.seed=176201
     )
     metadata(rsecFluidigm)$packageVersion <- packageVersion("clusterExperiment")
     return(rsecFluidigm)
 }
-#' @rdname makeRsecFluidigmObject
-#' @export
+
 checkRsecFluidigmObject<-function(object){
     ## Simple Tests that haven't changed the clustering algorithms such that get different results.
     ## Don't simply do all.equal with old one because might of changed something minor not related to the actual algorithms
 
-    ## Expected Results
-    
-    ## Previous expected results -- can't recreate!
-    # nMakeConsensus<-8
-    # nMerge<-6
-    # contrasts<-c('(X6+X1+X4)/3-(X8+X2+X5+X3+X7)/5','X6-(X1+X4)/2','X8-(X2+X5+X3+X7)/4','(X2+X5)/2-(X3+X7)/2','X2-X5','X3-X7','X1-X4')
-    # adjPValues<-c(0.049794879, 0.007356062, 0.008204838,
-    #               0.013156033, 0.009336540, 0.007497524, 0.033526666)
-
-    ## Results as of 07/12/2019 -- 2.5.4.9002
-    nMakeConsensus<-10
-    nMerge<-6
-    contrasts<-c('(X10+X2+X3+X6+X8)/5-(X4+X5+X9+X1+X7)/5','(X10+X2+X3)/3-(X6+X8)/2','(X4+X5)/2-(X9+X1+X7)/3','X4-X5','X9-(X1+X7)/2','X1-X7','X10-(X2+X3)/2','X6-X8','X2-X3')
-    adjPValues<-c(0.08374593,0.03762908,0.01372188,0.0072146,0.00778045,0.01018532,0.00056585,0.00650729,0.00183902)
-
-        
+    ## Results for feature/knn 07/25/2019 -- 2.5.4.9005
+    nMakeConsensus<-7
+    nMerge<-5
+    contrasts<-c('(X4+X1+X5)/3-(X6+X7+X2+X3)/4','X4-(X1+X5)/2',
+        'X6-(X7+X2+X3)/3','X7-(X2+X3)/2','X1-X5','X2-X3')                  
+    adjPValues<-c(0.06167775,0.01117556,0.01697553,0.00042439,0.01004385,0.00155609)
+       
     ## Test same
     checkValues<-.getCheckValues(object)
+    if(nMakeConsensus==nMerge) warning("having same number of clusters before and after merge won't be great for the vignette!")
     if(checkValues$nMakeConsensus != nMakeConsensus)
       stop("rsecFluidigm has changed -- makeConsensus")
     if(!is.logical(all.equal(contrasts,checkValues$contrasts)))

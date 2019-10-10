@@ -206,11 +206,20 @@ containing the cluster relationship (leaves are clusters; see see
 \item{\code{dendro_index}}{numeric. An integer giving the cluster that was used to
 make the dendrograms. NA_real_ value if no dendrograms are saved.}
 
-\item{\code{coClustering}}{\code{\link[Matrix]{sparseMatrix}} object. A sparse 
-representation of the matrix with the cluster co-occurrence
-information; this can either be based on subsampling or on co-clustering
-across parameter sets (see \code{clusterMany}). The matrix is a square matrix
-with number of rows/columns equal to the number of samples.}
+\item{\code{coClustering}}{One of \itemize{ 
+\item{\code{NULL}, i.e. empty} 
+\item{a
+  numeric vector, signifying the indices of the clusterings in the
+  clusterMatrix that were used for \code{makeConsensus}. This allows for the
+  recreation of the distance matrix (using hamming distance) if needed for
+  function \code{plotClusters} but doesn't require storage of full NxN
+  matrix.} 
+\item{a \code{\link[Matrix]{sparseMatrix}} object -- a sparse 
+  representation of the NxN matrix with the cluster co-occurrence 
+  information; this can either be based on subsampling or on co-clustering 
+  across parameter sets (see \code{clusterMany}). The matrix is a square
+  matrix with number of rows/columns equal to the number of samples.}
+}}
 
 \item{\code{clusterLegend}}{a list, one per cluster in \code{clusterMatrix}. Each
 element of the list is a matrix with nrows equal to the number of different

@@ -101,7 +101,7 @@
 #'
 #' cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reducedDim="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
-#' removeSil=c(TRUE,FALSE))
+#' removeSil=c(TRUE,FALSE), makeMissingDiss=TRUE)
 #' #give arbitrary names to clusters for demonstration
 #' cl<-renameClusters(cl,value=letters[1:nClusters(cl)[1]],whichCluster=1)
 #' tableClusters(cl,whichClusters=1:2)

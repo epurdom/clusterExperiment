@@ -42,6 +42,7 @@
 \alias{coClustering<-,ClusterExperiment,matrix-method}
 \alias{coClustering<-}
 \alias{coClustering<-,ClusterExperiment,dsCMatrix-method}
+\alias{coClustering<-,ClusterExperiment,numeric-method}
 \alias{clusterTypes,ClusterExperiment-method}
 \alias{clusterTypes}
 \alias{clusteringInfo,ClusterExperiment-method}
@@ -107,6 +108,8 @@
 \S4method{coClustering}{ClusterExperiment,matrix}(object) <- value
 
 \S4method{coClustering}{ClusterExperiment,dsCMatrix}(object) <- value
+
+\S4method{coClustering}{ClusterExperiment,numeric}(object) <- value
 
 \S4method{clusterTypes}{ClusterExperiment}(x)
 

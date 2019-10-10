@@ -60,7 +60,7 @@ setMethod(
 					medoids <- do.call("rbind", by(t(dat[,-whichUnassigned]), clFactor, function(z){apply(z, 2, median)}))
 			    rownames(medoids) <- levels(clFactor)
 			
-					classif<-.genericClassify(x=dat[,whichUnassigned],centers=medoids)
+					classif<-.genericClassify(inputMatrix=dat[,whichUnassigned],centers=medoids)
 			
 					###############
 					#check reasonable results:

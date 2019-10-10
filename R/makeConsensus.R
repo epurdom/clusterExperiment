@@ -1,14 +1,13 @@
-#'Find sets of samples that stay together across clusterings
+#' Find sets of samples that stay together across clusterings
 #'
-#'Find sets of samples that stay together across clusterings in order to define 
-#'a new clustering vector.
+#' Find sets of samples that stay together across clusterings in order to define 
+#' a new clustering vector.
 #'
-#' @aliases makeConsensus
-#'  
-#' @param x a matrix or \code{\link{ClusterExperiment}} object.
-
-#' @param clusterFunction the clustering to use (passed to 
-#'  \code{\link{mainClustering}}); currently must be of type '01'.
+#' @param x a matrix with samples on the rows and different clusterings on the
+#'   columns or \code{\link{ClusterExperiment}} object.
+#' @param clusterFunction the clustering function to use (passed to 
+#'   \code{\link{mainClustering}}); currently must be of type '01' and accept as
+#'   input matrices of type "cat" (see details of ?ClusterFunction).
 #' @param minSize minimum size required for a set of samples to be considered in 
 #'  a cluster because of shared clustering, passed to
 #'  \code{\link{mainClustering}}
@@ -20,7 +19,22 @@
 #'  proportion < 1)
 #' @param ... arguments to be passed on to the method for signature 
 #'  \code{matrix,missing}.
-#' @inheritParams clusterMany
+#' @param whenUnassign (provided for back compatibility with previous versions).
+#'   Must be one of "before" or "after", indicating at what point are samples
+#'   with a proportion of assignments of -1 greater than \code{propUnassigned}
+#'   forced to have a '-1' value. If "before", then these samples are removed
+#'   and not used for clustering. If "after", these samples are included in the
+#'   clustering step, but then the cluster values they receive are assigned a
+#'   '-1. These choices may result in different clusterings, because if these
+#'   samples are included in the clustering (i.e. \code{whenUnassign="after"},
+#'   then these samples may affect the cluster assignments of other samples. The
+#'   default is currently "before", but previous to version 2.5.4, there was no
+#'   such option and the code internally set to "after", so for reproducibility
+#'   with older results, users may need to set this option.
+#' @inheritParams clusterSingle
+#' @param clusterArgs list of arguments to be passed to the call to 
+#'  \code{\link{mainClustering}} that is used to cluster the proportion 
+#'  overlap between samples. 
 #' @inheritParams getClusterIndex
 #' @details This function was previously called \code{combineMany} (versions <=
 #'   2.0.0). \code{combineMany} is still available, but is considered defunct
@@ -61,7 +75,7 @@
 #'
 #' cl <- clusterMany(simData,nReducedDims=c(5,10,50),  reduceMethod="PCA",
 #' clusterFunction="pam", ks=2:4, findBestK=c(FALSE), removeSil=TRUE,
-#' subsample=FALSE)
+#' makeMissingDiss=TRUE, subsample=FALSE)
 #'
 #' #make names shorter for plotting
 #' clMat <- clusterMatrix(cl)
@@ -75,10 +89,10 @@
 #' #require 70% agreement based on clustering of overlap
 #' clCommon70 <- makeConsensus(clMat, proportion=0.7, minSize=10)
 #'
-#' oldpar <- par()
+#' oldpar <- par(no.readonly = TRUE)
 #' par(mar=c(1.1, 12.1, 1.1, 1.1))
-#' plotClusters(cbind("70%Similarity"=clCommon70$clustering, clMat,
-#' "100%Similarity"=clCommon100$clustering), axisLine=-2)
+#' plotClusters(cbind("70%Similarity"=clCommon70, clMat,
+#' "100%Similarity"=clCommon100), axisLine=-2)
 #'
 #' #method for ClusterExperiment object
 #' clCommon <- makeConsensus(cl, whichClusters="workflow", proportion=0.7,
@@ -86,73 +100,87 @@
 #' plotClusters(clCommon)
 #' par(oldpar)
 #'
+#' @aliases makeConsensus,matrix-method
 #' @rdname makeConsensus
 #' @export
 setMethod(
-  f = "makeConsensus",
-  signature = signature(x = "matrix"),
-  definition = function(x, proportion,
-                        clusterFunction="hierarchical01",
-                        propUnassigned=.5, minSize=5,...) {
-    
-    if(proportion >1 || proportion <0) stop("Invalid value for the 'proportion' parameter")
-    if(propUnassigned >1 || propUnassigned <0) stop("Invalid value for the 'propUnassigned' parameter")
-    clusterMat <- x
-    if(proportion == 1) {
-      #have to repeat from mainClustering because didn't
-      if(!is.numeric(minSize) || minSize<0) 
-        stop("Invalid value for the 'minSize' parameter in determining the minimum number of samples required in a cluster.")
-      else minSize<-round(minSize) #incase not integer.
-      singleValueClusters <- apply(clusterMat, 1, paste, collapse=";")
-      allUnass <- paste(rep("-1", length=ncol(clusterMat)), collapse=";")
-      uniqueSingleValueClusters <- unique(singleValueClusters)
-      tab <-	table(singleValueClusters)
-      tab <- tab[tab >= minSize]
-      tab <- tab[names(tab) != allUnass]
-      cl <- match(singleValueClusters, names(tab))
-      cl[is.na(cl)] <- -1
-      sharedPerct<-NULL
-    } else{
-      
-      if(is.character(clusterFunction)) typeAlg <- algorithmType(clusterFunction)
-      else if(is(clusterFunction,"ClusterFunction")) typeAlg<-algorithmType(clusterFunction) else stop("clusterFunction must be either built in clusterFunction name or a ClusterFunction object")
-      if(typeAlg!="01") {
-        stop("makeConsensus is only implemented for '01' type clustering functions (see ?ClusterFunction)")
-      }
-      
-      ##Make clusterMat integer, just in case
-      clusterMat <- apply(clusterMat, 2, as.integer)
-      clusterMat[clusterMat %in%  c(-1,-2)] <- NA
-      sharedPerct <- search_pairs(t(clusterMat)) #works on columns. gives a nsample x nsample matrix back. only lower tri populated
-      
-      #fix those pairs that have no clusterings for which they are both not '-1'
-      sharedPerct <- sharedPerct + t(sharedPerct)
-      sharedPerct[is.na(sharedPerct)] <- 0
-      sharedPerct[is.nan(sharedPerct)] <- 0
-      diag(sharedPerct) <- 1
-      
-      clustArgs<-list(alpha=1-proportion)
-      clustArgs<-c(clustArgs,list(...))
-      if(!"evalClusterMethod" %in% names(clustArgs) && clusterFunction=="hierarchical01"){
-        clustArgs<-c(clustArgs,list(evalClusterMethod=c("average")))
-      }
-      cl <- mainClustering(diss=1-sharedPerct, clusterFunction=clusterFunction,
-                           minSize=minSize, format="vector",
-                           clusterArgs=clustArgs)
-      
-      if(is.character(cl)) {
-        stop("coding error -- mainClustering should return numeric vector")
-      }
+    f = "makeConsensus",
+    signature = signature(x = "matrix"),
+    definition = function(x, proportion,
+                          clusterFunction="hierarchical01",
+                          minSize=5, propUnassigned=.5, 
+                          whenUnassign=c("before","after"),
+                          clusterArgs=NULL) {
+        whenUnassign<-match.arg(whenUnassign)
+        if(proportion >1 || proportion <0) stop("Invalid value for the 'proportion' parameter")
+        if(propUnassigned >1 || propUnassigned <0) stop("Invalid value for the 'propUnassigned' parameter")
+        N<-nrow(x)
+        
+        ## Now define as unassigned any samples with >= propUnassigned '-1' values in x
+        ## Doing >= means that all -1 will be in -1 cluster, no matter what
+        ## (protects against chance that they get assigned to a cluster)
+        whUnassigned <- which(apply(x, 1, function(dat){
+            sum(dat<0)/length(dat)>=propUnassigned}))
+        if(length(whUnassigned)>0 && whenUnassign=="before") {           
+            temp<-rep(-1,length=N)
+            names(temp)<-rownames(x)
+            x<-x[-whUnassigned, ,drop=FALSE]
+        }
+        
+        #Skip clustering altogether if just going to assign all to -1
+        if(length(whUnassigned)!=N){
+            if(proportion == 1) {
+                #have to repeat from mainClustering because didn't
+                if(!is.numeric(minSize) || minSize<0) 
+                    stop("Invalid value for the 'minSize' parameter in determining the minimum number of samples required in a cluster.")
+                else minSize<-round(minSize) #incase not integer.
+                cl<-.uniqueCluster(inputMatrix=t(x), minSize=minSize)
+            } else{
+                if(is.character(clusterFunction) || is(clusterFunction,"ClusterFunction")){
+                    typeAlg <- algorithmType(clusterFunction)
+                    inputType<-inputType(clusterFunction)
+                } 
+                else{
+                    stop("clusterFunction must be either a builtin clusterFunction name or a ClusterFunction object")
+                }
+                if(typeAlg!="01") {
+                    stop("makeConsensus is only implemented for '01' type clustering functions (see ?ClusterFunction)")
+                }
+                if(!"cat" %in% inputType)
+                    stop("makeConsensus is only implemented for clustering functions that permit inputType 'cat'.")
+                #overwrites alpha if given
+                clusterArgs[["alpha"]]<-1-proportion
+                if(!"evalClusterMethod" %in% names(clusterArgs) &&
+                    clusterFunction=="hierarchical01"){
+                    clusterArgs<-c(clusterArgs,
+                        list(evalClusterMethod=c("average")))
+                }
+                cl <- mainClustering(inputMatrix=t(x),
+                                     inputType="cat",
+                                     clusterFunction=clusterFunction,
+                                     minSize=minSize, format="vector",
+                                     clusterArgs=clusterArgs)
+            
+                if(is.character(cl)) {
+                    stop("coding error -- mainClustering should return numeric vector")
+                }
+            }
+            if(whenUnassign!="never" && length(whUnassigned)>0){
+                if(whenUnassign=="after") cl[whUnassigned]<- -1
+                if(whenUnassign=="before"){
+                    #put back in the -1 values
+                    temp[-whUnassigned]<-cl
+                    cl<-temp
+                }                    
+            }
+        }
+        else{
+            cl<-rep(-1,length=N)
+            names(cl)<-rownames(x)
+        }
+        return(cl)
     }
-    ##Now define as unassigned any samples with >= propUnassigned '-1' values in clusterMat
-    whUnassigned <- which(apply(clusterMat, 1, function(x){
-      sum(x== -1)/length(x)>propUnassigned}))
-    clUnassigned <- cl
-    clUnassigned[whUnassigned] <- -1
-    
-    return(list(clustering=clUnassigned, percentageShared=sharedPerct,
-                noUnassignedCorrection=cl))
-  }
+
 )
 
 #' @rdname makeConsensus
@@ -162,41 +190,49 @@ setMethod(
 #'   the result of a call to makeConsensus. However, a more informative label can
 #'   be set (see vignette).
 setMethod(
-  f = "makeConsensus",
-  signature = signature(x = "ClusterExperiment"),
-  definition = function(x, whichClusters, eraseOld=FALSE,clusterLabel="makeConsensus",...){
-	if(missing(whichClusters)){
-	  whichClusters <- getClusterIndex(x, whichClusters="clusterMany", noMatch="silentlyRemove")
-	  if(length(whichClusters)>0){
-	    .mynote("no clusters specified to combine, using results from clusterMany")
-	  }
-	  else{
-	    stop("no clusters specified to combine, please specify.")
-	  }
-	}
-	else{
-		whichClusters <-getClusterIndex(x,whichClusters=whichClusters,noMatch="throwError")
-	}
-	clusterMat <- clusterMatrix(x)[, whichClusters, drop=FALSE]
-    
-    outlist <- makeConsensus(clusterMat, ...)
-    newObj <- ClusterExperiment(x, outlist$clustering,
-                                transformation=transformation(x),
-                                clusterTypes="makeConsensus",checkTransformAndAssay=FALSE)
-    #add "c" to name of cluster
-    newObj<-.addPrefixToClusterNames(newObj,prefix="c",whCluster=1)
-    clusterLabels(newObj) <- clusterLabel
-    
-    if(!is.null(outlist$percentageShared)) {
-      coClustering(newObj) <- Matrix::Matrix(outlist$percentageShared,sparse=TRUE)
+    f = "makeConsensus",
+    signature = signature(x = "ClusterExperiment"),
+    definition = function(x, whichClusters, eraseOld=FALSE,clusterLabel="makeConsensus",...){
+        if(missing(whichClusters)){
+            whichClusters <- getClusterIndex(x, 
+                                whichClusters="clusterMany", 
+                                noMatch="silentlyRemove")
+            if(length(whichClusters)>0){
+                .mynote("no clusters specified to combine, using results from clusterMany")
+            }
+            else{
+                stop("no clusters specified to combine, please specify.")
+            }
+        }
+        else{
+            whichClusters <-getClusterIndex(x,
+                whichClusters=whichClusters,noMatch="throwError")
+        }
+        outlist <- makeConsensus(clusterMatrix(x,whichClusters), ...)
+        newObj <- ClusterExperiment(x, outlist,
+                        transformation=transformation(x),
+                        clusterTypes="makeConsensus",
+                        checkTransformAndAssay=FALSE)
+        #add "c" to name of cluster
+        newObj<-.addPrefixToClusterNames(newObj,prefix="c",whCluster=1)
+        clusterLabels(newObj) <- clusterLabel
+        
+        # ## FIXME: the function no longer returns this object.
+        #  need to the index of clusterings used for the makeConsensus?
+        # Or save it only if plot it (i.e. calculate it)?
+        # if(!is.null(outlist$percentageShared)) {
+        #   coClustering(newObj) <- Matrix::Matrix(outlist$percentageShared,sparse=TRUE)
+        # }
+        ##Check if pipeline already ran previously and if so increase
+        x<-.updateCurrentWorkflow(x,eraseOld,
+            newTypeToAdd="makeConsensus", newLabelToAdd=clusterLabel)
+        if(!is.null(x)){
+            coClustering(x) <- whichClusters
+            retval<-.addNewResult(newObj=newObj, oldObj=x) #make decisions about what to keep.
+        }
+        else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
+        return(retval)
     }
-    ##Check if pipeline already ran previously and if so increase
-		x<-.updateCurrentWorkflow(x,eraseOld,newTypeToAdd="makeConsensus",newLabelToAdd=clusterLabel)
-		
-    if(!is.null(x)) retval<-.addNewResult(newObj=newObj,oldObj=x) #make decisions about what to keep.
-    else retval<-.addBackSEInfo(newObj=newObj,oldObj=x)
-    return(retval)
-  }
 )
 
 
