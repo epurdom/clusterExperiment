@@ -107,6 +107,11 @@
 #' @details If the input is a \code{ClusterExperiment} object, current
 #'   implementation is that existing \code{orderSamples},\code{coClustering} or
 #'   the many dendrogram slots will be retained.
+#' @details If \code{run=FALSE}, the function will still calculate reduced 
+#'   dimensions or filter statistics if not already calculated and saved in the object.
+#'   Moreover the results of these calculations will not be save. Therefore, if these 
+#' steps are lengthy for large datasets it is
+#'   recommended to do them before calling the function.
 #' @return If \code{run=TRUE} will
 #'   return a \code{ClusterExperiment} object, where the results are stored as
 #'   clusterings with clusterTypes \code{clusterMany}. Depending on
@@ -266,7 +271,7 @@ setMethod(
                           subsampleArgs=NULL,
                           seqArgs=NULL,
                           whichAssay=1,
-                          makeMissingDiss=FALSE,
+                          makeMissingDiss=if(ncol(x)<1000) TRUE else FALSE,
                           ncores=1, random.seed=NULL, run=TRUE,
                           ...
     )
@@ -307,13 +312,13 @@ setMethod(
             stop("All values of 'reduceMethod' need to either match an existing (i.e. stored) filtering/dimensionality reduction or they need to all match a built-in function to be calculated")
         
         
+
         if(all(isBuiltIn) & any(isBuiltInNotExisting) ){
-            
-            .mynote(paste0("Not all of the methods requested in 'reduceMethod' have been calculated. Will calculate all the methods requested (any pre-existing values -- filtering statistics or dimensionality reductions -- with these names will be recalculated and overwritten): ",paste(reduceMethod,collapse=","),"."))
-            
             reduceMethod<-unique(reduceMethod)
             doNone<-any(reduceMethod=="none")
             
+            .mynote(paste0("Not all of the methods requested in 'reduceMethod' have been calculated. Will calculate all the methods requested (any pre-existing values -- filtering statistics or dimensionality reductions -- with these names will be recalculated and overwritten): ",paste(reduceMethod,collapse=","),"."))
+               
             #check can given reduceMethod values match built in options.
             dimNam<-reduceMethod[isBuiltInReducedDims(reduceMethod)]
             filtNam<-reduceMethod[isBuiltInFilterStats(reduceMethod)]

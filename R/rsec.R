@@ -124,7 +124,7 @@ setMethod(
                           sequential=TRUE,
                           clusterFunction="hierarchical01", #listBuiltInType01(),
                           alphas=c(0.1,0.2,0.3),betas=0.9, minSizes=1,
-                          makeMissingDiss=FALSE,
+                          makeMissingDiss=if(ncol(x)<1000) TRUE else FALSE,
                           consensusProportion=0.7,
                           consensusMinSize,
                           dendroReduce,

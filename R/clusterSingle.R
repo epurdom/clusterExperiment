@@ -285,7 +285,7 @@ setMethod(
                           isCount=FALSE,transFun=NULL, 
                           reduceMethod="none",
                           nDims=defaultNDims(inputMatrix, reduceMethod),
-                          makeMissingDiss=FALSE,
+                          makeMissingDiss=if(ncol(inputMatrix)<1000) TRUE else FALSE,
                           clusterLabel="clusterSingle",
                           saveSubsamplingMatrix=FALSE, 
                           checkDiss=FALSE, warnings=TRUE) {
