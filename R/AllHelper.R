@@ -23,9 +23,9 @@
 #' nFeatures(rsecFluidigm)
 #' # retrieve all clustering assignments
 #' # (either as cluster ids, cluster names or cluster colors)
-#' head(clusterMatrix(rsecFluidigm))
-#' head(clusterMatrixNamed(rsecFluidigm))
-#' head(clusterMatrixColors(rsecFluidigm))
+#' head(clusterMatrix(rsecFluidigm)[,1:5])
+#' head(clusterMatrixNamed(rsecFluidigm)[,1:5])
+#' head(clusterMatrixColors(rsecFluidigm)[,1:5])
 #' # clustering Types/Labels
 #' clusterTypes(rsecFluidigm)
 #' clusterLabels(rsecFluidigm)
@@ -171,7 +171,7 @@ setMethod(
 setMethod(
   f = "clusterMatrixColors",
   signature = c("ClusterExperiment"),
-  definition = function(x,whichClusters) {
+  definition = function(x,whichClusters="all") {
     convertClusterLegend(x,output="matrixColors",whichClusters=whichClusters)
   }
 )

@@ -1,15 +1,15 @@
-Changes in version 2.5.3-9003 (Release date: )
+Changes in version 2.5.6-9001 (Release date: )
 ==============
-* Changes to internals (`mainClustering`, `seqCluster`, `subsampleClustering`) and `clusterSingle`. 
-	- no longer take diss/x, but just 'inputMatrix' and 'inputType', so allow additional input types to more easily be added. 
+* Changes to clustering internals (`mainClustering`, `seqCluster`, `subsampleClustering`) and `clusterSingle`. 
+	- they no longer take diss/x, but just 'inputMatrix' and 'inputType', so allow additional input types to more easily be added in future. 
 	- Introduce `inputType="cat"` for categorical matrix to all the intermediate functions
-	- no longer allow `distFunction` as argument to internal functions. These functions no longer will calculate distances, only the top level function, `clusterSingle`. 
-    - error handling is different, as are warnings/messages. Single internal function `.checkArgs` checks match between arguments and combinations of arguments, used at all functions (e.g. `clusterMany` as well).  
+	- No longer allow `distFunction` as argument to internal clustering functions. These functions no longer will calculate distances, only the top level function, `clusterSingle`. This will keep from internally calculating distances without the user being aware
+    - error handling is different, as are warnings/messages. Single internal function `.checkArgs` now checks match between arguments and combinations of arguments, used at all functions (including `clusterMany`).  
     - There is no calculating of dissimilarity matrices unless `makeMissingDiss=TRUE` (new argument). This argument is also in `clusterMany` and `RSEC`, so that no distances are calculated without explicit user request.
 * Changes to clustering functions:
     - In order to cluster the results of subsampling, a clustering function must now accept data of form `cat` (not `dist` as before), i.e. the BxN matrix of clusterings from subsampling. Built in clustering techniques that took type `diss` (`pam`, `hier01` and `hierK`) have been adapted to do this.
-    - Built-in functions that accept `cat` can also reduce the BxN matrix to a B x m matrix, where m is the number of unique values of clusterings. This does affect the clustering results, as taking the average, etc. between samples will be affected, but for extremely large datasets can make the clustering more feasible. This option can be set in the `clusterArgs` list of options sent to the function: `clusterArgs=list(removeDup=TRUE)`.
-    - The data types that the clustering function takes should now be defined as a *vector* of acceptable types (previously when only two options, was a single value, one of `diss`, `X`, and `both`). 
+    - Built-in functions that accept `cat` also have functionality to reduce the BxN matrix to a B x m matrix, where m is the number of unique values of clusterings. This does affect the clustering results, as taking the average, etc. between samples will be affected, but for extremely large datasets can make the clustering more feasible. This option can be set in the `clusterArgs` list of options sent to the function: `clusterArgs=list(removeDup=TRUE)`.
+    - The data types that the clustering function takes should now be defined as a *vector* of acceptable types (previously was a single value, and was one of "diss", "X", and "both". Now the "both" option would be given as c("X","diss")). 
 * Changes to `makeConsensus`:
     - `clusterArgs`: list of arguments that will be passed to `clusterArgs` argument of `mainClustering` to allow control of the clustering
     - `whenUnassign`: when to forcibly set unassigned to -1 for those. option `whenUnassign="after"` corresponds to previous version, but now default is `before`, i.e. to cluster without those samples, so those samples don't affect the clustering of those that will get assignments. 
@@ -17,16 +17,17 @@ Changes in version 2.5.3-9003 (Release date: )
 * Changed `coClustering` slot to not only take full NxN matrix, but also
     - index of clusterings used (from `clusterMatrix` of object)
     - NxB matrix of clusterings (also in sparse format)
-    - `plotClusterings` now calculates the hamming distance of clusterings; if requested, will return object with distance to avoid having to calculate in future plots (meaning the NxN matrix must be saved, in sparse format). 
+    - `plotCoClustering` now calculates the hamming distance of clusterings; if requested, will return object with distance to avoid having to calculate in future plots (meaning the NxN matrix must be saved, in sparse format). 
 * Added checks in builtin functions for very small numbers of observations (mainly for unit tests)
 * `addClusterings` applied to two CE objects now gives more arguments about how will copy over the clustering information of one to the other. 
-* For sequential clustering, can make `top.can` be fraction between 0 and 1 indicating keep all candidate clusterings that have at least this proportion (of the remaining data) in the clustering. Default is now 0.01 (only clusters with at least 1% of clustered data can be considered as stable over different choices). 
-
+* For sequential clustering, added option to make `top.can` be fraction between 0 and 1 indicating keep all candidate clusterings that have at least this proportion (of the remaining data) in the clustering. Default is now 0.01 (only clusters with at least 1% of clustered data can be considered as stable over different choices). 
 
 Bugs:
-* Fix so export function`getReducedData`
-* Fix error in `makeConsensus` was calculating the unassigned proportion in the wrong margin and proportion=1 correctly (matrix inversion problem). 
+* Export Function`getReducedData`
+* Fix error in `makeConsensus`: was calculating the unassigned proportion in the wrong margin and proportion=1 correctly (matrix inversion problem). 
 * Fix bug in `clusterMany` that was not grabbing correct distFunction results. 
+* Set default of `clusterMatrixColors` for argument `whichClusters` to be "all"
+
 
 Changes in version 2.5.3 (Release date: May 29, 2019)
 ==============

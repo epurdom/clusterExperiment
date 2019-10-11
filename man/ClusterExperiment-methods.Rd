@@ -84,7 +84,8 @@
 \S4method{clusterMatrixNamed}{ClusterExperiment}(x,
   whichClusters = "all")
 
-\S4method{clusterMatrixColors}{ClusterExperiment}(x, whichClusters)
+\S4method{clusterMatrixColors}{ClusterExperiment}(x,
+  whichClusters = "all")
 
 \S4method{clusterMatrix}{ClusterExperiment}(x, whichClusters)
 
@@ -240,9 +241,9 @@ nSamples(rsecFluidigm)
 nFeatures(rsecFluidigm)
 # retrieve all clustering assignments
 # (either as cluster ids, cluster names or cluster colors)
-head(clusterMatrix(rsecFluidigm))
-head(clusterMatrixNamed(rsecFluidigm))
-head(clusterMatrixColors(rsecFluidigm))
+head(clusterMatrix(rsecFluidigm)[,1:5])
+head(clusterMatrixNamed(rsecFluidigm)[,1:5])
+head(clusterMatrixColors(rsecFluidigm)[,1:5])
 # clustering Types/Labels
 clusterTypes(rsecFluidigm)
 clusterLabels(rsecFluidigm)
