@@ -128,6 +128,10 @@ setMethod(
             names(temp)<-rownames(x)
             x<-x[-whUnassigned, ,drop=FALSE]
         }
+        if(length(whUnassigned)==N && whenUnassign=="after"){
+            temp<-rep(-1,length=N)
+            names(temp)<-rownames(x)
+        }
         
         #Skip clustering altogether if just going to assign all to -1
         if(length(whUnassigned)!=N){
@@ -177,8 +181,7 @@ setMethod(
             }
         }
         else{
-            cl<-rep(-1,length=N)
-            names(cl)<-rownames(x)
+            cl<-temp
         }
         return(cl)
     }
