@@ -216,7 +216,7 @@ setMethod(
     
   })
 
-#' @aliases defaultNDims defaultNDims,SingleCellExperiment-method
+#' @rdname reduceFunctions
 #' @export
 setMethod( 
   f="defaultNDims","matrixOrHDF5",function(object,...){
