@@ -17,22 +17,22 @@ setMethod(
   definition = function(object) {
     cat("class:", class(object), "\n")
     cat("dim:", dim(object), "\n")
-    # cat("reducedDimNames:",if(anyValidReducedDims(object)) reducedDimNames(object) else "no reduced dims stored","\n")
-    # cat("filterStats:",if(anyValidFilterStats(object)) filterNames(object) else "no valid filtering stats stored","\n")
-    # cat("-----------\n")
-    # cat("Primary cluster type:", clusterTypes(object)[primaryClusterIndex(object)],"\n")
-    # cat("Primary cluster label:", clusterLabels(object)[primaryClusterIndex(object)],"\n")
-    # cat("Table of clusters (of primary clustering):")
-    # print(table(primaryClusterNamed(object)))
-    # cat("Total number of clusterings:", NCOL(clusterMatrix(object)),"\n")
-    # if(!is.na(dendroClusterIndex(object)) ) cat("Dendrogram run on '",clusterLabels(object)[dendroClusterIndex(object)],"' (cluster index: ", dendroClusterIndex(object),")\n",sep="") else cat("No dendrogram present\n")
-    # cat("-----------\n")
-    # cat("Workflow progress:\n")
-    # typeTab<-names(table(clusterTypes(object)))
-    # cat("clusterMany run?",if("clusterMany" %in% typeTab) "Yes" else "No","\n")
-    # cat("makeConsensus run?",if("makeConsensus" %in% typeTab) "Yes" else "No","\n")
-    # cat("makeDendrogram run?",if(!is.null(object@dendro_samples) & !is.null(object@dendro_clusters) ) "Yes" else "No","\n")
-    # cat("mergeClusters run?",if("mergeClusters" %in% typeTab) "Yes" else "No","\n")
+    cat("reducedDimNames:",if(anyValidReducedDims(object)) reducedDimNames(object) else "no reduced dims stored","\n")
+    cat("filterStats:",if(anyValidFilterStats(object)) filterNames(object) else "no valid filtering stats stored","\n")
+    cat("-----------\n")
+    cat("Primary cluster type:", clusterTypes(object)[primaryClusterIndex(object)],"\n")
+    cat("Primary cluster label:", clusterLabels(object)[primaryClusterIndex(object)],"\n")
+    cat("Table of clusters (of primary clustering):")
+    print(table(primaryClusterNamed(object)))
+    cat("Total number of clusterings:", NCOL(clusterMatrix(object)),"\n")
+    if(!is.na(dendroClusterIndex(object)) ) cat("Dendrogram run on '",clusterLabels(object)[dendroClusterIndex(object)],"' (cluster index: ", dendroClusterIndex(object),")\n",sep="") else cat("No dendrogram present\n")
+    cat("-----------\n")
+    cat("Workflow progress:\n")
+    typeTab<-names(table(clusterTypes(object)))
+    cat("clusterMany run?",if("clusterMany" %in% typeTab) "Yes" else "No","\n")
+    cat("makeConsensus run?",if("makeConsensus" %in% typeTab) "Yes" else "No","\n")
+    cat("makeDendrogram run?",if(!is.null(object@dendro_samples) & !is.null(object@dendro_clusters) ) "Yes" else "No","\n")
+    cat("mergeClusters run?",if("mergeClusters" %in% typeTab) "Yes" else "No","\n")
   }
 )
 
@@ -480,18 +480,16 @@ setMethod(
 	definition=function(object,whichClusters="primary",useNames=TRUE,makeFactor=TRUE,...){
 		if(useNames){
 			cm<-clusterMatrixNamed(object,whichClusters=whichClusters)
-			if(!makeFactor) cm<-DataFrame(data.frame(cm,stringsAsFactors=FALSE),check.names=FALSE)
-			else cm<-DataFrame(cm,check.names=FALSE)
 		}
 		else{
-			cm<-clusterMatrix(object,whichClusters=whichClusters)
-			if(makeFactor){
-				cnames<-colnames(cm)
-				cm<-do.call("DataFrame",c(lapply(seq_len(ncol(cm)),function(i){factor(cm[,i])}),list(check.names=FALSE))) 
-				colnames(cm)<-cnames		
-			}
-			else cm<-DataFrame(cm,check.names=FALSE)
+			cm<-clusterMatrix(object,whichClusters=whichClusters)			
 		}
+		if(makeFactor){
+			cnames<-colnames(cm)
+			cm<-do.call("DataFrame",c(lapply(seq_len(ncol(cm)),function(i){factor(cm[,i])}),list(check.names=FALSE))) 
+			colnames(cm)<-cnames		
+		}
+		else cm<-DataFrame(cm,check.names=FALSE)
 		return(cbind(colData(object),cm))
 	})
 	
