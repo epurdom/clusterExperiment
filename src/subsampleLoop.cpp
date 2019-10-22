@@ -86,8 +86,8 @@ Rcpp::IntegerMatrix subsampleLoop(Rcpp::List clList, int N){
 				// 1) increase countSampled
 				countTotal[hashKey].first+= 1;
 				// 2) add only those clustered with j to countClustered[j]
-				LogicalVector clusterj = (j <= indexClusterEnds) && (j >= indexClusterStarts);
-				LogicalVector clusterk = (k <= indexClusterEnds) && (k >= indexClusterStarts);
+				LogicalVector clusterj = (j <= indexClusterEnds) & (j >= indexClusterStarts);
+				LogicalVector clusterk = (k <= indexClusterEnds) & (k >= indexClusterStarts);
 				if(is_true(all(clusterj == clusterk))){
 					countTotal[hashKey].second+= 1;
 				}
