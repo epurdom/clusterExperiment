@@ -39,18 +39,19 @@ test_that("`RSEC` works through whole series of steps",{
 #bigger example where actually goes through all the steps, takes some time:
     expect_message(rsecOut<-RSEC(
         x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
-        k0s=4:5,clusterFunction="tight", alphas=0.1, 
-        consensusProportion=0.7, consensusMinSize=5,
-        betas=0.9,dendroReduce="none",minSizes=1, stopOnErrors = FALSE,
+        k0s=4:5,clusterFunction="hierarchical01", alphas=0.1, 
+        betas=0.9,minSizes=1,
         subsampleArgs=list(resamp.num=5), seqArgs=list(top.can=0),
-        random.seed=seedValue,
+        random.seed=seedValue, makeMissingDiss=TRUE,
+        consensusProportion=0.7, consensusMinSize=5,
+        dendroReduce="none", stopOnErrors = FALSE,
         mergeMethod = "adjP", 
-                mergeDEMethod="edgeR",mergeCutoff = 0.05),
+        mergeDEMethod="edgeR",mergeCutoff = 0.05),
         "Merging will be done on")
-    expect_silent(ceOut<- clusterMany(x=assay(seSimCount), ks=4:5, 
-        clusterFunction="tight", alphas=0.1, 
+    expect_silent(ceOut<- clusterMany(x=assay(seSimCount), isCount=TRUE,
+        reduceMethod="none", 
+        ks=4:5, clusterFunction="hierarchical01", alphas=0.1, 
         betas=0.9, minSizes=1,
-        isCount=TRUE, reduceMethod="none", 
         transFun = NULL,
         sequential=TRUE,removeSil=FALSE,subsample=TRUE,
         silCutoff=0,distFunction=NA,
@@ -98,14 +99,15 @@ test_that("`RSEC` works through whole series of steps",{
 })
 
 test_that("`RSEC` works with no merging",{
-  #bigger example where actually goes through all the steps (above skips the merging, in particular, because no dendrogram); takes some time:
-  expect_message(rsecOut<-RSEC(x=assay(seSimCount), isCount=TRUE,reduceMethod="none",
-                k0s=4:5,clusterFunction="tight", alphas=0.1,
-                betas=0.9,dendroReduce="none",minSizes=1,
-                seqArgs=list(top.can=0),
-                subsampleArgs=list(resamp.num=5),random.seed=seedValue,
-                mergeMethod="none"),
-                "clusters will not be merged because argument")
+  #do the same, only don't do merging:
+    expect_message(rsecOut<-RSEC(x=assay(seSimCount), 
+        isCount=TRUE,reduceMethod="none",
+        k0s=4:5,clusterFunction="hierarchical01", alphas=0.1,
+        betas=0.9,dendroReduce="none",minSizes=1,
+        seqArgs=list(top.can=0),
+        subsampleArgs=list(resamp.num=5),random.seed=seedValue,
+        mergeMethod="none"),
+        "clusters will not be merged because argument")
 })
 
 test_that("`RSEC` returns clusterMany even when errors later",{
@@ -155,7 +157,7 @@ test_that("`RSEC` works with hdf5",{
 
 	expect_message(rsecOut2<-RSEC(hdfObj, isCount=FALSE,k0s=4:5,
         reduceMethod="PCA",
-		clusterFunction="tight", alphas=0.1, nReducedDims=3,
+		clusterFunction="hierarchical01", alphas=0.1, nReducedDims=3,
         subsampleArgs=list(resamp.num=5),
         seqArgs=list(top.can=0),
         random.seed=seedValue),
@@ -164,7 +166,7 @@ test_that("`RSEC` works with hdf5",{
 
 	expect_message(rsecOut3<-RSEC(assay(hdfObj), isCount=FALSE,
         k0s=4:5, reduceMethod="PCA",
-		clusterFunction="tight", alphas=0.1, nReducedDims=3,
+		clusterFunction="hierarchical01", alphas=0.1, nReducedDims=3,
 	    subsampleArgs=list(resamp.num=5),
         seqArgs=list(top.can=0), random.seed=seedValue),
 		"Merging will be done on"
@@ -176,7 +178,7 @@ test_that("`RSEC` works with hdf5",{
     #requires numeric/complex matrix/vector arguments
 	expect_message(rsecOut1<-RSEC(hdfObj, isCount=FALSE,
         k0s=4:5,reduceMethod="none",
-		clusterFunction="tight", alphas=0.1, 
+		clusterFunction="hierarchical01", alphas=0.1, 
         seqArgs=list(top.can=0), 
         subsampleArgs=list(resamp.num=5,clusterFunction="pam"),
         random.seed=seedValue),
