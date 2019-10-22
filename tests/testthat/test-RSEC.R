@@ -45,7 +45,7 @@ test_that("`RSEC` works through whole series of steps",{
         subsampleArgs=list(resamp.num=5), seqArgs=list(top.can=0),
         random.seed=seedValue,
         mergeMethod = "adjP", 
-                mergeDEMethod="edgeR",mergeCutoff = 0.05),
+        mergeDEMethod="edgeR",mergeCutoff = 0.05),
         "Merging will be done on")
     expect_silent(ceOut<- clusterMany(x=assay(seSimCount), ks=4:5, 
         clusterFunction="tight", alphas=0.1, 
