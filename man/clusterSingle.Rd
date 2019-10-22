@@ -22,9 +22,9 @@
   distFunction = NA, mainClusterArgs = NULL, subsampleArgs = NULL,
   seqArgs = NULL, isCount = FALSE, transFun = NULL,
   reduceMethod = "none", nDims = defaultNDims(inputMatrix,
-  reduceMethod), makeMissingDiss = FALSE,
-  clusterLabel = "clusterSingle", saveSubsamplingMatrix = FALSE,
-  checkDiss = FALSE, warnings = TRUE)
+  reduceMethod), makeMissingDiss = if (ncol(inputMatrix) < 1000) TRUE
+  else FALSE, clusterLabel = "clusterSingle",
+  saveSubsamplingMatrix = FALSE, checkDiss = FALSE, warnings = TRUE)
 }
 \arguments{
 \item{inputMatrix}{numerical matrix on which to run the clustering or a

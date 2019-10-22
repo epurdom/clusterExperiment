@@ -27,14 +27,14 @@
   nReducedDims = defaultNDims(x, reduceMethod, type = "reducedDims"),
   k0s = 4:15, subsample = TRUE, sequential = TRUE,
   clusterFunction = "hierarchical01", alphas = c(0.1, 0.2, 0.3),
-  betas = 0.9, minSizes = 1, makeMissingDiss = FALSE,
-  consensusProportion = 0.7, consensusMinSize, dendroReduce, dendroNDims,
-  mergeMethod = "adjP", mergeCutoff, mergeLogFCcutoff,
-  mergeDEMethod = if (isCount) "limma-voom" else "limma",
-  verbose = FALSE, parameterWarnings = FALSE, mainClusterArgs = NULL,
-  subsampleArgs = NULL, seqArgs = NULL, consensusArgs = NULL,
-  whichAssay = 1, ncores = 1, random.seed = NULL,
-  stopOnErrors = FALSE, run = TRUE)
+  betas = 0.9, minSizes = 1, makeMissingDiss = if (ncol(x) < 1000)
+  TRUE else FALSE, consensusProportion = 0.7, consensusMinSize,
+  dendroReduce, dendroNDims, mergeMethod = "adjP", mergeCutoff,
+  mergeLogFCcutoff, mergeDEMethod = if (isCount) "limma-voom" else
+  "limma", verbose = FALSE, parameterWarnings = FALSE,
+  mainClusterArgs = NULL, subsampleArgs = NULL, seqArgs = NULL,
+  consensusArgs = NULL, whichAssay = 1, ncores = 1,
+  random.seed = NULL, stopOnErrors = FALSE, run = TRUE)
 }
 \arguments{
 \item{x}{the data matrix on which to run the clustering. Can be object of the

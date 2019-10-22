@@ -22,8 +22,8 @@
   transFun = NULL, isCount = FALSE, verbose = TRUE,
   parameterWarnings = FALSE, mainClusterArgs = NULL,
   subsampleArgs = NULL, seqArgs = NULL, whichAssay = 1,
-  makeMissingDiss = FALSE, ncores = 1, random.seed = NULL,
-  run = TRUE, ...)
+  makeMissingDiss = if (ncol(x) < 1000) TRUE else FALSE, ncores = 1,
+  random.seed = NULL, run = TRUE, ...)
 
 \S4method{clusterMany}{ClusterExperiment}(x, reduceMethod = "none",
   nFilterDims = defaultNDims(x, reduceMethod, type = "filterStats"),
@@ -231,6 +231,12 @@ The argument \code{ks} is interpreted differently for different
 If the input is a \code{ClusterExperiment} object, current
   implementation is that existing \code{orderSamples},\code{coClustering} or
   the many dendrogram slots will be retained.
+
+If \code{run=FALSE}, the function will still calculate reduced 
+  dimensions or filter statistics if not already calculated and saved in the object.
+  Moreover the results of these calculations will not be save. Therefore, if these 
+steps are lengthy for large datasets it is
+  recommended to do them before calling the function.
 
 The given \code{reduceMethod} values must either be \emph{all}
   precalculated filtering/dimensionality reduction stored in the appropriate
