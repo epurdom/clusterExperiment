@@ -250,7 +250,7 @@ setMethod(
 }
 
 
-
+#' @importFrom ape is.ultrametric
 .makeSampleDendro<-function(x,clusterDendro, cl,type=c("mat","dist"), unassignedSamples=c("remove","outgroup","cluster"),sampleEdgeLength=0, outbranchLength=0,calculateSample=TRUE){
     unassignedSamples<-match.arg(unassignedSamples)
     type<-match.arg(type)

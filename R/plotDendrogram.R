@@ -599,7 +599,7 @@ setMethod(
     pdf(tmpf)
     do.call(ape::plot.phylo,list(...))
     dev.off()
-    lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
+    lastPP <- get("last_plot.phylo", envir = ape:::.PlotPhyloEnv)
     unlink(tmpf) 
     return(lastPP)
 
