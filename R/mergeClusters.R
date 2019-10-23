@@ -614,8 +614,9 @@ setMethod(
         }
         ###Divide ... into mergeCluster arguments and plotting arguments
         ###Remove mergeClusters arguments in ... so can pass arguments to
-        mergeArgs<-.methodFormals("mergeClusters","matrix") #list with names equal to formal arguments
         passedArgs<-list(...)
+        mergeArgs<-.methodFormals("mergeClusters","matrix",
+            envir=as.environment(passedArgs))         
         if(any(!names(passedArgs) %in% names(mergeArgs))){
             plotArgs<-passedArgs[which(!names(passedArgs) %in% names(mergeArgs))]
         }

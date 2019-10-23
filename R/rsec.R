@@ -90,7 +90,7 @@ setMethod(
         }
         else{
             if(!is.na(x@merge_demethod)) passedArgs$mergeDEMethod<-x@merge_demethod
-            retval<-do.call(".postClusterMany",c(list(ce=x),passedArgs))
+            retval<-do.call(".postClusterMany",c(list(x=x),passedArgs))
         }
         
         return(retval)
@@ -169,9 +169,10 @@ setMethod(
         
         if(run){
             #first add ones that have default value
-            passedArgs<-list(ce=ce,consensusProportion=consensusProportion,
+            passedArgs<-list(x=ce,consensusProportion=consensusProportion,
                              mergeMethod=mergeMethod,whichAssay=whichAssay,
                              stopOnErrors=stopOnErrors,
+                             makeMissingDiss=eval(makeMissingDiss),
                              consensusArgs=consensusArgs)
             #add those who will use default value from the function -- is there easier way
             if(!missing(consensusProportion))
@@ -194,7 +195,9 @@ setMethod(
         return(ce)
     })
 
-.methodFormals <- function(f, signature = character()) {
+
+## argument envir is only used for evaluating conditional statements -- can give additional arguments that are values of the default arguments
+.methodFormals <- function(f, signature = character(), envir) {
     #to find defaults of RSEC
     #from this conversation:
     #http://r.789695.n4.nabble.com/Q-Get-formal-arguments-of-my-implemented-S4-method-td4702420.html
@@ -208,9 +211,13 @@ setMethod(
             forms<-formals(b[[2]][[3]])
             whConditional<-which(sapply(forms,function(x){class(x)=="if"}))
             if(length(whConditional)>0){
-                #note, converts it to a list (rather than pairlist) class, but doesn't matter for me.
+                # note, converts it to a list (rather than pairlist) class, but doesn't matter for me.
+                formEnvir<-forms
+                # find those defined already by user so can use in evaluating the conditionals
+                whDefined<-sapply(names(forms),exists,envir=envir)
+                formEnvir[whDefined]<-sapply(names(forms)[whDefined],get,envir=envir)
                 forms[whConditional]<-sapply(forms[whConditional],function(x){
-                    eval(x,envir=forms)
+                    eval(x,envir=formEnvir)
                 })
             }
             return(forms)
@@ -219,13 +226,14 @@ setMethod(
     }
     genFormals
 }
-.postClusterMany<-function(ce,stopOnErrors=FALSE,...){
-    defaultArgs<-.methodFormals("RSEC",signature="SingleCellExperiment")
-    #remove those without anything defined
-    defaultArgs<-defaultArgs[which(sapply(.methodFormals("RSEC",
-                                                         signature="SingleCellExperiment"),
-                                          function(x){!isTRUE(x=="")}))]
+.postClusterMany<-function(x,stopOnErrors=FALSE,...){
+    ## Note: can't have any arguments in RSEC that depend on evaluating x
+    ## Because it will fail here; can only have conditions that are on other arguments that have default values. x doesn't have a default value.
     passedArgs<-list(...)
+    defaultArgs<-.methodFormals("RSEC",signature="SingleCellExperiment", envir=as.environment(c(list(x=x,stopOnErrors=stopOnErrors),passedArgs)))
+    #remove those without anything defined
+    defaultArgs<-defaultArgs[which(sapply(defaultArgs,
+        function(x){!isTRUE(x=="")}))]
     whNotShared<-which(!names(defaultArgs)%in%names(passedArgs) )
     if(length(whNotShared)>0) 
         passedArgs<-c(passedArgs,defaultArgs[whNotShared])
@@ -241,10 +249,10 @@ setMethod(
         passedArgs$whichClusters  	
         else "clusterMany"
     combineTry<-try(do.call("makeConsensus",
-                            c(list(x=ce,whichClusters=whClusters),args1)), 
+                            c(list(x=x,whichClusters=whClusters),args1)), 
                     silent=TRUE)
     if(!inherits(combineTry,"try-error")){
-        ce<-combineTry
+        x<-combineTry
         #------------
         ##makeDendrogram
         #------------
@@ -255,13 +263,13 @@ setMethod(
             if(passedArgs$dendroReduce=="none") passedArgs$dendroNDims<-NA
         }
         if("dendroNDims" %in% names(passedArgs)) args1<-c(args1,"nDims"=passedArgs$dendroNDims)
-        dendroTry<- try(do.call( "makeDendrogram", c(list(x=ce,filterIgnoresUnassigned=TRUE), args1)), silent=TRUE)
+        dendroTry<- try(do.call( "makeDendrogram", c(list(x=x,filterIgnoresUnassigned=TRUE), args1)), silent=TRUE)
         
         #------------
         #mergeClusters
         #------------
         if(!inherits(dendroTry,"try-error")){
-            ce<-dendroTry
+            x<-dendroTry
             
             if("mergeMethod" %in% names(passedArgs) && passedArgs$mergeMethod!="none"){
                 args1<-list()
@@ -273,14 +281,14 @@ setMethod(
                 }
                 if("mergeDEMethod" %in% names(passedArgs)){
                     args1<-c(args1,"DEMethod"=passedArgs$mergeDEMethod)
-                    mergeTry <- try(do.call( mergeClusters,c(list(x=ce,plot=FALSE,plotInfo="none"), args1 )), silent=TRUE)
+                    mergeTry <- try(do.call( mergeClusters,c(list(x=x,plot=FALSE,plotInfo="none"), args1 )), silent=TRUE)
                 }
                 else{
                     mergeTry<-"mergeDEMethod argument is missing with no default"
                     class(mergeTry)<-"try-error"
                 }
                 if(!inherits(mergeTry,"try-error")){
-                    ce<-mergeTry
+                    x<-mergeTry
                 }
                 else{
                     if(!stopOnErrors).mynote(paste("mergeClusters encountered following error and therefore clusters were not merged:\n", mergeTry))
@@ -300,5 +308,5 @@ setMethod(
         else stop(combineTry)
         
     }
-    return(ce)
+    return(x)
 }
