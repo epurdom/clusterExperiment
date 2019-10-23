@@ -1,7 +1,8 @@
-Changes in version 2.5.7 (Release date: October 22, 2019)
+Changes in version 2.5.8 (Release date: October 22, 2019)
 ==============
 Bugs: 
 * Fix logical precedence error in C++ code for subsample loop
+* Fix how calculate the xlim from plot.phylo so don't have to copy over code from ape package.
 
 Changes in version 2.5.3 (Release date: May 29, 2019)
 ==============
