@@ -270,6 +270,7 @@
 
 ###Note, cluster nodes DEFINED as those whose descendants are of length>0. So edge from root of these fake binary trees needs to be > 0, and rest =0 
 ### But also use this to make fake binary when n<5 samples and need it to stay ultrametric. Here, the edgeLength>0 will make it not ultrametric! Sigh. I fix that issue after returned (i.e. not here)
+### Note that if n==1 (i.e. only 1 group), will return INVALID phylo object, because the edge matrix is matrix(NA,nrow=0,ncol=2) and Nnode=0
 .makeFakeBinary<-function(tipNames,rootEdgeLength=0,edgeLength=0){
 	newPhylo<-list()
 	n<-length(tipNames)
@@ -405,11 +406,11 @@
 
 
 #Input:
-#tipTrees should be list of trees in same order as tips in mainTree
-#assumes rooted tree
-#single values to be added to tree should have $edge=0-row matrix, $Nnode=0, $tip.label name of cluster, $edge.length=value to be added to length of cluster node
-#Output:
-
+#' @param tipTrees should be list of trees in same order as tips in mainTree
+#' @param mainTree a phylo object, assumed to be rooted tree
+#' @details single values to be added to tree should have $edge=0-row matrix, $Nnode=0, $tip.label name of cluster, $edge.length=value in the tipTrees list to be added to length of cluster node
+#' @return
+#' noRd
 .addTreesToTips<-function(mainTree,tipTrees){
 	N<-length(mainTree$tip.label)
 	M<-mainTree$Nnode
