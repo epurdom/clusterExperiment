@@ -1,4 +1,4 @@
-Changes in version 2.7.0-9001 (Release date: )
+Changes in version 2.7.1-9001 (Release date: )
 ==============
 * Changes to clustering internals (`mainClustering`, `seqCluster`, `subsampleClustering`) and `clusterSingle`. 
 	- they no longer take diss/x, but just 'inputMatrix' and 'inputType', so allow additional input types to more easily be added in future. 
@@ -27,6 +27,11 @@ Bugs:
 * Fix error in `makeConsensus`: was calculating the unassigned proportion in the wrong margin and proportion=1 correctly (matrix inversion problem). 
 * Fix bug in `clusterMany` that was not grabbing correct distFunction results. 
 * Set default of `clusterMatrixColors` for argument `whichClusters` to be "all"
+
+Changes in version 2.7.1 (Release date: Nov 5, 2019)
+==============
+Bugs: 
+* Fix error in making sample dendrogram
 
 Changes in version 2.5.7 (Release date: October 22, 2019)
 ==============

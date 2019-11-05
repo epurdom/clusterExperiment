@@ -112,6 +112,7 @@
 #' @param convertTips logical. If true, the returned dendrogram will have the tip labels changed. If 'ClusterIdDendro' is in tdata (i.e. its a cluster dendrogram) then they are converted to Dendro cluster id (if no NAs) or if there are NAs, then merge cluster id (if dendros are NA in tips). If 'SampleIndex' is column name in tdata (i.e. is a samples dendrogram), then returns tip labels that are the SampleIndex value
 #' @importFrom stats as.hclust
 #' @importFrom ape as.phylo.hclust
+#' @details phylo is class in ape package (S3). phylo4 and phylo4d are classes from  phylobase package -- S4 version of phylo. 
 #' @noRd
 .convertToPhyClasses<-function(x,returnClass=c("phylo4","phylo","phylo4d"),convertNodes=FALSE,convertTips=FALSE){
 	returnClass<-match.arg(returnClass)
@@ -171,6 +172,7 @@
 			#but the problem has probably been fixed by now in ape!
 			x<-try(suppressWarnings(as(x,"phylo")),TRUE)
 			if(inherits(x, "try-error")) stop("coding error -- could not convert from phylo4 to phylo object. Reported error:",x)
+            #checkValidPhylo(x) returns NULL whether true or not. 
 			return(x)
 		}
 	}
@@ -274,6 +276,7 @@
 
 ###Note, cluster nodes DEFINED as those whose descendants are of length>0. So edge from root of these fake binary trees needs to be > 0, and rest =0 
 ### But also use this to make fake binary when n<5 samples and need it to stay ultrametric. Here, the edgeLength>0 will make it not ultrametric! Sigh. I fix that issue after returned (i.e. not here)
+### Note that if n==1 (i.e. only 1 group), will return INVALID phylo object, because the edge matrix is matrix(NA,nrow=0,ncol=2) and Nnode=0
 .makeFakeBinary<-function(tipNames,rootEdgeLength=0,edgeLength=0){
 	newPhylo<-list()
 	n<-length(tipNames)
@@ -287,7 +290,7 @@
 			newPhylo$edge<-rbind(c(3,1),c(3,2))		
 		}
 		newPhylo$tip.label<-tipNames
-		newPhylo$Nnode<-(n-1)
+		newPhylo$Nnode<-as.integer(n-1)
 		newPhylo$edge.length<-rep(edgeLength,length=nrow(newPhylo$edge))
 		whRoot<-which(newPhylo$edge==n+1,arr.ind = TRUE)
 		if(nrow(whRoot)>2) stop("coding error -- found more than two descendants of root")
@@ -300,7 +303,7 @@
 			newPhylo$edge<-matrix(NA,nrow=0,ncol=2)
 			newPhylo$tip.label<-tipNames
 			newPhylo$edge.length<-rootEdgeLength
-			newPhylo$Nnode<-0
+			newPhylo$Nnode<-as.integer(0)
 		}
 		
 		else stop("coding error -- zero or less length tipNames")
@@ -409,11 +412,11 @@
 
 
 #Input:
-#tipTrees should be list of trees in same order as tips in mainTree
-#assumes rooted tree
-#single values to be added to tree should have $edge=0-row matrix, $Nnode=0, $tip.label name of cluster, $edge.length=value to be added to length of cluster node
-#Output:
-
+#' @param tipTrees should be list of trees in same order as tips in mainTree
+#' @param mainTree a phylo object, assumed to be rooted tree
+#' @details single values to be added to tree should have $edge=0-row matrix, $Nnode=0, $tip.label name of cluster, $edge.length=value in the tipTrees list to be added to length of cluster node
+#' @return
+#' noRd
 .addTreesToTips<-function(mainTree,tipTrees){
 	N<-length(mainTree$tip.label)
 	M<-mainTree$Nnode
@@ -432,34 +435,46 @@
 	isSingle<-sapply(tipTrees,function(x){nrow(x$edge)==0})
 	cumN<-c(0,cumsum(nVec))
 	cumM<-c(0,cumsum(pmax(mVec-1,0))) #cumulative number of NON-ROOT internal
-	cumSingle<-c(0,cumsum(as.numeric(isSingle))) #counts how many clusters/tips on main tree were singleton before i
-	#don't need the last entry.
+    #cumSingle[i] counts how many clusters/tips on main tree were singleton before (main) tip i 
+	cumSingle<-c(0,cumsum(as.numeric(isSingle))) 
+	#don't need the last entry of any of these.
 	cumN<-head(cumN,-1) 
 	cumM<-head(cumM,-1) 
 	cumSingle<-head(cumSingle,-1) 
 	
 	##############
-	#change mainTree edge matrix
+	#change mainTree edge matrix in anticipation of adding trees to tips
 	##############
 	whRoot<-which(mainTree$edge==N+1)
-	whInternal<-which(mainTree$edge>N)
-	#1) inner add sum(nVec)-N (including root)
-	#note root becomes sum(nVec)+1, and last internal edge should be sum(nVec)+M
+	whInternal<-which(mainTree$edge>N) #includes root
+	#1) internal nodes: add sum(nVec)-N (including root)
+	# note root becomes sum(nVec)+1, and the last internal edge should be sum(nVec)+M
 	mainTree$edge[whInternal]<-mainTree$edge[whInternal]-N+sum(nVec)
+    if(max(mainTree$edge[whInternal])!= sum(nVec)+M) stop("internal coding error in adding trees")
+      
+    #     whInternalIndex<-which(mainTree$edge>N,arr.ind=TRUE)
+    # whTipsIndex<-which(mainTree$edge<=N & !mainTree$edge %in% which(isSingle),arr.ind=TRUE)
+    
 	#2) tips add sum(nVec)+M so now internal edges  -- except those that will be continue being tip because singleton added!
 	whTips<-which(mainTree$edge<=N & !mainTree$edge %in% which(isSingle))
 	# main tree tips that are not single get consecutive numbers
-	mainTree$edge[whTips]<-mainTree$edge[whTips]+sum(nVec)+M-cumSingle[!isSingle]
+	mainTree$edge[whTips]<-mainTree$edge[whTips]+sum(nVec)+M-cumSingle[mainTree$edge[whTips]]
 	if(sum(isSingle)>0){
 		whSingle<-match(which(isSingle),mainTree$edge[,2])
 		mainTree$edge[whSingle,2]<-cumN[isSingle]+1
 	
-	#Note that singletons, unlike others, short value of rootEdgeLength to their edge length, comparatively, when made with fakeBinaryTrees function. (and rootEdgeLength was added to deal with identification of cluster problem)
-	#Need to add to those
+	# Note that singletons, unlike others, short value of rootEdgeLength to their edge length, comparatively, when made with fakeBinaryTrees function. (and rootEdgeLength was added to deal with identification of cluster problem)
+	# Need to add to those
 		addValues<-sapply(tipTrees[isSingle],.subset2,"edge.length")
 		mainTree$edge.length[whSingle]<-mainTree$edge.length[whSingle]+addValues
 	}
-
+    #######
+    ### Check valid edge matrix:
+    #######
+    # check no duplicated edges:
+    if(any(duplicated(mainTree$edge[,2]))) stop("internal coding error -- adding tips to tree led to duplicate edges")
+    
+    
 	newPhylo<-list()
 	newPhylo$Nnode<-mainTree$Nnode+sum(sapply(tipTrees,.subset2,"Nnode"))
 	
@@ -502,6 +517,7 @@
 		return(x)
 	})
 	
+    
 	newPhylo$edge<-do.call("rbind",c(lapply(tipTrees[!isSingle],.subset2,"edge"),list(mainTree$edge)))
 	newPhylo$tip.label<-do.call("c",lapply(tipTrees,.subset2,"tip.label"))
 	newPhylo$edge.length<-do.call("c",c(lapply(tipTrees[!isSingle],.subset2,"edge.length"),list(mainTree$edge.length)))

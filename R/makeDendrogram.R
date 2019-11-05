@@ -173,6 +173,10 @@ setMethod(
         return(list(samples=fullD,clusters=clusterD))
     })
 
+#' @param x a matrix or hdf5 or distance
+#' @param cl vector of cluster info
+#' @param type whether input x is a matrix or distance.
+#' @noRd
 .makeClusterDendro<-function(x, cl,type=c("mat","dist"),...){
     type<-match.arg(type)
     if(type=="dist"){
@@ -251,6 +255,11 @@ setMethod(
 
 
 
+#' @param x a matrix or hdf5 or distance
+#' @param cl
+#' @param clusterDendro the cluster dendrogram (a phylo4d class)-- will be converted internally to type 'phylo'
+#' @param type whether input x is a matrix or distance.
+#' @noRd
 .makeSampleDendro<-function(x,clusterDendro, cl,type=c("mat","dist"), unassignedSamples=c("remove","outgroup","cluster"),sampleEdgeLength=0, outbranchLength=0,calculateSample=TRUE){
     unassignedSamples<-match.arg(unassignedSamples)
     type<-match.arg(type)
