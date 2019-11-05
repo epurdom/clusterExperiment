@@ -112,6 +112,7 @@
 #' @param convertTips logical. If true, the returned dendrogram will have the tip labels changed. If 'ClusterIdDendro' is in tdata (i.e. its a cluster dendrogram) then they are converted to Dendro cluster id (if no NAs) or if there are NAs, then merge cluster id (if dendros are NA in tips). If 'SampleIndex' is column name in tdata (i.e. is a samples dendrogram), then returns tip labels that are the SampleIndex value
 #' @importFrom stats as.hclust
 #' @importFrom ape as.phylo.hclust
+#' @details phylo is class in ape package (S3). phylo4 and phylo4d are classes from  phylobase package -- S4 version of phylo. 
 #' @noRd
 .convertToPhyClasses<-function(x,returnClass=c("phylo4","phylo","phylo4d"),convertNodes=FALSE,convertTips=FALSE){
 	returnClass<-match.arg(returnClass)
@@ -165,6 +166,7 @@
 			#but the problem has probably been fixed by now in ape!
 			x<-try(suppressWarnings(as(x,"phylo")),FALSE)
 			if(inherits(x, "try-error")) stop("coding error -- could not convert from phylo4 to phylo object. Reported error:",x)
+            #checkValidPhylo(x) returns NULL whether true or not. 
 			return(x)
 		}
 	}
@@ -281,7 +283,7 @@
 			newPhylo$edge<-rbind(c(3,1),c(3,2))		
 		}
 		newPhylo$tip.label<-tipNames
-		newPhylo$Nnode<-(n-1)
+		newPhylo$Nnode<-as.integer(n-1)
 		newPhylo$edge.length<-rep(edgeLength,length=nrow(newPhylo$edge))
 		whRoot<-which(newPhylo$edge==n+1,arr.ind = TRUE)
 		if(nrow(whRoot)>2) stop("coding error -- found more than two descendants of root")
@@ -294,7 +296,7 @@
 			newPhylo$edge<-matrix(NA,nrow=0,ncol=2)
 			newPhylo$tip.label<-tipNames
 			newPhylo$edge.length<-rootEdgeLength
-			newPhylo$Nnode<-0
+			newPhylo$Nnode<-as.integer(0)
 		}
 		
 		else stop("coding error -- zero or less length tipNames")
