@@ -429,34 +429,46 @@
 	isSingle<-sapply(tipTrees,function(x){nrow(x$edge)==0})
 	cumN<-c(0,cumsum(nVec))
 	cumM<-c(0,cumsum(pmax(mVec-1,0))) #cumulative number of NON-ROOT internal
-	cumSingle<-c(0,cumsum(as.numeric(isSingle))) #counts how many clusters/tips on main tree were singleton before i
-	#don't need the last entry.
+    #cumSingle[i] counts how many clusters/tips on main tree were singleton before (main) tip i 
+	cumSingle<-c(0,cumsum(as.numeric(isSingle))) 
+	#don't need the last entry of any of these.
 	cumN<-head(cumN,-1) 
 	cumM<-head(cumM,-1) 
 	cumSingle<-head(cumSingle,-1) 
 	
 	##############
-	#change mainTree edge matrix
+	#change mainTree edge matrix in anticipation of adding trees to tips
 	##############
 	whRoot<-which(mainTree$edge==N+1)
-	whInternal<-which(mainTree$edge>N)
-	#1) inner add sum(nVec)-N (including root)
-	#note root becomes sum(nVec)+1, and last internal edge should be sum(nVec)+M
+	whInternal<-which(mainTree$edge>N) #includes root
+	#1) internal nodes: add sum(nVec)-N (including root)
+	# note root becomes sum(nVec)+1, and the last internal edge should be sum(nVec)+M
 	mainTree$edge[whInternal]<-mainTree$edge[whInternal]-N+sum(nVec)
+    if(max(mainTree$edge[whInternal])!= sum(nVec)+M) stop("internal coding error in adding trees")
+      
+    #     whInternalIndex<-which(mainTree$edge>N,arr.ind=TRUE)
+    # whTipsIndex<-which(mainTree$edge<=N & !mainTree$edge %in% which(isSingle),arr.ind=TRUE)
+    
 	#2) tips add sum(nVec)+M so now internal edges  -- except those that will be continue being tip because singleton added!
 	whTips<-which(mainTree$edge<=N & !mainTree$edge %in% which(isSingle))
 	# main tree tips that are not single get consecutive numbers
-	mainTree$edge[whTips]<-mainTree$edge[whTips]+sum(nVec)+M-cumSingle[!isSingle]
+	mainTree$edge[whTips]<-mainTree$edge[whTips]+sum(nVec)+M-cumSingle[mainTree$edge[whTips]]
 	if(sum(isSingle)>0){
 		whSingle<-match(which(isSingle),mainTree$edge[,2])
 		mainTree$edge[whSingle,2]<-cumN[isSingle]+1
 	
-	#Note that singletons, unlike others, short value of rootEdgeLength to their edge length, comparatively, when made with fakeBinaryTrees function. (and rootEdgeLength was added to deal with identification of cluster problem)
-	#Need to add to those
+	# Note that singletons, unlike others, short value of rootEdgeLength to their edge length, comparatively, when made with fakeBinaryTrees function. (and rootEdgeLength was added to deal with identification of cluster problem)
+	# Need to add to those
 		addValues<-sapply(tipTrees[isSingle],.subset2,"edge.length")
 		mainTree$edge.length[whSingle]<-mainTree$edge.length[whSingle]+addValues
 	}
-
+    #######
+    ### Check valid edge matrix:
+    #######
+    # check no duplicated edges:
+    if(any(duplicated(mainTree$edge[,2]))) stop("internal coding error -- adding tips to tree led to duplicate edges")
+    
+    
 	newPhylo<-list()
 	newPhylo$Nnode<-mainTree$Nnode+sum(sapply(tipTrees,.subset2,"Nnode"))
 	
@@ -499,6 +511,7 @@
 		return(x)
 	})
 	
+    
 	newPhylo$edge<-do.call("rbind",c(lapply(tipTrees[!isSingle],.subset2,"edge"),list(mainTree$edge)))
 	newPhylo$tip.label<-do.call("c",lapply(tipTrees,.subset2,"tip.label"))
 	newPhylo$edge.length<-do.call("c",c(lapply(tipTrees[!isSingle],.subset2,"edge.length"),list(mainTree$edge.length)))
