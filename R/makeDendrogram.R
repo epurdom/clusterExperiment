@@ -318,6 +318,7 @@ setMethod(
             #---------
             #make list of phylo trees for each cluster:
             #---------
+            browser()
             fakePhyloList <- tapply(sampleNames[whPos], as.factor(paste("ClusterId",cl[whPos],sep="")), .makeFakeBinary, simplify=FALSE)
             
             #need to reorder so in order of the tips of phyloObj
