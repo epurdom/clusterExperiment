@@ -1,4 +1,4 @@
-Changes in version 2.5.7-9001 (Release date: )
+Changes in version 2.7.0-9001 (Release date: )
 ==============
 * Changes to clustering internals (`mainClustering`, `seqCluster`, `subsampleClustering`) and `clusterSingle`. 
 	- they no longer take diss/x, but just 'inputMatrix' and 'inputType', so allow additional input types to more easily be added in future. 
