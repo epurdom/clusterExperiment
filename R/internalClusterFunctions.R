@@ -249,7 +249,7 @@
             missingArgs<-missingArgs[missingArgs%in%mainReqArgs]
             
           }
-          else missingArgs<-c()
+          else missingArgs<-vector("character")
         } 	
         else{
           missingArgs<-reqSubArgs[reqSubArgs%in%mainReqArgs]

@@ -77,7 +77,7 @@ setMethod(
     ###################
     ##Do loop over reducedDims values:
     ###################
-    currErrors<-c()
+    currErrors<-vector("character")
     for(kk in seq_along(reducedDims)){
       dr<-reducedDims[[kk]]
       md<-maxDims[[kk]]

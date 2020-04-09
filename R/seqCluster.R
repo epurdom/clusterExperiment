@@ -188,8 +188,8 @@ seqCluster<-function(x=NULL, diss=NULL, k0,
   
   candidates <- list() #list of length seq.num of possible clusters found for each k to be compared
   tclust <- list() #list of final cluster identifications (indices of rows of x)
-  kstart<-c() #the starting k for the cluster
-  kend<-c() #the ending k for the cluster
+  kstart<-vector("numeric") #the starting k for the cluster
+  kend<-vector("numeric") #the ending k for the cluster
   whyStop<-NULL
   
   updateClustering<-function(newk){
@@ -238,7 +238,8 @@ seqCluster<-function(x=NULL, diss=NULL, k0,
     #find which rows of index.m define cluster combinations that don't exist
     ##################
     nClusterPerK<-sapply(candidates,length) #number of clusters found per k sequence
-    whInvalid<-unique(unlist(lapply(seq_len(ncol(index.m)),function(i){which(index.m[,i] > nClusterPerK[i])})))
+    whInvalid<-unique(unlist(lapply(seq_len(ncol(index.m)),  
+        function(i){which(index.m[,i] > nClusterPerK[i])})))
     if(length(whInvalid)==nrow(index.m)){
       #all invalid -- probably means that for some k there were no candidates found. So should stop.
       if(verbose) cat(paste("Found ",paste(nClusterPerK,collapse=","),"clusters for k=",paste(k+seq_len(seq.num)-1,collapse=","),", respectively. Stopping iterating because zero-length cluster.\n"))
@@ -297,6 +298,9 @@ seqCluster<-function(x=NULL, diss=NULL, k0,
       found = FALSE
       k = k + 1
     }
+    ###Catch error before start new loop
+    testError<-kend-kstart
+  
   }
   if(is.null(whyStop)){
     if(remain< remain.n) whyStop<-"Ran out of samples"
