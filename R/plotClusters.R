@@ -632,7 +632,7 @@ setMethod(
 
 		#EAP: change so do the one with the most overlap first, simplifies code.
 		whichClusters<-order(apply(m,2,max),decreasing = TRUE)
-		usedClusters<-c() #index of m of used clusters (pci) if !reuseColors; if reuseColors, used slightly differently
+		usedClusters<-vector("numeric") #index of m of used clusters (pci) if !reuseColors; if reuseColors, used slightly differently
 		for(tci in whichClusters){ # for each cluster EAP: in order of size
 
 			if(!reuseColors){

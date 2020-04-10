@@ -245,7 +245,7 @@ setMethod(
         adjPFCMethod<-if(logFCcutoff>0) addFCString(logFCcutoff) else NULL
         if(calculateAll) whMethodCalculate=.availMergeMethods
         else{
-            whMethodCalculate<-if(!mergeMethod=="none") mergeMethod else c()
+            whMethodCalculate<-if(!mergeMethod=="none") mergeMethod else vector("character")
             if(plotInfo=="all") whMethodCalculate<-.availMergeMethods
             if(plotInfo%in% .availMergeMethods) whMethodCalculate<-unique(c(whMethodCalculate,plotInfo))
         }
