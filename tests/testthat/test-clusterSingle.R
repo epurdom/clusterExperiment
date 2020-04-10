@@ -752,10 +752,9 @@ test_that("Different options of mainClustering",{
     #-------
     # Error, because needs calculate diss
     expect_error(clusterSingle(simData,
-        subsample=FALSE,
+        subsample=FALSE, makeMissingDiss = FALSE,
         mainClusterArgs=list(clusterFunction="pam",
-            kRange=2:4,
-            findBestK=TRUE)),
+            kRange=2:4, findBestK=TRUE)),
         "Cannot do requested post processing")
     #Should find best K is K=4
     expect_message(out<-clusterSingle(simData,
