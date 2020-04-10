@@ -6,9 +6,11 @@
 \alias{simCount}
 \alias{trueCluster}
 \title{Simulated data for running examples}
-\format{Three objects are loaded, two data frame(s) of simulated data each
+\format{
+Three objects are loaded, two data frame(s) of simulated data each
   with 300 samples/columns and 153 variables/rows, and a vector of length 300
-  with the true cluster assignments.}
+  with the true cluster assignments.
+}
 \description{
 Simulated data for running examples
 }

@@ -256,7 +256,7 @@ setMethod(
 
 
 #' @param x a matrix or hdf5 or distance
-#' @param cl
+#' @param cl a clustering of samples in x
 #' @param clusterDendro the cluster dendrogram (a phylo4d class)-- will be converted internally to type 'phylo'
 #' @param type whether input x is a matrix or distance.
 #' @noRd

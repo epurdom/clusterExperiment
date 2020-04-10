@@ -14,39 +14,58 @@
 \alias{plotCoClustering}
 \title{Heatmap for showing clustering results and more}
 \usage{
-\S4method{plotHeatmap}{SingleCellExperiment}(data, isCount = FALSE,
-  transFun = NULL, ...)
+\S4method{plotHeatmap}{SingleCellExperiment}(data, isCount = FALSE, transFun = NULL, ...)
 
-\S4method{plotHeatmap}{SummarizedExperiment}(data, isCount = FALSE,
-  transFun = NULL, ...)
+\S4method{plotHeatmap}{SummarizedExperiment}(data, isCount = FALSE, transFun = NULL, ...)
 
 \S4method{plotHeatmap}{table}(data, ...)
 
-\S4method{plotHeatmap}{ClusterExperiment}(data,
-  clusterSamplesData = c("dendrogramValue", "hclust",
-  "orderSamplesValue", "primaryCluster"), clusterFeaturesData = "var",
-  nFeatures = NA, visualizeData = c("transformed", "centeredAndScaled",
-  "original"), whichClusters = c("primary", "workflow", "all", "none"),
-  colData = NULL, clusterFeatures = TRUE, nBlankLines = 2,
-  colorScale, whichAssay = 1, ...)
+\S4method{plotHeatmap}{ClusterExperiment}(
+  data,
+  clusterSamplesData = c("dendrogramValue", "hclust", "orderSamplesValue",
+    "primaryCluster"),
+  clusterFeaturesData = "var",
+  nFeatures = NA,
+  visualizeData = c("transformed", "centeredAndScaled", "original"),
+  whichClusters = c("primary", "workflow", "all", "none"),
+  colData = NULL,
+  clusterFeatures = TRUE,
+  nBlankLines = 2,
+  colorScale,
+  whichAssay = 1,
+  ...
+)
 
 \S4method{plotHeatmap}{data.frame}(data, ...)
 
 \S4method{plotHeatmap}{ExpressionSet}(data, ...)
 
-\S4method{plotHeatmap}{matrixOrHDF5}(data, colData = NULL,
-  clusterSamplesData = NULL, clusterFeaturesData = NULL,
-  whColDataCont = NULL, clusterSamples = TRUE,
-  showSampleNames = FALSE, clusterFeatures = TRUE,
-  showFeatureNames = FALSE, colorScale = seqPal5,
-  clusterLegend = NULL, alignColData = FALSE,
-  unassignedColor = "white", missingColor = "grey", breaks = NA,
-  symmetricBreaks = FALSE, capBreaksLegend = FALSE,
-  isSymmetric = FALSE, overRideClusterLimit = FALSE, plot = TRUE,
-  labelTracks = TRUE, ...)
+\S4method{plotHeatmap}{matrixOrHDF5}(
+  data,
+  colData = NULL,
+  clusterSamplesData = NULL,
+  clusterFeaturesData = NULL,
+  whColDataCont = NULL,
+  clusterSamples = TRUE,
+  showSampleNames = FALSE,
+  clusterFeatures = TRUE,
+  showFeatureNames = FALSE,
+  colorScale = seqPal5,
+  clusterLegend = NULL,
+  alignColData = FALSE,
+  unassignedColor = "white",
+  missingColor = "grey",
+  breaks = NA,
+  symmetricBreaks = FALSE,
+  capBreaksLegend = FALSE,
+  isSymmetric = FALSE,
+  overRideClusterLimit = FALSE,
+  plot = TRUE,
+  labelTracks = TRUE,
+  ...
+)
 
-\S4method{plotCoClustering}{ClusterExperiment}(data, invert,
-  saveDistance = FALSE, ...)
+\S4method{plotCoClustering}{ClusterExperiment}(data, invert, saveDistance = FALSE, ...)
 }
 \arguments{
 \item{data}{data to use to determine the heatmap. Can be a matrix,

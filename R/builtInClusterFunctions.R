@@ -529,7 +529,6 @@ NULL
 #' @param object name of built in function.
 #' @description Documents the built-in clustering options that are available in
 #'   the clusterExperiment package.
-#' @rdname builtInClusteringFunctions
 #' @details \code{listBuiltInFunctions} will return the character names of the
 #'   built-in clustering functions available.
 #' @details \code{listBuiltInTypeK} returns the names of the built-in functions

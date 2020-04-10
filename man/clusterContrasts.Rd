@@ -9,9 +9,14 @@
 \usage{
 \S4method{clusterContrasts}{ClusterExperiment}(cluster, contrastType, ...)
 
-\S4method{clusterContrasts}{vector}(cluster, contrastType = c("Dendro",
-  "Pairs", "OneAgainstAll"), dendro = NULL, pairMat = NULL,
-  outputType = c("limma", "MAST"), removeUnassigned = TRUE)
+\S4method{clusterContrasts}{vector}(
+  cluster,
+  contrastType = c("Dendro", "Pairs", "OneAgainstAll"),
+  dendro = NULL,
+  pairMat = NULL,
+  outputType = c("limma", "MAST"),
+  removeUnassigned = TRUE
+)
 }
 \arguments{
 \item{cluster}{Either a vector giving contrasts assignments or a 

@@ -8,15 +8,22 @@
 \alias{plotBarplot,matrix-method}
 \title{Barplot of 1 or 2 clusterings}
 \usage{
-\S4method{plotBarplot}{ClusterExperiment}(object,
-  whichClusters = "primary", labels = c("names", "ids"), ...)
+\S4method{plotBarplot}{ClusterExperiment}(object, whichClusters = "primary", labels = c("names", "ids"), ...)
 
 \S4method{plotBarplot}{vector}(object, ...)
 
-\S4method{plotBarplot}{matrix}(object, xNames = NULL, legNames = NULL,
-  legend = ifelse(ncol(object) == 2, TRUE, FALSE), xlab = NULL,
-  legend.title = NULL, unassignedColor = "white",
-  missingColor = "grey", colPalette = NULL, ...)
+\S4method{plotBarplot}{matrix}(
+  object,
+  xNames = NULL,
+  legNames = NULL,
+  legend = ifelse(ncol(object) == 2, TRUE, FALSE),
+  xlab = NULL,
+  legend.title = NULL,
+  unassignedColor = "white",
+  missingColor = "grey",
+  colPalette = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{A matrix of with each column corresponding to a clustering and

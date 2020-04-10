@@ -4,10 +4,21 @@
 \alias{seqCluster}
 \title{Program for sequentially clustering, removing cluster, and starting again.}
 \usage{
-seqCluster(inputMatrix, inputType, k0, subsample = TRUE, beta,
-  top.can = 0.01, remain.n = 30, k.min = 3, k.max = k0 + 10,
-  verbose = TRUE, subsampleArgs = NULL, mainClusterArgs = NULL,
-  warnings = FALSE)
+seqCluster(
+  inputMatrix,
+  inputType,
+  k0,
+  subsample = TRUE,
+  beta,
+  top.can = 0.01,
+  remain.n = 30,
+  k.min = 3,
+  k.max = k0 + 10,
+  verbose = TRUE,
+  subsampleArgs = NULL,
+  mainClusterArgs = NULL,
+  warnings = FALSE
+)
 }
 \arguments{
 \item{inputMatrix}{numerical matrix on which to run the clustering or a

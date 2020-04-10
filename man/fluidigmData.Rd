@@ -5,8 +5,10 @@
 \alias{fluidigmData}
 \alias{fluidigmColData}
 \title{Subset of fluidigm data}
-\format{subset of fluidigm data used in vignette
-package.}
+\format{
+subset of fluidigm data used in vignette
+package.
+}
 \description{
 Subset of fluidigm data
 }

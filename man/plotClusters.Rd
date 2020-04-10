@@ -7,19 +7,42 @@
 \alias{plotClusters,matrix-method}
 \title{Visualize cluster assignments across multiple clusterings}
 \usage{
-\S4method{plotClusters}{ClusterExperiment}(object, whichClusters,
-  existingColors = c("ignore", "all", "firstOnly"), resetNames = FALSE,
-  resetColors = FALSE, resetOrderSamples = FALSE, colData = NULL,
-  clusterLabels = NULL, ...)
+\S4method{plotClusters}{ClusterExperiment}(
+  object,
+  whichClusters,
+  existingColors = c("ignore", "all", "firstOnly"),
+  resetNames = FALSE,
+  resetColors = FALSE,
+  resetOrderSamples = FALSE,
+  colData = NULL,
+  clusterLabels = NULL,
+  ...
+)
 
-\S4method{plotClusters}{matrix}(object, orderSamples = NULL,
-  colData = NULL, reuseColors = FALSE, matchToTop = FALSE,
-  plot = TRUE, unassignedColor = "white", missingColor = "grey",
-  minRequireColor = 0.3, startNewColors = FALSE,
-  colPalette = massivePalette, input = c("clusters", "colors"),
-  clusterLabels = colnames(object), add = FALSE, xCoord = NULL,
-  ylim = NULL, tick = FALSE, ylab = "", xlab = "", axisLine = 0,
-  box = FALSE, ...)
+\S4method{plotClusters}{matrix}(
+  object,
+  orderSamples = NULL,
+  colData = NULL,
+  reuseColors = FALSE,
+  matchToTop = FALSE,
+  plot = TRUE,
+  unassignedColor = "white",
+  missingColor = "grey",
+  minRequireColor = 0.3,
+  startNewColors = FALSE,
+  colPalette = massivePalette,
+  input = c("clusters", "colors"),
+  clusterLabels = colnames(object),
+  add = FALSE,
+  xCoord = NULL,
+  ylim = NULL,
+  tick = FALSE,
+  ylab = "",
+  xlab = "",
+  axisLine = 0,
+  box = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{A matrix of with each column corresponding to a clustering

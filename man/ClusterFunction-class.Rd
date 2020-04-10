@@ -12,10 +12,16 @@ internalFunctionCheck(clusterFUN, inputType, algorithmType, outputType)
 
 ClusterFunction(clusterFUN, ...)
 
-\S4method{ClusterFunction}{`function`}(clusterFUN, inputType, outputType,
-  algorithmType, inputClassifyType = NA_character_,
-  requiredArgs = NA_character_, classifyFUN = NULL,
-  checkFunctions = TRUE)
+\S4method{ClusterFunction}{`function`}(
+  clusterFUN,
+  inputType,
+  outputType,
+  algorithmType,
+  inputClassifyType = NA_character_,
+  requiredArgs = NA_character_,
+  classifyFUN = NULL,
+  checkFunctions = TRUE
+)
 }
 \arguments{
 \item{clusterFUN}{function passed to slot \code{clusterFUN}.}

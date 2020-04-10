@@ -5,9 +5,11 @@
 \alias{rsecFluidigm}
 \alias{makeRsecFluidigmObject}
 \title{Documentation of rsecFluidigm object}
-\format{\code{rsecFluidigm} is a \code{ClusterExperiment} object, the result
+\format{
+\code{rsecFluidigm} is a \code{ClusterExperiment} object, the result
   of running \code{\link{RSEC}} on fluidigm data described in vignette and
-  available in the \code{scRNAseq} package.}
+  available in the \code{scRNAseq} package.
+}
 \usage{
 makeRsecFluidigmObject(object)
 }
