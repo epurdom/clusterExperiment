@@ -122,8 +122,10 @@ test_that("'Dendro' contrasts works for ClusterExperiment object in `getBestFeat
     ceTemp<-ceSimData
     expect_silent(ceTemp <- makeDendrogram(ceTemp))
     expect_silent(dendC1 <- getBestFeatures(ceTemp, contrastType="Dendro",DEMethod="limma"))
-	#Need to fix here, because one returns character, the other factor...
-    neqcolsCE<-sapply(c("InternalName"),grep,colnames(dendC1))
+	# dend1 doesn't have 'InternalName' as column.
+    neqcolsCE<-sapply(c("InternalName"), grep,colnames(dendC1))
+    	#Need to fix here, because one returns character, the other factor...
+    # dend1 is from applying to data and giving dendro; dendC1 is updating clusterExperiment object
     expect_equal(dend1, dendC1[,-neqcolsCE])
 
   #check whole mergeDendrogram thing at least runs!
