@@ -351,7 +351,6 @@ setMethod(
     passedArgs<-list(...)
     if(DEMethod=="limma") dat<-transformData(x,whichAssay=whichAssay)
     else dat<-assay(x,whichAssay)
-    
     if(!is.null(weights) && (is.character(weights) || (is.vector(weights) && is.numeric(weights)))  && length(weights)==1){
     		tops<-getBestFeatures(dat, cl, contrastType=contrastType, dendro=dendro, weights=assay(x, weights),DEMethod=DEMethod,...) 
     }
@@ -388,7 +387,8 @@ setMethod(
 	    m <- .matchToDendroData(inputValue=tops$InternalName, dendro, matchColumn="NodeId", returnColumn="NodeIndex")
 	    tops$ContrastName<-phylobase::labels(dendro)[m]
     }
-		tops$ContrastName<-factor(tops$ContrastName) #make it consistent with the others and the results of matrix version
+    #Removed this, because R 4.0.0 now does stringsAsFactor=FALSE by default. 
+	#tops$ContrastName<-factor(tops$ContrastName) #make it consistent with the others and the results of matrix version
 	}
 	return(tops)
   }

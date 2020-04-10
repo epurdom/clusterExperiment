@@ -157,6 +157,7 @@ seqCluster<-function(inputMatrix, inputType, k0,
     if(is.character(checkOut)) stop(checkOut)
     mainClusterArgs<-checkOut$mainClusterArgs
     subsampleArgs<-checkOut$subsampleArgs
+<<<<<<< HEAD
     seqArgs<-checkOut$seqArgs
     k0=seqArgs[["k0"]]
     beta=seqArgs[["beta"]]
@@ -198,6 +199,57 @@ seqCluster<-function(inputMatrix, inputType, k0,
                 subsample=subsample,  subsampleArgs=tempSubArgs,
                 mainClusterArgs=tempMainArgs)$results
         return(res)
+=======
+    input<-checkOut$inputClusterD
+  }		
+  
+  ################
+  ################
+  ###The following is legacy of tight.clust. They originally had programmed ability to look across more than 2 at each step to determing the stability of a cluster. This was not what they described in paper, and function is hard-coded at 2, but I have left code here in case we ever wanted to reconsider this issue.
+  seq.num<-2
+  kReturn<-"last" # when look at stability, return stable as first or last? For seq.num=2, not really matter, take last like paper
+  kReturn<-match.arg(kReturn,c("last","first"))
+  betaNum<-"all"
+  betaNum<-match.arg(betaNum,c("all","last","first"))
+  #This makes all combinations of 1:top.can, seq.num times (could be simplified if seq.num=2):
+  #a ncombinations x seq.num matrix -- each row gives a combination of clusters to compare stability
+  index.m <- as.matrix(expand.grid(lapply(seq_len(seq.num), function(x) seq_len(top.can))))
+  whReturn<-switch(kReturn,"last"=seq.num,"first"=1) #way to index which one gets returned.
+  ################
+  ################
+  if(input %in% c("X")) N <- dim(x)[2]
+  if(input=="diss") N<-dim(diss)[2]
+  if(verbose){
+    if(input %in% c("X")) cat(paste("Number of points:", N, "\tDimension:", dim(x)[1], "\n"))
+    else cat(paste("Number of points:", N,"\n"))
+  }
+  if(input %in% c("X"))  colnames(x) <- as.character(seq_len(N))
+  if(input %in% c("diss")) colnames(diss)<-rownames(diss)<-as.character(seq_len(N))
+  
+  #iterative setup
+  remain <- N #keep track of how many samples not yet clustered (stop when less than remain.n)
+  nfound <- 0 #keep track of how many clusters found/removed so far
+  found <- TRUE #has a cluster been found/removed in last iteration
+  k.start <- k0 #the starting k for the next cluster
+  k <- k0
+  
+  candidates <- list() #list of length seq.num of possible clusters found for each k to be compared
+  tclust <- list() #list of final cluster identifications (indices of rows of x)
+  kstart<-vector("numeric") #the starting k for the cluster
+  kend<-vector("numeric") #the ending k for the cluster
+  whyStop<-NULL
+  
+  updateClustering<-function(newk){
+    if(verbose) cat(paste("k =", newk,"\n"))
+    if(subsample){
+      tempArgs<-subsampleArgs
+      tempArgs[["clusterArgs"]]<-c(list(k=newk), subsampleArgs[["clusterArgs"]]) #set k  
+      #also set the k for the mainClustering to be the same as in subsampling.
+      tempClusterDArgs<-mainClusterArgs
+      tempClusterDArgs[["clusterArgs"]] <- c(list(k=newk), mainClusterArgs[["clusterArgs"]])
+      
+      res <- .clusterWrapper(x=x, diss=diss,subsample=subsample,  subsampleArgs=tempArgs, mainClusterArgs=tempClusterDArgs)$results
+>>>>>>> master
     }
     trimResults<-function(res){
         if(length(res)>0){
@@ -259,8 +311,8 @@ seqCluster<-function(inputMatrix, inputType, k0,
     ### Blank values that will be filled in.
     candidates <- list() #list of length seq.num of possible clusters found for each k to be compared
     tclust <- list() #list of final cluster identifications (indices of rows of x)
-    kstart<-c() #the starting k for the cluster
-    kend<-c() #the ending k for the cluster
+    kstart<-vector("numeric") #the starting k for the cluster
+    kend<-vector("numeric") #the ending k for the cluster
     whyStop<-NULL
     #---------
     #iterative loop
@@ -383,5 +435,5 @@ seqCluster<-function(inputMatrix, inputType, k0,
         if(verbose) cat("No tight clusters could be found with given parameters")
         return(list(clustering = clusterVector, whyStop=whyStop))
     }
-    
+
 }

@@ -1,4 +1,4 @@
-Changes in version 2.7.1-9001 (Release date: )
+Changes in version 2.7.2-9001 (Release date: )
 ==============
 * Changes to clustering internals (`mainClustering`, `seqCluster`, `subsampleClustering`) and `clusterSingle`. 
 	- they no longer take diss/x, but just 'inputMatrix' and 'inputType', so allow additional input types to more easily be added in future. 
@@ -27,6 +27,11 @@ Bugs:
 * Fix error in `makeConsensus`: was calculating the unassigned proportion in the wrong margin and proportion=1 correctly (matrix inversion problem). 
 * Fix bug in `clusterMany` that was not grabbing correct distFunction results. 
 * Set default of `clusterMatrixColors` for argument `whichClusters` to be "all"
+
+Changes in version 2.7.2 (Release date: April 9, 2019)
+==============
+Bugs: 
+* Fix error from R 4.0 changing definition of treatment of NULL ("For consistency, N <- NULL; N[[1]] <- val now turns N into a list also when val) has length one. This enables dimnames(r1)[[1]] <- "R1" for a 1-row matrix r1, fixing PR#17719 reported by Serguei Sokol."). Replaced all `<- c()` with `<- vector(...)` and the appropriate class.
 
 Changes in version 2.7.1 (Release date: Nov 5, 2019)
 ==============

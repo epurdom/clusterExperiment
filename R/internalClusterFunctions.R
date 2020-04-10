@@ -262,7 +262,6 @@
                     }
             }
             
-            
             #--------
             #Check that minSize is valid
             #--------
@@ -387,7 +386,7 @@
                     }     
                 }  
             }
-        
+
         }
         
         
@@ -545,7 +544,7 @@
                                 
                             }
                             else
-                                missingArgs <- c()
+                                missingArgs <- vector("character")
                         }
                         else{
                             missingArgs <- reqSubArgs[reqSubArgs %in% mainReqArgs]
