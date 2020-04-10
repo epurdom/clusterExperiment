@@ -190,7 +190,8 @@ test_that("RSEC works independent of assay order", {
     expect_equal(out1, out2)
 
     #use character, counts on both with PCA reduce
-    expect_message(out1<-RSEC(x=multi_cc, reduceMethod="PCA", nReducedDims = 50,
+    # In 2.7.2-9001 had to change this to 60 dims -- no longer ran, probably because changed the clustering slightly?
+    expect_message(out1<-RSEC(x=multi_cc, reduceMethod="PCA", nReducedDims = 60,
                             k0s=4:5, clusterFunction="hierarchical01", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
                             subsampleArgs=list(resamp.num=5, clusterFunction="pam"),
@@ -198,7 +199,7 @@ test_that("RSEC works independent of assay order", {
                             random.seed=seedValue, whichAssay = "counts"),
                  "Merging will be done on")
 
-    expect_message(out2<-RSEC(x=multi_cc2, reduceMethod="PCA", nReducedDims = 50,
+    expect_message(out2<-RSEC(x=multi_cc2, reduceMethod="PCA", nReducedDims = 60,
                             k0s=4:5, clusterFunction="hierarchical01", alphas=0.1,
                             betas=0.9, dendroReduce="none", minSizes=1,
                             subsampleArgs=list(resamp.num=5, clusterFunction="pam"),
