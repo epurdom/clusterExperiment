@@ -1,4 +1,4 @@
-Changes in version 2.7.2-9001 (Release date: )
+Changes in version 2.7.3 (Release date: April 27, 2020)
 ==============
 * Changes to clustering internals (`mainClustering`, `seqCluster`, `subsampleClustering`) and `clusterSingle`. 
 	- they no longer take diss/x, but just 'inputMatrix' and 'inputType', so allow additional input types to more easily be added in future. 
