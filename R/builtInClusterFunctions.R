@@ -1,5 +1,5 @@
 ##Note to self:
-## 5/9/2019: currently, if classifyMethod=="InSample", cluster.only=TRUE, otherwise FALSE. Our default is "All", so generally doing the cluster.only=FALSE. 
+## 5/9/2019: currently, if classifyMethod=="InSample", cluster.only=TRUE, otherwise FALSE. Our default is "All", so generally doing the cluster.only=FALSE.
 
 
 #' @include internalFunctions.R internalClusterFunctions.R internalDendroFunctions.R RcppExports.R subsampleClustering.R
@@ -11,7 +11,7 @@ NULL
 .makeNumeric<-function(x){
     if(is.integer(x)){
         if(!is.null(dim(x))){
-            x<-matrix(as.numeric(x),nrow=nrow(x),ncol=ncol(x))	  	
+            x<-matrix(as.numeric(x),nrow=nrow(x),ncol=ncol(x))
         }
         else x<-as.numeric(x)
     }
@@ -26,10 +26,10 @@ NULL
     inputMatrix<-.makeNumeric(inputMatrix)
     centers<-.makeNumeric(centers)
     distMat<-pracma::distmat(t(inputMatrix),centers)
-    apply(distMat,1,which.min)	
+    apply(distMat,1,which.min)
 }
-## Function to get the passed args (i.e. from a list(...)) and keep only those that are needed by FUN. If checkArgs=TRUE, then will give a warning that not all of the arguments passed are used by FUN. 
-## This is mainly used as a way for all the ClusterFunctions to have a certain required arguments and the others get passed by ... mechanism, and how to keep them apart. 
+## Function to get the passed args (i.e. from a list(...)) and keep only those that are needed by FUN. If checkArgs=TRUE, then will give a warning that not all of the arguments passed are used by FUN.
+## This is mainly used as a way for all the ClusterFunctions to have a certain required arguments and the others get passed by ... mechanism, and how to keep them apart.
 .myArgNames<-c("removeDup")
 .getPassedArgs<-function(FUN,passedArgs,checkArgs){
     funArgs<-names(as.list(args(FUN)))
@@ -68,7 +68,7 @@ NULL
 .clustersHammingDistance<-function(clusterMat){
     #clusterMat is BxN (samples in columns)
     idnames<-colnames(clusterMat)
-    
+
     ## FIXME: This conversion of integers could be very slow in large datasets.
     ##Make clusterMat integer, just in case
     ###Make distance matrix
@@ -76,7 +76,7 @@ NULL
         clusterMat <- apply(clusterMat, 2, as.integer)
     }
     clusterMat[clusterMat %in%  c(-1,-2)] <- NA
-    ## Since x input is nfeatures x nsamples, 
+    ## Since x input is nfeatures x nsamples,
     ## Takes a BxN matrix, even though NxB is natural way to store (because same format as our clustermatrix)
     sharedPerct <- search_pairs(clusterMat) #works on columns. gives a nsample x nsample matrix back. only lower tri populated
     #make symmetric matrix of % with NAs when all missing
@@ -142,7 +142,7 @@ NULL
     out<-try(do.call(kernlab::specc,c(list(x=data.matrix(t(inputMatrix)), centers=k),passedArgs)))
     if(inherits(out,"try-error"))stop("Spectral clustering failed, probably because k (",k,") was too large relative to the number of samples (",ncol(inputMatrix),"). k must be less than the number of samples, but how much less is not straightforward.")
     if(cluster.only) return(out@.Data)
-    else return(out) 
+    else return(out)
 }
 .speccCF<-ClusterFunction(clusterFUN=.speccCluster, classifyFUN=NULL, inputType="X", algorithmType="K",outputType="vector",checkFunctions=FALSE)
 
@@ -151,7 +151,7 @@ NULL
 ##Kmeans
 ##---------
 #' @importFrom stats kmeans
-.kmeansCluster <- function(inputMatrix,k, checkArgs,inputType,cluster.only,...) { 
+.kmeansCluster <- function(inputMatrix,k, checkArgs,inputType,cluster.only,...) {
     passedArgs<-.getPassedArgs(FUN=stats::kmeans,passedArgs=list(...) ,checkArgs=checkArgs)
     #Checks for enough observations
     check<-.checkInput(inputMatrix,cluster.only)
@@ -159,15 +159,15 @@ NULL
     out<-do.call(stats::kmeans,
         c(list(x=t(inputMatrix),centers=k),passedArgs))
     if(cluster.only) return(out$cluster)
-    else return(.kmeansPartitionObject(inputMatrix,out)) 
-} 
-.kmeansClassify <- function(inputMatrix, inputType, clusterResult) { 
+    else return(.kmeansPartitionObject(inputMatrix,out))
+}
+.kmeansClassify <- function(inputMatrix, inputType, clusterResult) {
     suppressWarnings(stats::kmeans(t(inputMatrix), clusterResult$medoids, iter.max = 1, algorithm = "Lloyd")$cluster) #probably uses this so always classifies points to centers
-} 
+}
 #make partition object same form as pam output
 #' @importFrom cluster daisy silhouette
-.kmeansPartitionObject<-function(x,kmeansObj){ 
-    #This is hugely computationally expensive and don't need it! 
+.kmeansPartitionObject<-function(x,kmeansObj){
+    #This is hugely computationally expensive and don't need it!
     # dissE<-(cluster::daisy(t(x)))^2
     # silObj<-try(cluster::silhouette(x=kmeansObj$cluster,dist=dissE),silent=TRUE)
     # if(!inherits(silObj,"try-error"))
@@ -187,7 +187,7 @@ NULL
 #   init_fraction = ifelse(ncol(x) > 100, 0.25, 1),
 #   initializer = "kmeans++", calc_wcss = FALSE, early_stop_iter = 10,
 #   verbose = FALSE, CENTROIDS = NULL, tol = 1e-04)
-.mbkmeansCluster <- function(inputMatrix,k, checkArgs,inputType,cluster.only,...) { 
+.mbkmeansCluster <- function(inputMatrix,k, checkArgs,inputType,cluster.only,...) {
     passedArgs<-.getPassedArgs(FUN=mbkmeans::mbkmeans,
         passedArgs=list(...) ,checkArgs=checkArgs)
     #Checks for enough observations
@@ -196,15 +196,44 @@ NULL
     out<-do.call(mbkmeans::mbkmeans,
         c(list(x=inputMatrix,clusters=k),passedArgs))
     if(cluster.only) return(out$Clusters)
-    else return(out) 
-} 
+    else return(out)
+}
 .mbkmeansClassify <- function(inputMatrix, inputType, clusterResult) {
     #it looks like predict_mini_batch is what we need
     mbkmeans::predict_mini_batch_r(inputMatrix, clusterResult$centroids)
-} 
+}
 .mbkmeansCF<-ClusterFunction(clusterFUN=.mbkmeansCluster, classifyFUN=.mbkmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector",checkFunctions=FALSE)
 
 #internalFunctionCheck(.mbkmeansCluster,inputType="X",algorithmType="K",outputType="vector")
+
+## SNN clustering
+#' @importFrom scran buildSNNGraph
+#' @importFrom igraph cluster_walktrap cluster_louvain
+#' @importFrom BiocNeighbors VptreeParam
+.snnCluster <- function(inputMatrix, k, checkArgs, inputType, cluster.only, ...) {
+    passedArgs <- list(...)
+
+    #Checks for enough observations
+    check<-.checkInput(inputMatrix,cluster.only)
+    if(!check) return(.uniqueCluster(inputMatrix))
+
+    out <- do.call(.snn_clustering,
+                   c(list(x=inputMatrix,k=k),passedArgs))
+    if(cluster.only) return(out$membership)
+    else return(out)
+}
+
+.snn_clustering <- function(x, k, algorithm = c("walktrap", "louvain"), steps = 4) {
+    g <- scran::buildSNNGraph(x, k, BNPARAM = BiocNeighbors::VptreeParam(distance="Hamming"))
+    if(algorithm == "walktrap") {
+        out <- igraph::cluster_walktrap(g, steps = steps)
+    } else if(algorithm == "louvain") {
+        out <- igraph::cluster_louvain(g)
+    }
+    return(out)
+}
+
+.snnCF<-ClusterFunction(clusterFUN=.snnCluster, inputType="cat", algorithmType="K",outputType="vector",checkFunctions=FALSE)
 
 
 ##---------
@@ -222,15 +251,15 @@ NULL
     if(inputType=="cat"){
         if(is.null(passedArgs[["removeDup"]]) || passedArgs[["removeDup"]]){
             inputMatrix<-.dupRemove(inputMatrix)
-            mapping<-inputMatrix$mapping            
+            mapping<-inputMatrix$mapping
             convertCat<-TRUE
             inputMatrix<-.clustersHammingDistance(inputMatrix$smallMat)
-            
+
         }
         else inputMatrix<-.clustersHammingDistance(inputMatrix)
         inputType<-"diss"
     }
-    passedArgs<-.getPassedArgs(FUN=cluster::pam, passedArgs=passedArgs, 
+    passedArgs<-.getPassedArgs(FUN=cluster::pam, passedArgs=passedArgs,
         checkArgs=checkArgs)
     ## prioritize "diss", because otherwise pam just creates the diss matrix.
     if(inputType=="diss"){
@@ -251,12 +280,12 @@ NULL
         return(out)
     }
     if(inputType=="X"){
-        return(do.call(cluster::pam, c(list(x=t(inputMatrix),k=k, cluster.only=cluster.only), passedArgs)))  
-    } 
+        return(do.call(cluster::pam, c(list(x=t(inputMatrix),k=k, cluster.only=cluster.only), passedArgs)))
+    }
 }
 .pamClassify <- function(inputMatrix, inputType,clusterResult) { #x p x n matrix
     .genericClassify(inputMatrix,centers=clusterResult$medoids)
-} 
+}
 .pamCF<-ClusterFunction(clusterFUN=.pamCluster, classifyFUN=.pamClassify, inputType=c("X","diss","cat"), inputClassifyType="X", algorithmType="K",outputType="vector",checkFunctions=FALSE)
 
 #internalFunctionCheck(.pamCluster,inputType=c("x","diss"),algType="K",outputType="vector")
@@ -274,7 +303,7 @@ NULL
     passedArgs<-c(passedArgs, list(samples=samples, keep.data=keep.data, rngR=rngR, pamLike=pamLike, correct.d=correct.d))
     out<-(do.call(cluster::clara, c(list(x=t(inputMatrix),k=k), passedArgs)))
     if(cluster.only) return(out$clustering) else return(out)
-    
+
 }
 
 .claraCF<-ClusterFunction(clusterFUN=.claraCluster, classifyFUN=.pamClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector",checkFunctions=FALSE)
@@ -301,9 +330,9 @@ NULL
             inputMatrix<-.clustersHammingDistance(inputMatrix$smallMat)
         }
         else inputMatrix<-.clustersHammingDistance(inputMatrix)
-        
+
     }
-    
+
     check<-.checkInput(inputMatrix,requiredN=k+1,cluster.only=cluster.only)
     if(!check) out<-1:nrow(inputMatrix)
     else{
@@ -324,7 +353,7 @@ NULL
 ##---------
 ##Hiearchical01
 ##---------
-#' @importFrom stats hclust 
+#' @importFrom stats hclust
 .hier01Cluster<-function(inputMatrix,alpha,evalClusterMethod=c("maximum","average"),whichHierDist=c("as.dist","dist"),checkArgs,inputType,cluster.only,...)
 {
     #Checks for enough observations
@@ -337,18 +366,18 @@ NULL
     if(inputType=="cat"){
         if(is.null(passedArgs[["removeDup"]]) || passedArgs[["removeDup"]]){
             inputMatrix<-.dupRemove(inputMatrix)
-            mapping<-inputMatrix$mapping            
+            mapping<-inputMatrix$mapping
             dupTab<-inputMatrix$replicates
             convertCat<-TRUE
             inputMatrix<-.clustersHammingDistance(inputMatrix$smallMat)
         }
         else inputMatrix<-.clustersHammingDistance(inputMatrix)
-        
+
     }
     # CHECKME: I changed this to make this for all, not just if missing, so as to guarantee that they are unique, but I don't know if it will break something downstream
     check<-.checkInput(inputMatrix,cluster.only=cluster.only)
     if(!check) return(lapply(1:nrow(inputMatrix),function(x){x}))
-    rownames(inputMatrix)<- colnames(inputMatrix)<- 
+    rownames(inputMatrix)<- colnames(inputMatrix)<-
         as.character(seq_len(nrow(inputMatrix)))
     passedArgs<-.getPassedArgs(FUN=stats::hclust,passedArgs=passedArgs,
         checkArgs=checkArgs)
@@ -359,16 +388,16 @@ NULL
     method<-evalClusterMethod
     phylo4Obj<-.convertToPhyClasses(hDmat,returnClass=c("phylo4"))
     allTips<-phylobase::getNode(phylo4Obj,  type=c("tip"))
-    
+
     ###
-    #the following code 
+    #the following code
     #each internal node (starting at root) calculate whether passes value of alpha or not
     ##
-    
+
     ##Initialize:
     nodesToCheck<-phylobase::rootNode(phylo4Obj)
     clusterList<-list()
-    
+
     while(length(nodesToCheck)>0){
         currNode<-nodesToCheck[1]
         nodesToCheck<-nodesToCheck[-1]
@@ -378,10 +407,10 @@ NULL
         }
         else{
             currTips<-names(phylobase::descendants(phylo4Obj,currNode,"tip"))
-            
+
             if(method=="maximum"){
                 check<-all(S[currTips,currTips,drop=FALSE]>=(1-alpha))
-                
+
             }
             if(method=="average"){
                 if(convertCat){
@@ -400,8 +429,8 @@ NULL
                     rm<-rowMeans(S[currTips,currTips,drop=FALSE])
                 }
                 check<-all(rm>=(1-alpha))
-            } 
-            
+            }
+
         }
         if(check){ #found a block that satisfies
             clusterList<-c(clusterList,list(currTips))
@@ -415,7 +444,7 @@ NULL
         match(tipNames,rownames(inputMatrix))
     })
     clusterListIndices<-.orderByAlpha(clusterListIndices,S)
-    
+
     if(convertCat){
         ## FIXME: this seems very akward. Should be able to do better!
         clusterListIndices<-lapply(clusterListIndices,function(x){
@@ -441,7 +470,7 @@ NULL
     if(inputType=="cat"){
         if(is.null(passedArgs[["removeDup"]]) || passedArgs[["removeDup"]]){
             inputMatrix<-.dupRemove(inputMatrix)
-            mapping<-inputMatrix$mapping            
+            mapping<-inputMatrix$mapping
             dupTab<-inputMatrix$replicates
             convertCat<-TRUE
             inputMatrix<-.clustersHammingDistance(inputMatrix$smallMat)
@@ -450,7 +479,7 @@ NULL
     }
     check<-.checkInput(inputMatrix,cluster.only=cluster.only)
     if(!check) return(lapply(1:nrow(inputMatrix),function(x){x}))
-   
+
     #previously, diss was similarity matrix. To make it match all of the code, I need it to be diss=1-similarity so now convert it back
     inputMatrix<-1-inputMatrix #now is similarity matrix...
     if(!is.null(passedArgs[["removeDup"]])){
@@ -458,7 +487,7 @@ NULL
     }
     if(length(passedArgs)>0 & checkArgs){
         warning(.wrongArgsWarning("tight"))
-    } 	
+    }
     find.candidates.one <- function(x) {
         tmp <- apply(x >= 1, 1, sum) #how many in each row ==1
         #what if none of them are ==1? will this never happen because have sample of size 1? Depends what diagonal is.
@@ -513,7 +542,7 @@ NULL
         })
     }
     return(res)
-    
+
 }
 .tightCF<-ClusterFunction(clusterFUN=.tightCluster, inputType=c("diss","cat"), algorithmType="01",outputType="list",checkFunctions=FALSE)
 
@@ -542,21 +571,21 @@ NULL
 #' @details \strong{Built-in clustering methods:} The built-in clustering
 #'   methods, the names of which can be accessed by
 #'   \code{listBuiltInFunctions()} are the following:
-#' \itemize{ 
+#' \itemize{
 #' \item{"pam"}{Based on \code{\link[cluster]{pam}} in
 #'   \code{cluster} package. Arguments to that function can be passed via
-#'   \code{clusterArgs}. 
-#' Input can be either \code{"x"} or \code{"diss"}; algorithm type is "K"} 
+#'   \code{clusterArgs}.
+#' Input can be either \code{"x"} or \code{"diss"}; algorithm type is "K"}
 #' \item{"clara"}{Based on \code{\link[cluster]{clara}} in
 #'   \code{cluster} package. Arguments to that function can be passed via
-#'   \code{clusterArgs}. Note that we have changed the default arguments of 
+#'   \code{clusterArgs}. Note that we have changed the default arguments of
 #'   that function to match the recommendations in the documentation of
-#'  \code{\link[cluster]{clara}} (numerous functions are set to less than optimal 
-#'  settings for back-compatiability). Specifically, the following defaults 
-#'  are implemented \code{samples=50}, \code{keep.data=FALSE}, 
+#'  \code{\link[cluster]{clara}} (numerous functions are set to less than optimal
+#'  settings for back-compatiability). Specifically, the following defaults
+#'  are implemented \code{samples=50}, \code{keep.data=FALSE},
 #' \code{mediods.x=FALSE},\code{rngR=TRUE},
-#'  \code{pamLike=TRUE}, \code{correct.d=TRUE}. 
-#' Input is \code{"X"}; algorithm type is "K".} 
+#'  \code{pamLike=TRUE}, \code{correct.d=TRUE}.
+#' Input is \code{"X"}; algorithm type is "K".}
 #' \item{"kmeans"}{Based on \code{\link[stats]{kmeans}} in \code{stats} package.
 #' Arguments to that function can be passed via \code{clusterArgs} except for
 #' \code{centers} which is reencoded here to be the argument 'k' Input is
@@ -579,20 +608,20 @@ NULL
 #' \item{"hierarchicalK"}{\code{\link[stats]{hclust}} in \code{stats} package is used
 #'   to build hiearchical clustering and \code{\link{cutree}} is used to cut the
 #'   tree into \code{k} clusters.
-#' Input is \code{"diss"}; algorithm type is "K"}   
+#' Input is \code{"diss"}; algorithm type is "K"}
 #' \item{"tight"}{Based on the algorithm in
 #'   Tsang and Wong, specifically their method of picking clusters from a
 #'   co-occurance matrix after subsampling. The clustering encoded here is not
 #'   the entire tight clustering algorithm, only that single piece that
-#'   identifies clusters from the co-occurance matrix.  
-#' Arguments for the tight method are 
+#'   identifies clusters from the co-occurance matrix.
+#' Arguments for the tight method are
 #'   'minSize.core' (default=2), which sets the minimimum number of samples that
 #'   form a core cluster.
-#' Input is \code{"diss"}; algorithm type is "01"} 
-#' \item{"spectral"}{\code{\link[kernlab]{specc}} in \code{kernlab} package 
-#' is used to perform spectral clustering. Note that spectral clustering can 
-#' produce errors if the number of clusters (K) is not sufficiently smaller than 
-#' the number of samples (N). K < N is not always sufficient. 
+#' Input is \code{"diss"}; algorithm type is "01"}
+#' \item{"spectral"}{\code{\link[kernlab]{specc}} in \code{kernlab} package
+#' is used to perform spectral clustering. Note that spectral clustering can
+#' produce errors if the number of clusters (K) is not sufficiently smaller than
+#' the number of samples (N). K < N is not always sufficient.
 #' Input is \code{"X"}; algorithm type is "K".}
 #' }
 #' @seealso \code{\link{ClusterFunction}}, \code{\link{algorithmType}},
@@ -605,16 +634,16 @@ NULL
 #' listBuiltInType01()
 #' @rdname builtInClusteringFunctions
 #' @aliases listBuiltInFunctions
-#' @return \code{listBuiltInFunctions} returns a character vector of all 
+#' @return \code{listBuiltInFunctions} returns a character vector of all
 #' the built-in cluster functions' names.
 #' @export
 listBuiltInFunctions<-function() {
     .builtInClusterNames
-    
+
 }
 #' @rdname builtInClusteringFunctions
 #' @aliases getBuiltInFunction
-#' @return \code{getBuiltInFunction} returns the \code{ClusterFunction} 
+#' @return \code{getBuiltInFunction} returns the \code{ClusterFunction}
 #' object that corresponds to the character name of a function
 #' @export
 setMethod(
@@ -625,14 +654,14 @@ setMethod(
         m<-match(object,names(.builtInClusterObjects))
         if(length(m)>1) .builtInClusterObjects[m]
         else .builtInClusterObjects[[m]]
-        
-        
+
+
     }
 )
 
 #' @rdname builtInClusteringFunctions
 #' @aliases listBuiltInTypeK
-#' @return \code{listBuiltInTypeK} returns a character vector of the 
+#' @return \code{listBuiltInTypeK} returns a character vector of the
 #' names of built-in cluster functions that are of type "K"
 #' @export
 listBuiltInTypeK<-function() {
@@ -642,7 +671,7 @@ listBuiltInTypeK<-function() {
 
 #' @rdname builtInClusteringFunctions
 #' @aliases listBuiltInType01
-#' @return \code{listBuiltInType01} returns a character vector of the 
+#' @return \code{listBuiltInType01} returns a character vector of the
 #' names of built-in cluster functions that are of type "01"
 #' @export
 listBuiltInType01<-function() {

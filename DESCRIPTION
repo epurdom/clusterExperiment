@@ -41,15 +41,17 @@ Imports:
 	zinbwave,
 	phylobase,
 	pracma,
-	mbkmeans
+	mbkmeans,
+	BiocNeighbors,
+	igraph,
+	scran
 Suggests:
 	BiocStyle,
 	knitr,
 	testthat,
 	MAST,
-	Rtsne,
-	scran,
-	igraph
+	Rtsne
+Remotes: lorenzonegro/BiocNeighbors
 VignetteBuilder: knitr
 LazyData: false
 LazyLoad: false
