@@ -199,9 +199,8 @@ NULL
     else return(out) 
 } 
 .mbkmeansClassify <- function(inputMatrix, inputType, clusterResult) {
-    #This will not be HDF5 friendly...will have to bring it into memory...
-    #Should write a C++ code to do this?? Maybe in mbkmeans? 
-    suppressWarnings(stats::kmeans(t(inputMatrix), clusterResult$centroids, iter.max = 1, algorithm = "Lloyd")$cluster) 
+    #it looks like predict_mini_batch is what we need
+    mbkmeans::predict_mini_batch_r(inputMatrix, clusterResult$centroids)
 } 
 .mbkmeansCF<-ClusterFunction(clusterFUN=.mbkmeansCluster, classifyFUN=.mbkmeansClassify, inputType="X", inputClassifyType="X", algorithmType="K",outputType="vector",checkFunctions=FALSE)
 
