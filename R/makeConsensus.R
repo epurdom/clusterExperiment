@@ -149,9 +149,9 @@ setMethod(
                 else{
                     stop("clusterFunction must be either a builtin clusterFunction name or a ClusterFunction object")
                 }
-                if(typeAlg!="01") {
-                    stop("makeConsensus is only implemented for '01' type clustering functions (see ?ClusterFunction)")
-                }
+                #if(typeAlg!="01") {
+                #    stop("makeConsensus is only implemented for '01' type clustering functions (see ?ClusterFunction)")
+                #}
                 if(!"cat" %in% inputType)
                     stop("makeConsensus is only implemented for clustering functions that permit inputType 'cat'.")
                 #overwrites alpha if given

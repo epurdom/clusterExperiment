@@ -211,7 +211,7 @@ NULL
 #' @importFrom igraph cluster_walktrap cluster_louvain
 #' @importFrom BiocNeighbors VptreeParam
 .snnCluster <- function(inputMatrix, k, checkArgs, inputType, cluster.only, ...) {
-    passedArgs <- list(...)
+    passedArgs <- list(inputType = inputType, ...)
 
     #Checks for enough observations
     check<-.checkInput(inputMatrix,cluster.only)
@@ -223,8 +223,18 @@ NULL
     else return(out)
 }
 
-.snn_clustering <- function(x, k, algorithm = c("walktrap", "louvain"), steps = 4) {
-    g <- scran::buildSNNGraph(x, k, BNPARAM = BiocNeighbors::VptreeParam(distance="Hamming"))
+.snn_clustering <- function(x, k, algorithm = c("walktrap", "louvain"), steps = 4,
+                            inputType = c("cat", "X"), ...) {
+    
+    algorithm <- match.arg(algorithm)
+    inputType <- match.arg(inputType)
+    
+    if(inputType == "cat") {
+        g <- scran::buildSNNGraph(x, k, BNPARAM = BiocNeighbors::VptreeParam(distance="Hamming"))
+    } else if(inputType == "X") {
+        g <- scran::buildSNNGraph(x, k)
+    }
+    
     if(algorithm == "walktrap") {
         out <- igraph::cluster_walktrap(g, steps = steps)
     } else if(algorithm == "louvain") {
@@ -233,7 +243,7 @@ NULL
     return(out)
 }
 
-.snnCF<-ClusterFunction(clusterFUN=.snnCluster, inputType="cat", algorithmType="K",outputType="vector",checkFunctions=FALSE)
+.snnCF<-ClusterFunction(clusterFUN=.snnCluster, inputType=c("cat", "X"), algorithmType="K",outputType="vector",checkFunctions=FALSE)
 
 
 ##---------
@@ -550,7 +560,7 @@ NULL
 #########
 ## Put them together so user/code can access easily
 #########
-.builtInClusterObjects<-list("pam"=.pamCF,"clara"=.claraCF,"kmeans"=.kmeansCF,"hierarchical01"=.hier01CF,"hierarchicalK"=.hierKCF,"tight"=.tightCF,"spectral"=.speccCF,"mbkmeans"=.mbkmeansCF)
+.builtInClusterObjects<-list("pam"=.pamCF,"clara"=.claraCF,"kmeans"=.kmeansCF,"hierarchical01"=.hier01CF,"hierarchicalK"=.hierKCF,"tight"=.tightCF,"spectral"=.speccCF,"mbkmeans"=.mbkmeansCF, "snn"=.snnCF)
 .builtInClusterNames<-names(.builtInClusterObjects)
 
 #' @title Built in ClusterFunction options
