@@ -25,9 +25,17 @@ system.time(cons1 <- makeConsensus(ce, proportion = 0.7))
 system.time(cons2 <- makeConsensus(ce, proportion = 0.7, clusterFunction = "snn",
                                    clusterArgs = list(k=10)))
 
-system.time(rsec1<-RSEC(se, isCount=TRUE, reduceMethod="PCA", nReducedDims=c(50,10), k0s=4:15,
-              alphas=c(0.1,0.2,0.3),betas=c(0.8,0.9), minSizes=c(1,5), clusterFunction="hierarchical01",
+system.time(rsec1<-RSEC(se, isCount=TRUE, reduceMethod="PCA", nReducedDims=c(50), k0s=4:7,
+              alphas=c(0.1),betas=c(0.8), minSizes=c(5), clusterFunction="hierarchical01",
               consensusProportion=0.7, consensusMinSize=5,
               dendroReduce="PCA",dendroNDims=50,
               mergeMethod="adjP",mergeCutoff=0.05,
+))
+
+system.time(rsec2<-RSEC(se, isCount=TRUE, reduceMethod="PCA", nReducedDims=c(50), k0s=4:7,
+                        alphas=c(0.1),betas=c(0.8), minSizes=c(5), clusterFunction="snn",
+                        mainClusterArgs = list(k=10),
+                        consensusProportion=0.7, consensusMinSize=5,
+                        dendroReduce="PCA",dendroNDims=50,
+                        mergeMethod="adjP",mergeCutoff=0.05,
 ))
