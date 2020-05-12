@@ -208,9 +208,9 @@ NULL
 
 ## SNN clustering
 #' @importFrom scran buildSNNGraph
-#' @importFrom igraph cluster_walktrap cluster_louvain
-#' @importFrom BiocNeighbors VptreeParam
-.snnCluster <- function(inputMatrix, k, checkArgs, inputType, cluster.only, ...) {
+#' @importFrom igraph graph.adjlist cluster_walktrap cluster_louvain
+#' @importFrom BiocNeighbors VptreeParam findNeighbors
+.snnCluster <- function(inputMatrix, alpha, checkArgs, inputType, cluster.only, ...) {
     passedArgs <- list(inputType = inputType, ...)
 
     #Checks for enough observations
@@ -218,32 +218,33 @@ NULL
     if(!check) return(.uniqueCluster(inputMatrix))
 
     out <- do.call(.snn_clustering,
-                   c(list(x=inputMatrix,k=k),passedArgs))
+                   c(list(x=inputMatrix,alpha=alpha),passedArgs))
     if(cluster.only) return(out$membership)
     else return(out)
 }
 
-.snn_clustering <- function(x, k, algorithm = c("walktrap", "louvain"), steps = 4,
-                            inputType = c("cat", "X"), ...) {
-    
+.snn_clustering <- function(x, alpha, algorithm = c("walktrap", "louvain", "components_weak", "components_strong"), steps = 4, inputType = "cat", ...) {
+
     algorithm <- match.arg(algorithm)
     inputType <- match.arg(inputType)
-    
-    if(inputType == "cat") {
-        g <- scran::buildSNNGraph(x, k, BNPARAM = BiocNeighbors::VptreeParam(distance="Hamming"))
-    } else if(inputType == "X") {
-        g <- scran::buildSNNGraph(x, k)
-    }
-    
-    if(algorithm == "walktrap") {
-        out <- igraph::cluster_walktrap(g, steps = steps)
-    } else if(algorithm == "louvain") {
-        out <- igraph::cluster_louvain(g)
-    }
+
+    thresh <- ncol(x) * (1 - alpha)
+    neighbors <- BiocNeighbors::findNeighbors(x, threshold = thresh,
+              BNPARAM = BiocNeighbors::VptreeParam(distance="Hamming"))
+    g <- igraph::graph.adjlist(neighbors$index, mode = "all",
+                               duplicate = FALSE)
+
+    out <- switch (algorithm,
+        "walktrap" = igraph::cluster_walktrap(g, steps = steps),
+        "louvain" = igraph::cluster_louvain(g),
+        "components_weak" = igraph::components(g, mode = "weak"),
+        "components_strong" = igraph::components(g, mode = "strong")
+    )
+
     return(out)
 }
 
-.snnCF<-ClusterFunction(clusterFUN=.snnCluster, inputType=c("cat", "X"), algorithmType="K",outputType="vector",checkFunctions=FALSE)
+.snnCF<-ClusterFunction(clusterFUN=.snnCluster, inputType=c("cat"), algorithmType="01",outputType="vector",checkFunctions=FALSE)
 
 
 ##---------
