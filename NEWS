@@ -1,4 +1,12 @@
-Changes in version 2.7.2-9001 (Release date: )
+Changes in version 2.7.3-9002 (Release date: )
+==============
+* `plotHeatmap` now relies on `pheatmap` instead of `aheatmap`. 
+    - if `plot=FALSE`, the calculations will be done for the heatmap, just not drawn (before the entire call to `aheatmap` would be skipped, including calculations of the clustering of rows/columns). Now `!plot` is passed to the argument `silent` in `pheatmap`. 
+
+Bugs:
+* Fixed error in `setBreaks` where if `breaks=1` then hit error. 
+
+Changes in version 2.7.3 (Release date: )
 ==============
 * Changes to clustering internals (`mainClustering`, `seqCluster`, `subsampleClustering`) and `clusterSingle`. 
 	- they no longer take diss/x, but just 'inputMatrix' and 'inputType', so allow additional input types to more easily be added in future. 

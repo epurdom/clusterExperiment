@@ -94,7 +94,7 @@ Not all arguments can be passed to \code{aheatmap} effectively, see
 details.}
 
 \item{clusterSamplesData}{If \code{data} is a matrix,
- \code{clusterSamplesData} is either a matrix that will be used by
+ \code{clusterSamplesData} is either a matrix whose columns will be used by
  \code{hclust} to define the hiearchical clustering of samples (e.g.
  normalized data) or a pre-existing dendrogram (of class
 \code{\link[stats]{dendrogram}}) that clusters the samples. If
@@ -103,7 +103,7 @@ details.}
  whether) the samples should be clustered (or gives indices of the order for
  the samples). See details.}
 
-\item{clusterFeaturesData}{If \code{data} is a matrix, either a matrix that
+\item{clusterFeaturesData}{If \code{data} is a matrix, either a matrix whose rows
 will be used in \code{hclust} to define the hiearchical clustering of
 features (e.g. normalized data) or a pre-existing dendrogram that clusters
 the features. If \code{data} is a \code{ClusterExperiment} object, the
@@ -215,7 +215,7 @@ re-calculating it in the future) or not.}
 \value{
 Returns (invisibly) a list with elements
 \itemize{
-\item{\code{aheatmapOut}}{ The output from the final call of
+\item{\code{heatmapOut}}{ The output from the final call of
 \code{\link[NMF]{aheatmap}}.}
 \item{\code{colData}}{ the annotation data.frame given to the argument
 \code{annCol} in \code{aheatmap}.}
@@ -376,17 +376,17 @@ ce <- ClusterExperiment(simCount, cl2, transformation=function(x){log2(x+1)})
 plotHeatmap(ce)
 
 #assign cluster colors
-colors <- bigPalette[20:23]
-names(colors) <- 1:3
+clColors <- bigPalette[20:23]
+names(clColors) <- 1:3
 plotHeatmap(data=simCount, clusterSamplesData=simData,
-colData=data.frame(cl), clusterLegend=list(colors))
+colData=data.frame(cl), clusterLegend=list(clColors))
 
 #show two different clusters
 anno <- data.frame(cluster1=cl, cluster2=cl2)
 out <- plotHeatmap(simData, colData=anno)
 
 #return the values to see format for giving colors to the annotations
-out$clusterLegend
+head(out$clusterLegend)
 
 #assign colors to the clusters based on plotClusters algorithm
 plotHeatmap(simData, colData=anno, alignColData=TRUE)
@@ -401,16 +401,30 @@ plotHeatmap(simData, colData=anno, clusterLegend=annoColors)
 anno2 <- cbind(anno, Cont=c(rnorm(100, 0), rnorm(100, 2), rnorm(100, 3)))
 plotHeatmap(simData, colData=anno2, whColDataCont=3)
 
-#compare changing breaks quantile on visual effect
+# The following compares changing breaks quantile on visual effect
+# Also shows how to run multi-grid heatmaps by 
+# saving output and use grid.arrange
 \dontrun{
-par(mfrow=c(2,2))
-plotHeatmap(simData, colorScale=seqPal1, breaks=1, main="Full length")
-plotHeatmap(simData,colorScale=seqPal1, breaks=.99, main="0.99 Quantile Upper
-Limit")
-plotHeatmap(simData,colorScale=seqPal1, breaks=.95, main="0.95 Quantile Upper
-Limit")
-plotHeatmap(simData, colorScale=seqPal1, breaks=.90, main="0.90 Quantile
-Upper Limit")
+# Save each of the 4 plots, with plot=FALSE
+out100<-plotHeatmap(simData, colorScale=seqPal1, 
+    breaks=1, plot=FALSE, main="Full set of breaks")
+out99<-plotHeatmap(simData,colorScale=seqPal1, 
+    breaks=.99, plot=FALSE, main="0.99 Quantile Upper Limit")
+out95<-plotHeatmap(simData,colorScale=seqPal1, 
+    breaks=.95, plot=FALSE, main="0.95 Quantile Upper Limit")
+out90<-plotHeatmap(simData, colorScale=seqPal1,
+    breaks=.90, plot=FALSE, main="0.90 Quantile Upper Limit")
+# define layout matrix (where will put each plot based on number 1-4)
+if (require(gridExtra, character.only = TRUE)){
+library(gridExtra)
+layoutMatrix=rbind(c(1,2),c(3,4))
+# Plot them, using the pheatmap output that is returned (see pheatmap)
+grid.arrange(list(out100$heatmapOut$gtable,
+   out99$heatmapOut$gtable,
+   out95$heatmapOut$gtable,
+   out90$heatmapOut$gtable), 
+   layout_matrix=layoutMatrix)
+}
 }
 
 }

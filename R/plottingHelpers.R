@@ -272,7 +272,8 @@ setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE,returnBreaks=TRUE){
   maxData<-max(data,na.rm=TRUE)
   maxAbsData<-max(abs(data),na.rm=TRUE)
   if(!is.vector(breaks)) stop("breaks argument must be a vector")
-  if(missing(breaks) || is.na(breaks)){
+  
+  if(missing(breaks) || is.na(breaks) || (length(breaks)==1 & breaks==1)){
     #go from minimum to max
     if(makeSymmetric & !isPositive & !isNegative){
       breaks<-seq(-maxAbsData,maxAbsData,length=ncols+1)

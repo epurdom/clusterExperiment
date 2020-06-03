@@ -31,7 +31,7 @@
 #'   \code{assay(data)}. If a new data.frame/matrix, any character arguments to
 #'   clusterFeaturesData will be ignored.
 #' @param clusterSamplesData If \code{data} is a matrix,
-#'   \code{clusterSamplesData} is either a matrix that will be used by
+#'   \code{clusterSamplesData} is either a matrix whose columns will be used by
 #'   \code{hclust} to define the hiearchical clustering of samples (e.g.
 #'   normalized data) or a pre-existing dendrogram (of class
 #'  \code{\link[stats]{dendrogram}}) that clusters the samples. If
@@ -40,7 +40,7 @@
 #'   whether) the samples should be clustered (or gives indices of the order for
 #'   the samples). See details.
 #' @inheritParams getClusterIndex
-#' @param clusterFeaturesData  If \code{data} is a matrix, either a matrix that
+#' @param clusterFeaturesData  If \code{data} is a matrix, either a matrix whose rows
 #'   will be used in \code{hclust} to define the hiearchical clustering of
 #'   features (e.g. normalized data) or a pre-existing dendrogram that clusters
 #'   the features. If \code{data} is a \code{ClusterExperiment} object, the
@@ -211,7 +211,7 @@
 #'
 #' @return Returns (invisibly) a list with elements
 #' \itemize{
-#' \item{\code{aheatmapOut}}{ The output from the final call of
+#' \item{\code{heatmapOut}}{ The output from the final call of
 #' \code{\link[NMF]{aheatmap}}.}
 #' \item{\code{colData}}{ the annotation data.frame given to the argument
 #' \code{annCol} in \code{aheatmap}.}
@@ -236,17 +236,17 @@
 #' plotHeatmap(ce)
 #'
 #' #assign cluster colors
-#' colors <- bigPalette[20:23]
-#' names(colors) <- 1:3
+#' clColors <- bigPalette[20:23]
+#' names(clColors) <- 1:3
 #' plotHeatmap(data=simCount, clusterSamplesData=simData,
-#' colData=data.frame(cl), clusterLegend=list(colors))
+#' colData=data.frame(cl), clusterLegend=list(clColors))
 #'
 #' #show two different clusters
 #' anno <- data.frame(cluster1=cl, cluster2=cl2)
 #' out <- plotHeatmap(simData, colData=anno)
 #'
 #' #return the values to see format for giving colors to the annotations
-#' out$clusterLegend
+#' head(out$clusterLegend)
 #'
 #' #assign colors to the clusters based on plotClusters algorithm
 #' plotHeatmap(simData, colData=anno, alignColData=TRUE)
@@ -261,16 +261,30 @@
 #' anno2 <- cbind(anno, Cont=c(rnorm(100, 0), rnorm(100, 2), rnorm(100, 3)))
 #' plotHeatmap(simData, colData=anno2, whColDataCont=3)
 #'
-#' #compare changing breaks quantile on visual effect
+#' # The following compares changing breaks quantile on visual effect
+#' # Also shows how to run multi-grid heatmaps by 
+#' # saving output and use grid.arrange
 #' \dontrun{
-#' par(mfrow=c(2,2))
-#' plotHeatmap(simData, colorScale=seqPal1, breaks=1, main="Full length")
-#' plotHeatmap(simData,colorScale=seqPal1, breaks=.99, main="0.99 Quantile Upper
-#' Limit")
-#' plotHeatmap(simData,colorScale=seqPal1, breaks=.95, main="0.95 Quantile Upper
-#' Limit")
-#' plotHeatmap(simData, colorScale=seqPal1, breaks=.90, main="0.90 Quantile
-#' Upper Limit")
+#' # Save each of the 4 plots, without plotting, with plot=FALSE
+#' out100<-plotHeatmap(simData, colorScale=seqPal1, 
+#'     breaks=1, plot=FALSE, main="Full set of breaks")
+#' out99<-plotHeatmap(simData,colorScale=seqPal1, 
+#'     breaks=.99, plot=FALSE, main="0.99 Quantile Upper Limit")
+#' out95<-plotHeatmap(simData,colorScale=seqPal1, 
+#'     breaks=.95, plot=FALSE, main="0.95 Quantile Upper Limit")
+#' out90<-plotHeatmap(simData, colorScale=seqPal1,
+#'     breaks=.90, plot=FALSE, main="0.90 Quantile Upper Limit")
+#' # define layout matrix (where will put each plot based on number 1-4)
+#' if (require(gridExtra, character.only = TRUE)){
+#' library(gridExtra)
+#' layoutMatrix=rbind(c(1,2),c(3,4))
+#' # Plot them, using the pheatmap output that is returned (see pheatmap)
+#' grid.arrange(list(out100$heatmapOut$gtable,
+#'    out99$heatmapOut$gtable,
+#'    out95$heatmapOut$gtable,
+#'    out90$heatmapOut$gtable), 
+#'    layout_matrix=layoutMatrix)
+#' }
 #' }
 #'
 #' @rdname plotHeatmap
@@ -671,75 +685,47 @@ setMethod(
     if(any(badValues %in% names(aHeatmapArgs))) stop("The following arguments to aheatmap cannot be set by the user in plotHeatmap:",paste(badValues,collapse=","),". They are over-ridden by: ",paste(replacedValues,collapse=","))
 
     ##########
-    ###Create the clustering dendrogram (samples):
+    ### Create the object passed to pheatmap for the clustering:
+    ###
+    ### RowV/ColV is what is actually passed to pheatmap for the clustering
+    ### passed to argument `cluster_rows`/`cluster_columns` (boolean values determining if rows/columns should be clustered or hclust object)
     ##########
-    if(clusterSamples){
-			if(inherits(clusterSamplesData,"dendrogram")){
-        if(nobs(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData dendrogram is not on same number of observations as heatData")
-        dendroSamples<-clusterSamplesData
-      }
-      else{
-        if(is.null(clusterSamplesData)){
-          dendroSamples<-NULL
-        }
-        else{
-          ##Call NMF:::cluster_mat so do the same thing:
-          
-          if(!is.data.frame(clusterSamplesData) & !is.matrix(clusterSamplesData) & !inherits(clusterSamplesData,"DelayedArray")) stop("clusterSamplesData must either be dendrogram, or data.frame/matrix/DelayedArray class")
-          clusterSamplesData<-data.matrix(clusterSamplesData)
-          #check valid
-          if(ncol(clusterSamplesData)!=ncol(heatData)) stop("clusterSamplesData matrix does not have on same number of observations as heatData")
-          dendroSamples<-NMF:::cluster_mat(t(clusterSamplesData),param=TRUE,distfun=getHeatmapValue("distfun"),hclustfun=getHeatmapValue("hclustfun"),reorderfun=getHeatmapValue("reorderfun",value=function(d, w) reorder(d, w)))$dendrogram
-          
-          #dendroSamples<-as.dendrogram(stats::hclust(stats::dist(t(clusterSamplesData)))) #dist finds distances between rows
-          
-        }
-      }
+    
+    #---- samples (Colv):
+    if(clusterSamples){ 
+        dendroSamples<-.convertDataToDendro(clusterSamplesData,
+            N=ncol(heatData),
+            dimDirection="columns")
     }
     else{
       clusterSamples<-NA
     }
-    if(!is.na(clusterSamples) && clusterSamples && is.null(dendroSamples)) Colv<-TRUE #then just pass the data
-    else Colv<-if(!is.na(clusterSamples) && clusterSamples) dendroSamples else clusterSamples
+    if(!is.na(clusterSamples) && clusterSamples){
+        if(is.null(dendroSamples)) Colv<-TRUE #then just pass the data in heatData
+        else Colv<-dendroSamples
+    }
+    else Colv<-clusterSamples
     
-    ##########
-    ###Create the clustering dendrogram (features):
-    ##########
+    #---- features (Rowv):
     if(isSymmetric){
       Rowv<-Colv
-      Colv<-"Rowv"
+      ## FIXME?? aheatmap had something special for symmetric. pheatmap doesnt? Check what it looks like...might want to fix it up
+      #Colv<-"Rowv"
     }
     else{
       if(clusterFeatures){
-        if(inherits(clusterFeaturesData, "dendrogram")){
-					if(nobs(clusterFeaturesData)!=nrow(heatData)) stop("clusterFeaturesData dendrogram is not on same number of observations as heatData")
-          dendroFeatures<-clusterFeaturesData
-        }
-        else{
-          if(is.null(clusterFeaturesData)){
-            dendroFeatures<-NULL
-          }
-          else{
-            ##Call NMF:::cluster_mat so do the same thing:
-            
-            if(!is.data.frame(clusterFeaturesData) & !is.matrix(clusterFeaturesData) &  !inherits(clusterFeaturesData,"DelayedArray")) stop("clusterFeaturesData must either be dendrogram, or data.frame/matrix")
-            clusterFeaturesData<-data.matrix(clusterFeaturesData)
-            #check valid
-            if(ncol(clusterFeaturesData)!=ncol(heatData)) stop("clusterFeaturesData matrix not have on same number of observations as heatData")
-            dendroFeatures<-NMF:::cluster_mat(clusterFeaturesData,param=TRUE,distfun=getHeatmapValue("distfun"),hclustfun=getHeatmapValue("hclustfun"),reorderfun=getHeatmapValue("reorderfun",value=function(d, w) reorder(d, w)))$dendrogram
-            #                dendroFeatures<-as.dendrogram(stats::hclust(stats::dist(clusterFeaturesData))) #dist finds distances between rows
-            
-          }
-          
-        }
+          dendroFeatures<-.convertDataToDendro(clusterFeaturesData,
+              N=nrow(heatData),
+              dimDirection="rows")
       }
       else{
         clusterFeatures<-NA
       }
-      if(!is.na(clusterFeatures) && clusterFeatures && is.null(dendroFeatures)) Rowv<-TRUE #then just pass the data
-      else Rowv<-if(!is.na(clusterFeatures) && clusterFeatures) dendroFeatures else clusterFeatures
-      
-      
+      if(!is.na(clusterFeatures) && clusterFeatures){
+          if(is.null(dendroFeatures)) Rowv<-TRUE #then just pass the data in heatData
+          else Rowv<-dendroFeatures
+      }
+      else Rowv<-clusterFeatures
     }
     
     
@@ -747,104 +733,19 @@ setMethod(
     ##Deal with annotation of samples (colData) ...
     ##########
     if(!is.null(colData)){
-      #----
-      #check colData input:
-      #----
-      if(!is.matrix(colData) & !is.data.frame(colData)) stop("colData must be a either a matrix or a data.frame")
-      if(NCOL(data) != NROW(colData)) stop("colData must have same number of rows as columns of heatData")
-      if(NCOL(colData)>10){
-        if(overRideClusterLimit) warning("More than 10 annotations/clusterings can result in incomprehensible errors in aheamap. You have >10 but have chosen to override the internal stop by setting overRideClusterLimit=TRUE.")
-        else stop("More than 10 annotations/clusterings cannot be reliably shown in plotHeatmap. To override this limitation and try for yourself, set overRideClusterLimit=TRUE.")
-      }
-      
-      #----
-      # check that no ordered factors...
-      #----
-      anyOrdered<-sapply(seq_len(ncol(colData)),function(ii){is.ordered(colData[,ii])})
-      if(any(anyOrdered)) stop("The function aheatmap in the NMF package that is called to create the heatmap does not currently accept ordered factors (https://github.com/renozao/NMF/issues/83)")
-      
-      #-------------------
-      # run .makeColors. This will:
-      # 1) Make colData explicitly factors (except for whColDataCont variables which are not given to function)
-      # 2) Make default clusterLegend, including incorporating and checking user-given clusterLegend
-      # 3) Make a numeric summary of factors (for if alignSamples==TRUE)
-      #-------------------
-      if(is.data.frame(colData)) colData<-droplevels(colData)
-      if(!is.null(whColDataCont)){
-        if(any(logical(whColDataCont))) whColDataCont<-which(whColDataCont)
-      }
-      if(length(whColDataCont)>0) tmpDf<-colData[,-whColDataCont,drop=FALSE]
-      else tmpDf<-colData
-      defaultColorLegend<-.makeColors(tmpDf,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, distinctColors=TRUE, matchClusterLegend = clusterLegend, matchTo="name") 
-      tmpDfNum<-defaultColorLegend$numClusters
-      colnames(tmpDfNum)<-colnames(tmpDf)
-      #so that annCol has them as factors.
-      tmpDf<-defaultColorLegend$facClusters
-      if(length(whColDataCont)>0){
-        annCol<-colData
-        annCol[,-whColDataCont]<-tmpDf
-      }			  
-      else annCol<-tmpDf 
-      
-      #-----
-      #final update of clusterLegend
-      #-----
-      if(is.null(clusterLegend) & alignColData & (is.null(whColDataCont) || length(whColDataCont)<ncol(annCol))){
-            #align the clusters and give them colors
-            alignObj<-plotClusters(tmpDfNum ,plot=FALSE,unassignedColor=unassignedColor, missingColor=missingColor)
-            defaultColorLegend<-.makeColors(tmpDf,clNumMat=tmpDfNum,colors=massivePalette,unassignedColor=unassignedColor,missingColor=missingColor, matchClusterLegend=alignObj$clusterLegend,matchTo="numIds")
-      }
-      #preserve those in given clusterLegend that don't match colData (could go with features/rows)
-			
-      if(is.list(clusterLegend)){ #could be single vector, but in that case, will loose them
-        whKeep<-names(clusterLegend)[which(!names(clusterLegend)%in% names(defaultColorLegend$colorList))]
-        clusterLegend<-c(defaultColorLegend$colorList,clusterLegend[whKeep])
-      }
-      else clusterLegend<-defaultColorLegend$colorList
-
-      # Convert to aheatmap format, if needed
-      annColors<-.convertToAheatmap(clusterLegend, names=TRUE)
-      
-      ##########################
-      # remove any unused level colors to clean up legend,
-      # give names to colors if not given, and
-      # make them in same order as in annCol factor
-      ##########################
-      whInAnnColors<-which(names(annColors)%in% colnames(annCol))
-      if(!is.null(whColDataCont) & length(whColDataCont)>0){
-        whInAnnColors<-setdiff(whInAnnColors,whColDataCont)
-      }
-      
-      #-----
-      # Deal with extra levels, only a single level, etc. 
-      # These are all problems with NMF. Need to check on development version.
-			# Also, doesn't deal with if in rowData...
-      #-----
-      prunedList<-lapply(whInAnnColors,function(ii){
-        nam<-names(annColors)[[ii]] #the name of variable
-        x<-annColors[[ii]] ##list of colors
-        levs<-levels(annCol[,nam])
-        if(length(x)<length(levs)) stop("number of colors given for ",nam," is less than the number of levels in the data")
-        #Note to self:
-        #It appears that if there is only 1 level of a factor, aheatmap
-        #doesn't plot it unless there are colors longer than 1
-        #But appears only problem with extra colors are just that the first ones must match the levels -- not being matched (or at least not well) to names of the colors.
-        #So going to leave "extra" colors in place, but put them at the end.
-        if(is.null(names(x))){
-          #if user didn't give names to colors, assign them in order of levels
-          #x<-x[1:length(levs)] #shorten if needed
-          names(x)<-levs
-        }
-        else{
-          if(any(!levs %in% names(x))) stop("colors given for ",nam," do not cover all levels in the data")
-          whlevs<-match(levs,names(x))
-          x<-c(x[whlevs],x[-whlevs])
-        }
-        return(x)
-      })
-      names(prunedList)<-names(annColors)[whInAnnColors]
-      annColors[whInAnnColors]<-prunedList
-      
+        if(!is.matrix(colData) & !is.data.frame(colData)) 
+            stop("colData must be a either a matrix or a data.frame")
+        if(NCOL(heatData) != NROW(colData)) 
+            stop("colData must have same number of rows as columns of heatData")
+        colDataOut<-.fixColData(annoteData=colData,
+            clusterLegend=clusterLegend,
+            whColumnsCont=whColDataCont,
+            unassignedColor=unassignedColor,
+            overRideClusterLimit=overRideClusterLimit, 
+            missingColor=missingColor, 
+            alignClusters=alignColData)
+        annCol<-colDataOut$annCol
+        annColors<-colDataOut$annColors
     }
     else{ #no colData provided -- just a heatmap with no annotation
       annCol<-NA
@@ -852,8 +753,10 @@ setMethod(
     }
     
     #############
-    # put into aheatmap
+    # put into pheatmap
     #############
+    
+    # FIXME??? pheatmap may allow for better way to do this...
     capBreaks<-length(breaks)==1 & capBreaksLegend
     breaks<-setBreaks(data=heatData, breaks=breaks, makeSymmetric=symmetricBreaks,returnBreaks=!capBreaks)
     if(capBreaks){ #so the legend is not so weird
@@ -863,59 +766,199 @@ setMethod(
       heatData[which(heatData>breaks[2])]<-breaks[2]
       breaks<-seq(breaks[1],breaks[2],length=52)
     }
-    if(plot){
-	    out <-NMF::aheatmap(heatData,
-                         Rowv =Rowv,Colv = Colv,
-                         color = colorScale, scale = getHeatmapValue("scale","none"),
-                         annCol = annCol,annColors=annColors,breaks=breaks,...)
-      
-      #############
-      # add labels to clusters at top of heatmap
-      #############
-      if(!is.null(dim(annCol)) & labelTracks){
-        treeOfViewports<-unlist(lapply(strsplit(as.character(grid::current.vpTree(all=TRUE)),"->"),strsplit,","))
-        wh<-sapply(treeOfViewports, function(x){
-          length(grep(x,"pattern"="aheatmap-AHEATMAP.VP"))>0
-        })
-        stringsViewports<-unlist(lapply(treeOfViewports[wh],
-                                        function(x){
-                                          x[grep(x,"pattern"="aheatmap-AHEATMAP.VP")]
-                                        }))
-        stringsViewports<-gsub("viewport\\[","",stringsViewports)
-        stringsViewports<-gsub("\\(","",stringsViewports)
-        stringsViewports<-gsub("\\)","",stringsViewports)
-        stringsViewports<-gsub("\\]","",stringsViewports)
-        vals<-sapply(  strsplit(
-          stringsViewports,"[.]VP[.]"), .subset2,2)
-        vals<-suppressWarnings(as.numeric(vals))
-        XX<-max(vals,na.rm=TRUE) #incase something there that doesn't convert to numeric well.
-        viewportName<-paste0("AHEATMAP.VP.",XX)
-        test<-try(grid::seekViewport(paste0("aheatmap-",viewportName)),silent=TRUE)
-        if(!inherits(test,"try-error")){
-          ###Now make a viewport related to this part of grid:
-          ##( The part of the grid that corresponds
-          ## to where the names should go)
-          #grid::grid.rect() #for developing -- see where grabbed.
-          newName<-paste0(viewportName,"-sideLabels")
-          grid::pushViewport(grid::viewport(layout.pos.row = 3, layout.pos.col = 4:5,  name = newName))
-          y <- seq(0,1,length=ncol(annCol))
-          n<-ncol(annCol)
-          y = cumsum(rep(8, n)) - 4 + cumsum(rep(2, n))
-          #		grid::grid.points(x = grid::unit(rep(0,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"))
-          grid::grid.text(colnames(annCol), x = grid::unit(rep(0.05,length(y)),"npc"),y = grid::unit(y[n:1], "bigpts"), vjust = 0.5, hjust = 0,gp= grid::gpar(fontsize=10))
-          grid::upViewport(0) #take it back up to the top.
-          
-        }
-        
-        
-        
-      }
-    }
-    else out<-NULL
+    colnames(heatData)<-rownames(annCol)
+    out<-pheatmap::pheatmap(heatData,
+        cluster_rows=Rowv,
+        cluster_cols=Colv,
+        scale=getHeatmapValue("scale","none"), ## FIXME??? need to check this
+        breaks=breaks,
+        annotation_col=annCol, silent=!plot,
+        annotation_colors=annColors,
+        annotation_names_col=labelTracks,...) ### FIXME??? don't really need the labelTracks argument now -- can just pass to pheatmap        
+    # if(plot){ ##FIXME??? pheatmap has a plot or not option... remove this option
+    #
+    #     # One quirk of ` pheatmap ` you must have row names for both your data matrix and the annotation matrix that match
+    #     # FIXME??? For now...
+    #
+    # }
+    # else out<-NULL
     
-    invisible(list(aheatmapOut=out,colData=annCol,clusterLegend=clusterLegend,breaks=breaks))
+    invisible(list(heatmapOut=out,colData=annCol,clusterLegend=annCol,breaks=breaks))
   }
 )
+
+#' @param object either hclust, dendrogram, or matrix-like object that will serve to cluster the data shown in heatmap. If matrix, then will assume the ROWS of object are the values to be clustered
+#' @param N the size of the dimension in the data shown in heatmap (i.e. not used for clustering, but for visualizing)
+#' @param dimDirection one of "rows" or "columns" indicating whether this data will be guiding the clustering of the rows or columns of the data visualized in heatmap (mainly so gives interpretable error messages)
+.convertDataToDendro<-function(object, N, dimDirection)
+{
+    dimDirection<-match.arg(dimDirection,c("rows","columns"))
+    nameOfObject<-switch(dimDirection,
+        "rows"="clusterFeaturesData",
+        "columns"="clusterSamplesData")
+    if(inherits(object,"hclust")){
+        if(object$merge != (N-1)) stop(paste(nameOfObject,"hclust object is not on same number of", dimDirection," as heatData"))
+        return(object)
+    }
+	if(inherits(object,"dendrogram")){
+        if(nobs(object)!=N) stop(paste(nameOfObject,"dendrogram is not on same number of ", dimDirection," as heatData"))
+        return(as.hclust(object))
+        
+    }
+    if(is.null(object)) return(NULL)
+    if(!is.data.frame(object) & !is.matrix(object) & !inherits(object,"DelayedArray")) stop(nameOfObject," must either be dendrogram, or data.frame/matrix/DelayedArray class")
+
+    #check valid (do this before make it matrix to save on computation)
+    if(dimDirection=="rows"){
+        if(nrow(object)!=N) stop(nameOfObject, "matrix does not have same number of ", dimDirection," as heatData")
+        object<-data.matrix(object)        
+    }
+    else{
+        if(ncol(object)!=N) stop(nameOfObject, "matrix does not have same number of ", dimDirection," as heatData")
+        object<-t(data.matrix(object))
+        
+    }
+    ## FIXME!!! Need to figure out exactly what pheatmap would do here. For now, reverted to hclust....
+        # dendroSamples<-NMF:::cluster_mat(t(object),param=TRUE,distfun=getHeatmapValue("distfun"),hclustfun=getHeatmapValue("hclustfun"),reorderfun=getHeatmapValue("reorderfun",value=function(d, w) reorder(d, w)))$dendrogram
+    return(stats::hclust(stats::dist(object))) #dist finds distances between rows
+}
+
+
+#' @param object either hclust, dendrogram, or matrix-like object that will serve to cluster the data shown in heatmap. If matrix, then will assume the ROWS of object are the values to be clustered
+#' @param N the size of the dimension in the data shown in heatmap (i.e. not used for clustering, but for visualizing)
+#' @param dimDirection one of "rows" or "columns" indicating whether this data will be guiding the clustering of the rows or columns of the data visualized in heatmap (mainly so gives interpretable error messages)
+#' @param whColumnsCont which columns of annoteData should be considered continuous, either vector of integers, or logical valued vector. Otherwise, will be assumed all are factors...
+#' @details The point of this function is to convert the annotation data into factors where continuous. This allows integer-valued cluster assignments to not be treated as continuous values. It does this by running .makeColors. This will:
+#-------------------
+# 1) Make annoteData explicitly factors (except for whColumnsCont variables which are not given to function)
+# 2) Make a default clusterLegend, including incorporating and checking user-given clusterLegend
+# 3) Make a numeric summary of factors (for if alignSamples==TRUE)
+#-------------------
+
+.fixColData<-function(annoteData,
+    clusterLegend,whColumnsCont,
+    unassignedColor,overRideClusterLimit, 
+    missingColor, alignClusters){
+
+    #----
+    #check annoteData input:
+    #----
+    if(NCOL(annoteData)>10){
+      # FIXME?? is this a problem with pheatmap??? Not too important perhaps to fix, but...
+      if(overRideClusterLimit) warning("More than 10 annotations/clusterings can result in incomprehensible errors in aheatmap. You have >10 but have chosen to override the internal stop by setting overRideClusterLimit=TRUE.")
+      else stop("More than 10 annotations/clusterings cannot be reliably shown in plotHeatmap. To override this limitation and try for yourself, set overRideClusterLimit=TRUE.")
+    }
+    
+    #----
+    # check that no ordered factors...
+    # FIXME Check with pheatmap...maybe not a problem? Regardless need to fix error message
+    #----
+    anyOrdered<-sapply(seq_len(ncol(annoteData)),
+        function(ii){is.ordered(annoteData[,ii])})
+    if(any(anyOrdered)) stop("The function aheatmap in the NMF package that is called to create the heatmap does not currently accept ordered factors (https://github.com/renozao/NMF/issues/83)")
+    
+    if(is.data.frame(annoteData)) annoteData<-droplevels(annoteData)
+    if(!is.null(whColumnsCont)){
+      if(any(logical(whColumnsCont))) whColumnsCont<-which(whColumnsCont)
+    }
+    if(length(whColumnsCont)>0){
+        annCol<-annoteData #want this here so get continuous values that are getting dropped from annoteData
+        annoteData<-annoteData[,-whColumnsCont,drop=FALSE]
+    } 
+    #----
+    # Run .makeColors
+    #----
+    defaultColorLegend<-.makeColors(annoteData,
+            colors=massivePalette,
+            unassignedColor=unassignedColor,
+            missingColor=missingColor, 
+            distinctColors=TRUE, 
+            matchClusterLegend = clusterLegend, 
+            matchTo="name") 
+    tmpDfNum<-defaultColorLegend$numClusters
+    colnames(tmpDfNum)<-colnames(annoteData)
+    #replace annoteData with results of .makeColors and update/create annCol
+    annoteData<-defaultColorLegend$facClusters
+    if(length(whColumnsCont)>0){
+      annCol[,-whColumnsCont]<-annoteData
+    }
+    else annCol<-annoteData
+        
+    #-----
+    # if aligning cluster colors (alignClusters=TRUE), 
+    # then give values and create clusterLegend based on aligned
+    # using plotClusters
+    #-----
+    if(alignClusters & is.null(clusterLegend) &  
+        (is.null(whColumnsCont) || length(whColumnsCont)<ncol(annCol))){
+          #align the clusters and give them colors
+          alignObj<-plotClusters(tmpDfNum ,plot=FALSE,
+              unassignedColor=unassignedColor, 
+              missingColor=missingColor)
+          defaultColorLegend<-.makeColors(annoteData,
+              clNumMat=tmpDfNum, colors=massivePalette,
+              unassignedColor=unassignedColor,
+              missingColor=missingColor, 
+              matchClusterLegend=alignObj$clusterLegend,
+              matchTo="numIds")
+    }
+    #preserve those in given clusterLegend that don't match annoteData (could go with features/rows)
+		
+    if(is.list(clusterLegend)){ #could be single vector, but in that case, will loose them
+      whKeep<-names(clusterLegend)[which(!names(clusterLegend) %in%  
+          names(defaultColorLegend$colorList))]
+      clusterLegend<-c(defaultColorLegend$colorList, clusterLegend[whKeep])
+    }
+    else clusterLegend<-defaultColorLegend$colorList
+
+    # Convert to aheatmap format, if needed
+    # FIXME?? I think this should be the same for pheatmap...      
+    annColors<-.convertToAheatmap(clusterLegend, names=TRUE)
+    
+    ##########################
+    # remove any unused level colors to clean up legend,
+    # give names to colors if not given, and
+    # make them in same order as in annCol factor
+    ##########################
+    whInAnnColors<-which(names(annColors) %in% colnames(annCol))
+    if(!is.null(whColumnsCont) & length(whColumnsCont)>0){
+      whInAnnColors<-setdiff(whInAnnColors,whColumnsCont)
+    }
+    
+    #-----
+    # Deal with extra levels, only a single level, etc. 
+    # These are all problems with NMF. Need to check on development version.
+    # Also, doesn't deal with if in rowData...
+    #-----
+    # FIXME?? may be able to drop this with pheatmap...
+    prunedList<-lapply(whInAnnColors,function(ii){
+      nam<-names(annColors)[[ii]] #the name of variable
+      x<-annColors[[ii]] ##list of colors
+      levs<-levels(annCol[,nam])
+      if(length(x)<length(levs)) stop("number of colors given for ",nam," is less than the number of levels in the data")
+      #Note to self:
+      #It appears that if there is only 1 level of a factor, aheatmap
+      #doesn't plot it unless there are colors longer than 1
+      #But appears only problem with extra colors are just that the first ones must match the levels -- not being matched (or at least not well) to names of the colors.
+      #So going to leave "extra" colors in place, but put them at the end.
+      if(is.null(names(x))){
+        #if user didn't give names to colors, assign them in order of levels
+        #x<-x[1:length(levs)] #shorten if needed
+        names(x)<-levs
+      }
+      else{
+        if(any(!levs %in% names(x))) stop("colors given for ",nam," do not cover all levels in the data")
+        whlevs<-match(levs,names(x))
+        x<-c(x[whlevs],x[-whlevs])
+      }
+      return(x)
+    })
+    names(prunedList)<-names(annColors)[whInAnnColors]
+    annColors[whInAnnColors]<-prunedList
+    
+    return(list(annCol=annCol,annColors=annColors))
+}
+
 
 #' @rdname plotHeatmap
 #' @aliases plotCoClustering
