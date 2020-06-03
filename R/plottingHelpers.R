@@ -246,6 +246,7 @@ massivePalette<-unique(c(bigPalette,.rcolors()))
 #'   breaks in the range of the data.
 #' @param makeSymmetric whether to make the range of the breaks symmetric around zero (only used if not all of the data is non-positive and not all of the data is non-negative)
 #' @param returnBreaks logical as to whether to return the vector of breaks. See details.
+#' @param numberOfColors integer, indicating the length of the number of colors that breaks should match. The length of returned breaks will be \code{numberOfColors+1}.
 #' @details if returnBreaks if FALSE, instead of returning the vector of breaks, the function will just return the second smallest and second largest value of the breaks. This is useful for alternatively just setting values of the data matrix larger than these values to this value if breaks was a percentile. This argument is only used if \code{breaks<1}, indicating truncating the breaks for large values of data.
 #' @rdname plottingFunctions
 #' @details \code{setBreaks} gives a set of breaks (of length 52) equally spaced
@@ -254,7 +255,7 @@ massivePalette<-unique(c(bigPalette,.rcolors()))
 #' @export
 #' @examples
 #' setBreaks(data=simData,breaks=.9)
-setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE,returnBreaks=TRUE){
+setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE,returnBreaks=TRUE,numberOfColors=51){
   if(all(is.na(data))) stop("data consists only of NA values")
   if(length(unique(na.omit(as.vector(data))))==1){
     warning("data consists of only a single non NA value")
@@ -267,7 +268,7 @@ setBreaks<-function(data,breaks=NA,makeSymmetric=FALSE,returnBreaks=TRUE){
   #get arround bug in aheatmap
   #if colors are given, then get back 51 colors, unless give RColorBrewer, in which case get 101! Assume user has to give palette. So breaks has to be +1 of that length
   #TO DO: might not need any more with updated aheatmap.
-  ncols<-51
+  ncols<-numberOfColors
   minData<-min(data,na.rm=TRUE)
   maxData<-max(data,na.rm=TRUE)
   maxAbsData<-max(abs(data),na.rm=TRUE)

@@ -55,7 +55,13 @@ bigPalette
 
 massivePalette
 
-setBreaks(data, breaks = NA, makeSymmetric = FALSE, returnBreaks = TRUE)
+setBreaks(
+  data,
+  breaks = NA,
+  makeSymmetric = FALSE,
+  returnBreaks = TRUE,
+  numberOfColors = 51
+)
 
 showHeatmapPalettes()
 
@@ -120,6 +126,8 @@ breaks in the range of the data.}
 \item{makeSymmetric}{whether to make the range of the breaks symmetric around zero (only used if not all of the data is non-positive and not all of the data is non-negative)}
 
 \item{returnBreaks}{logical as to whether to return the vector of breaks. See details.}
+
+\item{numberOfColors}{integer, indicating the length of the number of colors that breaks should match. The length of returned breaks will be \code{numberOfColors+1}.}
 
 \item{whichCluster}{argument that can be a single numeric or character value
 indicating the \emph{single} clustering to be used. Giving values that result in more than one clustering will result in an error. See details of \code{\link{getClusterIndex}}.}

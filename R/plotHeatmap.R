@@ -3,7 +3,7 @@
 #' @description Make heatmap with color scale from one matrix and hiearchical
 #'   clustering of samples/features from another. Also built in functionality
 #'   for showing the clusterings with the heatmap. Builds on
-#'   \code{\link[NMF]{aheatmap}} function of \code{NMF} package.
+#'   \code{\link[pheatmap]{pheatmap}} function of \code{pheatmap} package.
 #' @docType methods
 #' @param colData If input to \code{data} is either a
 #'   \code{\link{ClusterExperiment}},or \code{SummarizedExperiment} object or
@@ -40,8 +40,8 @@
 #'   whether) the samples should be clustered (or gives indices of the order for
 #'   the samples). See details.
 #' @inheritParams getClusterIndex
-#' @param clusterFeaturesData  If \code{data} is a matrix, either a matrix whose rows
-#'   will be used in \code{hclust} to define the hiearchical clustering of
+#' @param clusterFeaturesData  If \code{data} is a matrix, either a matrix whose
+#'   rows will be used in \code{hclust} to define the hiearchical clustering of
 #'   features (e.g. normalized data) or a pre-existing dendrogram that clusters
 #'   the features. If \code{data} is a \code{ClusterExperiment} object, the
 #'   input should be either character or integers indicating which features
@@ -66,9 +66,9 @@
 #' @param unassignedColor color assigned to cluster values of '-1'
 #'   ("unassigned").
 #' @param missingColor color assigned to cluster values of '-2' ("missing").
-#' @param ... for signature \code{matrix}, arguments passed to \code{aheatmap}.
+#' @param ... for signature \code{matrix}, arguments passed to \code{pheatmap}.
 #'   For the other signatures, passed to the method for signature \code{matrix}.
-#'   Not all arguments can be passed to \code{aheatmap} effectively, see
+#'   Not all arguments can be passed to \code{pheatmap} effectively, see
 #'   details.
 #' @param nFeatures integer indicating how many features should be used (if
 #'   \code{clusterFeaturesData} is 'var' or 'PCA').
@@ -91,10 +91,8 @@
 #'   requested will show in the color scale legend.
 #' @param whichAssay numeric or character specifying which assay to use. See
 #'   \code{\link[SummarizedExperiment]{assay}} for details.
-#' @param labelTracks logical, whether to put labels next to the color tracks 
-#' corresponding to the colData. 
 #' @inheritParams clusterSingle
-#' @details The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw
+#' @details The plotHeatmap function calls \code{\link[pheatmap]{pheatmap}} to draw
 #'   the heatmap. The main points of \code{plotHeatmap} are to 1) allow for
 #'   different matrix inputs, separating out the color scale visualization and
 #'   the clustering of the samples/features. 2) to visualize the clusters and
@@ -169,20 +167,16 @@
 #'   \code{breaks=0.9}, then the breaks will evenly spaced up until the 0.9
 #'   upper quantile of \code{data}, and then all values after the 0.9 quantile
 #'   will be absorbed by the upper-most color bin. This can help to reduce the
-#'   visual impact of a few highly expressed genes (features).
-#' @details Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the
-#'   hood. This allows you to plot multiple heatmaps via
-#'   \code{par(mfrow=c(2,2))}, etc. However, the dendrograms do not resize if
-#'   you change the size of your plot window in an interactive session of R
-#'   (this might be a problem for RStudio if you want to pop it out into a large
-#'   window...). Also, plotting to a pdf adds a blank page; see help pages of
-#'   \code{\link[NMF]{aheatmap}} for how to turn this off.
+#'   visual impact of a few highly expressed genes (features). See
+#'   \code{\link{setBreaks}} for more details.
+#' @details Note that plotHeatmap calls \code{\link[pheatmap]{pheatmap}} under the
+#'   hood. 
 #' @details \code{clusterLegend} takes the place of argument \code{annColors}
 #'   from \code{aheatmap} for giving colors to the annotation on the heatmap.
 #'   \code{clusterLegend} should be list of length equal to
 #'   \code{ncol(colData)} with names equal to the colnames of
 #'   \code{colData}. Each element of the list should be a either the format
-#'   requested by \code{\link[NMF]{aheatmap}} (a vector of colors with names
+#'   requested by \code{\link[pheatmap]{pheatmap}} (a vector of colors with names
 #'   corresponding to the levels of the column of \code{colData}), or should
 #'   be format of the \code{clusterLegend} slot in a \code{ClusterExperiment}
 #'   object. Color assignments to the rows/genes should also be passed via
@@ -190,38 +184,43 @@
 #'   \code{...}). If \code{clusterFeaturesData} is a \emph{named} list
 #'   describing groupings of genes then the colors for those groups can be given
 #'   in \code{clusterLegend} under the name "Gene Group".
+# FIXME -- is this true for pheatmap??
 #' @details If you have a factor with many levels, it is important to note that
-#'   \code{\link[NMF]{aheatmap}} does not recycle colors across factors in the
+#'   \code{\link[pheatmap]{pheatmap}} does not recycle colors across factors in the
 #'   \code{colData}, and in fact runs out of colors and the remaining levels
 #'   get the color white. Thus if you have many factors or many levels in those
-#'   factors, you should set their colors via \code{clusterLegend}.
-#' @details Many arguments can be passed on to \code{aheatmap}, however, some are set
-#'   internally by \code{plotHeatmap.} In particular, setting the values of
-#'   \code{Rowv} or \code{Colv} will cause errors. \code{color} in
-#'   \code{aheatmap} is replaced by \code{colorScale} in \code{plotHeatmap.} The
-#'   \code{annCol} to give annotation to the samples is replaced by the
-#'   \code{colData}; moreover, the \code{annColors} option in \code{aheatmap}
-#'   will also be set internally to give more vibrant colors than the default in
-#'   \code{aheatmap} (for \code{ClusterExperiment} objects, these values can
-#'   also be set in the \code{clusterLegend} slot ). Other options should be
-#'   passed on to \code{aheatmap}, though they have not been all tested. Useful options
-#'  include \code{treeheight=0} to suppress plotting of the dendrograms, 
-#'  \code{annLegend=FALSE} to suppress the legend of factors shown beside columns/rows, 
-#'  and \code{cexRow=0} or \code{cexCol=0} to suppress plotting of row/column labels.
+#'   factors, you should set their colors via \code{clusterLegend}. 
+#' @details Many arguments can be passed on to \code{pheatmap}, however, some
+#'   are set internally by \code{plotHeatmap.} In particular, setting the values
+#'   of \code{cluster_rows} or \code{cluster_cols} will cause errors.
+#'   \code{color} in \code{pheatmap} is replaced by \code{colorScale} in
+#'   \code{plotHeatmap.} The \code{annotation_col} to give annotation to the
+#'   samples is replaced by the \code{colData} in \code{plotHeatmap}; moreover,
+#'   the \code{annotation_colors} option in \code{pheatmap} will also be set
+#'   internally to give more vibrant colors than the default in \code{pheatmap}
+#'   (for \code{ClusterExperiment} objects, these values can also be set in the
+#'   \code{clusterLegend} slot ). Other options should be passed on to
+#'   \code{pheatmap}, though they have not been all tested. Useful options
+#'   include \code{treeheight_col=0} or \col{treeheight_row=0} to suppress
+#'   plotting of the dendrograms, \code{annotation_legend=FALSE} to suppress the
+#'   legend of factors shown beside columns/rows, and \code{show_rownames=FALSE}
+#'   or \code{show_colnames=FALSE} to suppress plotting of row/column labels.
 #'
 #' @return Returns (invisibly) a list with elements
 #' \itemize{
 #' \item{\code{heatmapOut}}{ The output from the final call of
-#' \code{\link[NMF]{aheatmap}}.}
+#' \code{\link[pheatmap]{pheatmap}}.}
 #' \item{\code{colData}}{ the annotation data.frame given to the argument
-#' \code{annCol} in \code{aheatmap}.}
-#' \item{\code{clusterLegend}}{ the annotation colors given to the argument
-#' \code{annColors} \code{aheatmap}.}
-#' \item{\code{breaks}}{ The breaks used for \code{aheatmap}, after adjusting
-#' for quantile.}
+#' \code{annotation_col} in \code{pheatmap}.}
+#' \item{\code{clusterLegend}}{ the (internally updated) \code{clusterLegend}
+#' annotation colors.}
+#' \item{\code{breaks}}{ The breaks used for \code{pheatmap}, after adjusting
+#' for quantile and to match the number of clusters.}
 #' }
 #' @author Elizabeth Purdom
-#' @seealso \code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}, \code{\link{showHeatmapPalettes}}, \code{\link{makeDendrogram}}, \code{\link[stats]{dendrogram}}
+#' @seealso \code{\link[pheatmap]{pheatmap}}, \code{\link{makeBlankData}},
+#'   \code{\link{showHeatmapPalettes}}, \code{\link{makeDendrogram}},
+#'   \code{\link[stats]{dendrogram}}
 #' @export
 #' @examples
 #' data(simData)
@@ -290,7 +289,7 @@
 #' @rdname plotHeatmap
 #' @aliases plotHeatmap,SingleCellExperiment-method
 #' @importFrom stats hclust dist
-#' @importFrom NMF aheatmap
+#' @importFrom pheatmap pheatmap
 setMethod(
   f = "plotHeatmap",
   signature = signature(data = "SingleCellExperiment"),
@@ -613,13 +612,14 @@ setMethod(
     else{
       labRow<-rownames(heatData)
     }
-    do.call("plotHeatmap",c(list(data=heatData,
-                                 clusterSamplesData=clusterSamplesData,
-                                 clusterFeaturesData=heatData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
-                                 colData=colData,whColDataCont=whColDataCont,
-                                 clusterSamples=clusterSamples,labRow=labRow,
-                                 clusterLegend=clLegend,clusterFeatures=clusterFeatures,
-                                 colorScale=colorScale),userList))
+    do.call("plotHeatmap",
+        c(list(data=heatData,
+            clusterSamplesData=clusterSamplesData,
+            clusterFeaturesData=heatData, #set it so user doesn't try to pass it and have something weird happen because dimensions wrong, etc.
+            colData=colData,whColDataCont=whColDataCont,
+            clusterSamples=clusterSamples,labRow=labRow,
+            clusterLegend=clLegend,clusterFeatures=clusterFeatures,
+            colorScale=colorScale),userList))
 
 
   })
@@ -655,34 +655,61 @@ setMethod(
                         colorScale=seqPal5,
                         clusterLegend=NULL,alignColData=FALSE,
                         unassignedColor="white",missingColor="grey",
-                        breaks=NA,symmetricBreaks=FALSE,capBreaksLegend=FALSE,
+                        breaks=NA,symmetricBreaks=FALSE,
+                        capBreaksLegend=FALSE,
                         isSymmetric=FALSE, overRideClusterLimit=FALSE,
-						plot=TRUE,labelTracks=TRUE,...
+						plot=TRUE,...
   ){
-    
-    aHeatmapArgs<-list(...)  
-		checkIgnore<-.depricateArgument(passedArgs=aHeatmapArgs,"colData","sampleData") #06/2018 added in BioC 3.8
-		if(!is.null(checkIgnore)){
-			aHeatmapArgs<-checkIgnore$passedArgs
-			colData<-checkIgnore$val
-		}
     
     ##########
     ##Deal with numeric matrix for heatmap ...
     ##########
     heatData<-data.matrix(data)
-    aHeatmapDefaultArgs<-as.list(args(NMF::aheatmap))
+
+    ##########
+    ##Deal with passed arguments to pheatmap ...
+    ##########
+    pHeatmapArgs<-list(...)  
+    # old version was sampleData -> colData
+    checkIgnore<-.depricateArgument(passedArgs=pHeatmapArgs,
+            newArgName="colData",oldArgName="sampleData") #06/2018 added in BioC 3.8
+	if(!is.null(checkIgnore)){
+		pHeatmapArgs<-checkIgnore$passedArgs
+		colData<-checkIgnore$val
+	}
+    
+    # got rid of labelTracks argument for plotHeatmap, 
+    # because now part of pheatmap
+    checkIgnore<-.depricateArgument(passedArgs=pHeatmapArgs,
+            oldArgName="labelTracks") #05/2020 in development
+	if(!is.null(checkIgnore)){
+		pHeatmapArgs<-checkIgnore$passedArgs
+        pHeatmapArgs<-c(pHeatmapArgs,list(labelTracks=checkIgnore$val))
+	}
+
+    #set some defaults that I like better unless user sets them...
+    if(! "na_col" %in% names(pHeatmapArgs)){
+        pHeatmapArgs<-c( pHeatmapArgs, list(na_col="white"))
+    }
+    if(! "border_color" %in% names(pHeatmapArgs)){
+        pHeatmapArgs<-c( pHeatmapArgs, list(border_color=NA))
+    }
+		
+    pHeatmapDefaultArgs<-as.list(args(pheatmap::pheatmap))
     getHeatmapValue<- function(string,value=NULL){ #note, doesn't work for pulling function 'reorder' so put in manually
-      if(string %in% names(aHeatmapArgs)) val<-aHeatmapArgs[[string]]
+      if(string %in% names(pHeatmapArgs)) val<-pHeatmapArgs[[string]]
       else{
-        if(is.null(value)) val<-aHeatmapDefaultArgs[[string]]
+        if(is.null(value)) val<-pHeatmapDefaultArgs[[string]]
         else val<-value
       }
       return(val)
     }
-    badValues<-c("Rowv","Colv","color","annCol","annColors")
-    replacedValues<-c("clusterSamplesData","clusterFeaturesData","colorScale","colData","clusterLegend")
-    if(any(badValues %in% names(aHeatmapArgs))) stop("The following arguments to aheatmap cannot be set by the user in plotHeatmap:",paste(badValues,collapse=","),". They are over-ridden by: ",paste(replacedValues,collapse=","))
+    badValues<-c("cluster_rows","cluster_cols","color",
+        "annotation_col","annotation_colors")
+    replacedValues<-c("clusterSamples","clusterFeatures",
+        "colorScale","colData","clusterLegend")
+    if(any(badValues %in% names(pHeatmapArgs))) 
+        stop("The following arguments to aheatmap cannot be set by the user in plotHeatmap:",paste(badValues,collapse=","),". They are over-ridden by: ",paste(replacedValues,collapse=","))
 
     ##########
     ### Create the object passed to pheatmap for the clustering:
@@ -696,11 +723,6 @@ setMethod(
         dendroSamples<-.convertDataToDendro(clusterSamplesData,
             N=ncol(heatData),
             dimDirection="columns")
-    }
-    else{
-      clusterSamples<-NA
-    }
-    if(!is.na(clusterSamples) && clusterSamples){
         if(is.null(dendroSamples)) Colv<-TRUE #then just pass the data in heatData
         else Colv<-dendroSamples
     }
@@ -717,11 +739,6 @@ setMethod(
           dendroFeatures<-.convertDataToDendro(clusterFeaturesData,
               N=nrow(heatData),
               dimDirection="rows")
-      }
-      else{
-        clusterFeatures<-NA
-      }
-      if(!is.na(clusterFeatures) && clusterFeatures){
           if(is.null(dendroFeatures)) Rowv<-TRUE #then just pass the data in heatData
           else Rowv<-dendroFeatures
       }
@@ -746,6 +763,7 @@ setMethod(
             alignClusters=alignColData)
         annCol<-colDataOut$annCol
         annColors<-colDataOut$annColors
+        clusterLegend<-colDataOut$clusterLegend
     }
     else{ #no colData provided -- just a heatmap with no annotation
       annCol<-NA
@@ -758,7 +776,7 @@ setMethod(
     
     # FIXME??? pheatmap may allow for better way to do this...
     capBreaks<-length(breaks)==1 & capBreaksLegend
-    breaks<-setBreaks(data=heatData, breaks=breaks, makeSymmetric=symmetricBreaks,returnBreaks=!capBreaks)
+    breaks<-setBreaks(data=heatData, breaks=breaks, makeSymmetric=symmetricBreaks,returnBreaks=!capBreaks,numberOfColors=length(colorScale))
     if(capBreaks){ #so the legend is not so weird
       if(length(breaks)!=2)
         stop("coding error in new breaks function")
@@ -767,14 +785,16 @@ setMethod(
       breaks<-seq(breaks[1],breaks[2],length=52)
     }
     colnames(heatData)<-rownames(annCol)
-    out<-pheatmap::pheatmap(heatData,
+    
+
+    out<-do.call(pheatmap::pheatmap,c(list(mat=heatData,
         cluster_rows=Rowv,
         cluster_cols=Colv,
+        color=colorScale,
         scale=getHeatmapValue("scale","none"), ## FIXME??? need to check this
         breaks=breaks,
         annotation_col=annCol, silent=!plot,
-        annotation_colors=annColors,
-        annotation_names_col=labelTracks,...) ### FIXME??? don't really need the labelTracks argument now -- can just pass to pheatmap        
+        annotation_colors=annColors),pHeatmapArgs))   
     # if(plot){ ##FIXME??? pheatmap has a plot or not option... remove this option
     #
     #     # One quirk of ` pheatmap ` you must have row names for both your data matrix and the annotation matrix that match
@@ -783,7 +803,10 @@ setMethod(
     # }
     # else out<-NULL
     
-    invisible(list(heatmapOut=out,colData=annCol,clusterLegend=annCol,breaks=breaks))
+    invisible(list(heatmapOut=out,
+        colData=annCol,
+        clusterLegend=clusterLegend,
+        breaks=breaks))
   }
 )
 
@@ -956,7 +979,7 @@ setMethod(
     names(prunedList)<-names(annColors)[whInAnnColors]
     annColors[whInAnnColors]<-prunedList
     
-    return(list(annCol=annCol,annColors=annColors))
+    return(list(annCol=annCol,annColors=annColors,clusterLegend=clusterLegend))
 }
 
 

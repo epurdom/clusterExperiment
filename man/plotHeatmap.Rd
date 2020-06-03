@@ -61,7 +61,6 @@
   isSymmetric = FALSE,
   overRideClusterLimit = FALSE,
   plot = TRUE,
-  labelTracks = TRUE,
   ...
 )
 
@@ -88,9 +87,9 @@ function will throw an error. If object is of class
 \code{ClusterExperiment}, the stored transformation will be used and giving
 this parameter will result in an error.}
 
-\item{...}{for signature \code{matrix}, arguments passed to \code{aheatmap}.
+\item{...}{for signature \code{matrix}, arguments passed to \code{pheatmap}.
 For the other signatures, passed to the method for signature \code{matrix}.
-Not all arguments can be passed to \code{aheatmap} effectively, see
+Not all arguments can be passed to \code{pheatmap} effectively, see
 details.}
 
 \item{clusterSamplesData}{If \code{data} is a matrix,
@@ -103,8 +102,8 @@ details.}
  whether) the samples should be clustered (or gives indices of the order for
  the samples). See details.}
 
-\item{clusterFeaturesData}{If \code{data} is a matrix, either a matrix whose rows
-will be used in \code{hclust} to define the hiearchical clustering of
+\item{clusterFeaturesData}{If \code{data} is a matrix, either a matrix whose
+rows will be used in \code{hclust} to define the hiearchical clustering of
 features (e.g. normalized data) or a pre-existing dendrogram that clusters
 the features. If \code{data} is a \code{ClusterExperiment} object, the
 input should be either character or integers indicating which features
@@ -195,9 +194,6 @@ render it.}
 package mantaince to avoid calls to aheatmap on unit tests that take a long
 time.}
 
-\item{labelTracks}{logical, whether to put labels next to the color tracks 
-corresponding to the colData.}
-
 \item{invert}{logical determining whether the coClustering matrix should be
 inverted to be 1-coClustering for plotting. By default, if the diagonal
 elements are all zero, invert=TRUE, and otherwise invert=FALSE. If
@@ -229,7 +225,7 @@ for quantile.}
 Make heatmap with color scale from one matrix and hiearchical
   clustering of samples/features from another. Also built in functionality
   for showing the clusterings with the heatmap. Builds on
-  \code{\link[NMF]{aheatmap}} function of \code{NMF} package.
+  \code{\link[pheatmap]{pheatmap}} function of \code{pheatmap} package.
 }
 \details{
 The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw
@@ -405,7 +401,7 @@ plotHeatmap(simData, colData=anno2, whColDataCont=3)
 # Also shows how to run multi-grid heatmaps by 
 # saving output and use grid.arrange
 \dontrun{
-# Save each of the 4 plots, with plot=FALSE
+# Save each of the 4 plots, without plotting, with plot=FALSE
 out100<-plotHeatmap(simData, colorScale=seqPal1, 
     breaks=1, plot=FALSE, main="Full set of breaks")
 out99<-plotHeatmap(simData,colorScale=seqPal1, 

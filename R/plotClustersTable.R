@@ -244,7 +244,7 @@ setMethod(
 			}
 			passedArgs<-c(list(data=tableAll[,order2,drop=FALSE],colData=cData, annRow=rData,
 					clusterLegend=clusterLegend, main=main,annLegend=legend,
-					labelTracks =labelCols,
+					annotation_names_col =labelCols,
 					clusterFeatures=cluster,clusterSamples=cluster)
 					,passedArgs)
 			 	 	

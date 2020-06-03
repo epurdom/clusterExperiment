@@ -5,9 +5,10 @@ context("Heatmap functions")
 plotAll<-FALSE #set to true to actually SEE the plots; otherwise for TravisCI, where no visual, runs quicker with FALSE
 ###Note some are still run with plot=TRUE to check that works with aheatmap. Only a fraction not plotted.
 test_that("`setBreaks`", {
-	setBreaks(smSimData)
-	setBreaks(smSimData,breaks=0.99)
-	x<-setBreaks(smSimData,breaks=0.99,makeSymmetric=TRUE)
+	expect_silent(setBreaks(smSimData))
+	expect_silent(setBreaks(smSimData,breaks=0.99))
+	expect_equal(setBreaks(smSimData,breaks=1),setBreaks(smSimData))
+	expect_silent(x<-setBreaks(smSimData,breaks=0.99,makeSymmetric=TRUE))
 	expect_equal(max(x),-min(x))
 	expect_equal(x,setBreaks(smSimData,breaks=0.01,makeSymmetric=TRUE))
 	expect_warning(y<-setBreaks(smSimData,breaks=10))
@@ -15,8 +16,9 @@ test_that("`setBreaks`", {
 })
 test_that("`plotHeatmap` works with matrix objects", {
     expect_silent(x1<-plotHeatmap(data=smSimData))
-    a1<-NMF::aheatmap(smSimData)
-    expect_equal(x1$aheatmapOut,a1)
+    a1<-pheatmap::pheatmap(smSimData)
+    # Fourth element of list is the gtable, and doesn't match
+    expect_equal(x1$heatmapOut[1:3],a1[1:3])
     expect_silent(x2<-plotHeatmap(data=smSimCount,
         clusterSamplesData=smSimData,
         clusterFeaturesData=smSimData))
@@ -25,34 +27,44 @@ test_that("`plotHeatmap` works with matrix objects", {
     expect_equal(x1$aheatmapOut$colInd,x2$aheatmapOut$colInd) 
     
     #check internal alignment of colData (alignColData=TRUE) is working:
-    colData<-clusterMatrix(smSimCE)
-    expect_silent(alList<-plotClusters(colData))
+    colAnnotData<-clusterMatrix(smSimCE)
+    expect_silent(alList<-plotClusters(colAnnotData))
     alCol<-clusterExperiment:::.convertToAheatmap(alList$clusterLegend, names=FALSE)
    #these should be same plots:
     expect_silent(x1<-plotHeatmap(data=smSimData[,alList$orderSamples],
-        colData=colData[alList$orderSamples,1:10],
-        clusterLegend=alCol,clusterSamples=FALSE,
+        colData=colAnnotData[alList$orderSamples,1:10],
+        clusterLegend=alCol[1:10],clusterSamples=FALSE,
         clusterFeatures=FALSE,plot=plotAll))
     expect_silent(x2<-plotHeatmap(data=smSimData[,alList$orderSamples],
-        colData=colData[alList$orderSamples,1:10],
+        colData=colAnnotData[alList$orderSamples,1:10],
         alignColData=TRUE,clusterFeatures=FALSE,
         clusterSamples=FALSE,plot=plotAll))
-#   Should get this working so proper test, but more a problem because in different order, otherwise the same. Don't want to deal with this right now.
-#    expect_equal(lapply(x1$clusterLegend,function(x){x[,c("clusterIds","color")]}),lapply(x2$clusterLegend,function(x){x[,c("clusterIds","color")]}))
+    # Do this for only 1-10. x1 has additional elements not used in plotHeatmap
+    expect_equal(lapply(x1$clusterLegend, 
+            function(x){x[,c("clusterIds","color")]}), 
+        lapply(x2$clusterLegend, 
+            function(x){x[,c("clusterIds","color")]}))
 
-    expect_error( plotHeatmap(data=smSimData,Rowv=TRUE),
+    # should work even if give extra values in clusterLegend 
+    #(and same plot as above)    
+    expect_silent(plotHeatmap(data=smSimData[,alList$orderSamples],
+                colData=colAnnotData[alList$orderSamples,1:10],
+                clusterLegend=alCol,clusterSamples=FALSE,
+                clusterFeatures=FALSE,plot=plotAll))
+
+    expect_error( plotHeatmap(data=smSimData,cluster_rows=TRUE),
         "arguments to aheatmap cannot be set by the user")
-    expect_error( plotHeatmap(data=smSimData,Colv=TRUE),
+    expect_error( plotHeatmap(data=smSimData,cluster_cols=TRUE),
         "arguments to aheatmap cannot be set by the user")
     expect_error( plotHeatmap(data=smSimData,
         colorScale=seqPal5,color=TRUE),
         "arguments to aheatmap cannot be set by the user")
 
     expect_error( plotHeatmap(data=smSimData,
-        annCol=rnorm(n=ncol(smSimData))),
+        annotation_col=rnorm(n=ncol(smSimData))),
         "arguments to aheatmap cannot be set by the user")
     expect_error( plotHeatmap(data=smSimData,
-        annColors=list(a=c("blue","green"))),
+        annotation_colors=list(a=c("blue","green"))),
         "arguments to aheatmap cannot be set by the user")
     
     ##Should add tests that pass aheatmap arguments correctly.

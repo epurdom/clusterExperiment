@@ -35,9 +35,10 @@ setMethod(
 
 .depricateArgument<-function(passedArgs,newArgName,oldArgName){
 	if(oldArgName %in% names(passedArgs)){
-		warning(paste0("the argument name '",oldArgName,"' has been changed to '",newArgName,"'. Please change future calls to reflect this, as the old argument will be depricated in future releases."))
 		val<-passedArgs[[oldArgName]]
 		passedArgs<-passedArgs[-which(names(passedArgs)==oldArgName)]
+		if(!missing(newArgName)) warning(paste0("the argument name '",oldArgName,"' has been changed to '",newArgName,"'. Please change future calls to reflect this, as the old argument will be depricated in future releases."))
+        else warning(paste0("the argument '",oldArgName,"' is no longer an argument accepted by this function (see help). Please change future calls to reflect this, as the old argument will cause errors in future releases."))
 		return(list(passedArgs=passedArgs,val=val))
 	}
 	else return(NULL)
