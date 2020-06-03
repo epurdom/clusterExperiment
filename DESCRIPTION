@@ -16,7 +16,7 @@ Depends:
 	BiocGenerics
 Imports:
 	methods,
-	NMF,
+	pheatmap,
 	RColorBrewer,
 	ape (>= 5.0),
 	cluster,
