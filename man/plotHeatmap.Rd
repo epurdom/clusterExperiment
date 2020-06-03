@@ -212,13 +212,15 @@ re-calculating it in the future) or not.}
 Returns (invisibly) a list with elements
 \itemize{
 \item{\code{heatmapOut}}{ The output from the final call of
-\code{\link[NMF]{aheatmap}}.}
+\code{\link[pheatmap]{pheatmap}}. This can be useful if you want heatmaps in
+a grid, as \code{mfrow}/\code{mfcol} will not work. See examples below for
+how to do this.}
 \item{\code{colData}}{ the annotation data.frame given to the argument
-\code{annCol} in \code{aheatmap}.}
-\item{\code{clusterLegend}}{ the annotation colors given to the argument
-\code{annColors} \code{aheatmap}.}
-\item{\code{breaks}}{ The breaks used for \code{aheatmap}, after adjusting
-for quantile.}
+\code{annotation_col} in \code{pheatmap}.}
+\item{\code{clusterLegend}}{ the (internally updated) \code{clusterLegend}
+annotation colors.}
+\item{\code{breaks}}{ The breaks used for \code{pheatmap}, after adjusting
+for quantile and to match the number of colors.}
 }
 }
 \description{
@@ -228,7 +230,7 @@ Make heatmap with color scale from one matrix and hiearchical
   \code{\link[pheatmap]{pheatmap}} function of \code{pheatmap} package.
 }
 \details{
-The plotHeatmap function calls \code{\link[NMF]{aheatmap}} to draw
+The plotHeatmap function calls \code{\link[pheatmap]{pheatmap}} to draw
   the heatmap. The main points of \code{plotHeatmap} are to 1) allow for
   different matrix inputs, separating out the color scale visualization and
   the clustering of the samples/features. 2) to visualize the clusters and
@@ -308,22 +310,18 @@ If \code{breaks} is a numeric value between 0 and 1, then
   \code{breaks=0.9}, then the breaks will evenly spaced up until the 0.9
   upper quantile of \code{data}, and then all values after the 0.9 quantile
   will be absorbed by the upper-most color bin. This can help to reduce the
-  visual impact of a few highly expressed genes (features).
+  visual impact of a few highly expressed genes (features). See
+  \code{\link{setBreaks}} for more details.
 
-Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the
-  hood. This allows you to plot multiple heatmaps via
-  \code{par(mfrow=c(2,2))}, etc. However, the dendrograms do not resize if
-  you change the size of your plot window in an interactive session of R
-  (this might be a problem for RStudio if you want to pop it out into a large
-  window...). Also, plotting to a pdf adds a blank page; see help pages of
-  \code{\link[NMF]{aheatmap}} for how to turn this off.
+Note that plotHeatmap calls \code{\link[pheatmap]{pheatmap}} under the
+  hood.
 
 \code{clusterLegend} takes the place of argument \code{annColors}
   from \code{aheatmap} for giving colors to the annotation on the heatmap.
   \code{clusterLegend} should be list of length equal to
   \code{ncol(colData)} with names equal to the colnames of
   \code{colData}. Each element of the list should be a either the format
-  requested by \code{\link[NMF]{aheatmap}} (a vector of colors with names
+  requested by \code{\link[pheatmap]{pheatmap}} (a vector of colors with names
   corresponding to the levels of the column of \code{colData}), or should
   be format of the \code{clusterLegend} slot in a \code{ClusterExperiment}
   object. Color assignments to the rows/genes should also be passed via
@@ -332,25 +330,32 @@ Note that plotHeatmap calls \code{\link[NMF]{aheatmap}} under the
   describing groupings of genes then the colors for those groups can be given
   in \code{clusterLegend} under the name "Gene Group".
 
-If you have a factor with many levels, it is important to note that
-  \code{\link[NMF]{aheatmap}} does not recycle colors across factors in the
-  \code{colData}, and in fact runs out of colors and the remaining levels
-  get the color white. Thus if you have many factors or many levels in those
-  factors, you should set their colors via \code{clusterLegend}.
+Many arguments can be passed on to \code{pheatmap}, however, some
+  are set internally by \code{plotHeatmap.} In particular, setting the values
+  of \code{cluster_rows} or \code{cluster_cols} will cause errors.
+  \code{color} in \code{pheatmap} is replaced by \code{colorScale} in
+  \code{plotHeatmap.} The \code{annotation_col} to give annotation to the
+  samples is replaced by the \code{colData} in \code{plotHeatmap}; moreover,
+  the \code{annotation_colors} option in \code{pheatmap} will also be set
+  internally to give more vibrant colors than the default in \code{pheatmap}
+  (for \code{ClusterExperiment} objects, these values can also be set in the
+  \code{clusterLegend} slot ).
 
-Many arguments can be passed on to \code{aheatmap}, however, some are set
-  internally by \code{plotHeatmap.} In particular, setting the values of
-  \code{Rowv} or \code{Colv} will cause errors. \code{color} in
-  \code{aheatmap} is replaced by \code{colorScale} in \code{plotHeatmap.} The
-  \code{annCol} to give annotation to the samples is replaced by the
-  \code{colData}; moreover, the \code{annColors} option in \code{aheatmap}
-  will also be set internally to give more vibrant colors than the default in
-  \code{aheatmap} (for \code{ClusterExperiment} objects, these values can
-  also be set in the \code{clusterLegend} slot ). Other options should be
-  passed on to \code{aheatmap}, though they have not been all tested. Useful options
- include \code{treeheight=0} to suppress plotting of the dendrograms, 
- \code{annLegend=FALSE} to suppress the legend of factors shown beside columns/rows, 
- and \code{cexRow=0} or \code{cexCol=0} to suppress plotting of row/column labels.
+Other options given by the user in \code{...} should be passed on to
+  \code{pheatmap}, though they have not been all tested. There are some
+  arguments to \code{pheatmap} that we have internally changed the default
+  values: \code{scale="none"},\code{na_col="white"},\code{border_col=NA}. If
+  a user sets these values, they will be whatever the user sets, but if these
+  arguments are not set, our defaults are used instead. All other arguments
+  to \code{pheatmap} not discussed here are set to the default of
+  \code{pheatmap}. Useful options of \code{pheatmap} that the user might want
+  to adjust include \code{treeheight_col=0} or \col{treeheight_row=0} to
+  suppress plotting of the dendrograms, \code{annotation_legend=FALSE} to
+  suppress the legend of factors shown beside columns/rows, and
+  \code{show_rownames=FALSE} or \code{show_colnames=FALSE} to suppress
+  plotting of row/column labels. If you find annotation or labels are getting
+  cropped, you may find adjusting \code{cellwidth} or \code{cellheight} is
+  helpful for giving more space on the sides.
 
 \code{plotCoClustering} is a convenience function to plot the
   heatmap of the co-clustering distance matrix from the \code{coClustering}
@@ -425,7 +430,9 @@ grid.arrange(list(out100$heatmapOut$gtable,
 
 }
 \seealso{
-\code{\link[NMF]{aheatmap}}, \code{\link{makeBlankData}}, \code{\link{showHeatmapPalettes}}, \code{\link{makeDendrogram}}, \code{\link[stats]{dendrogram}}
+\code{\link[pheatmap]{pheatmap}}, \code{\link{makeBlankData}},
+  \code{\link{showHeatmapPalettes}}, \code{\link{makeDendrogram}},
+  \code{\link[stats]{dendrogram}}
 }
 \author{
 Elizabeth Purdom

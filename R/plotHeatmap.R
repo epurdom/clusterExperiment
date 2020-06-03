@@ -183,13 +183,7 @@
 #'   \code{clusterLegend} (assuming \code{annRow} is an argument passed to
 #'   \code{...}). If \code{clusterFeaturesData} is a \emph{named} list
 #'   describing groupings of genes then the colors for those groups can be given
-#'   in \code{clusterLegend} under the name "Gene Group".
-# FIXME -- is this true for pheatmap??
-#' @details If you have a factor with many levels, it is important to note that
-#'   \code{\link[pheatmap]{pheatmap}} does not recycle colors across factors in the
-#'   \code{colData}, and in fact runs out of colors and the remaining levels
-#'   get the color white. Thus if you have many factors or many levels in those
-#'   factors, you should set their colors via \code{clusterLegend}. 
+#'   in \code{clusterLegend} under the name "Gene Group". 
 #' @details Many arguments can be passed on to \code{pheatmap}, however, some
 #'   are set internally by \code{plotHeatmap.} In particular, setting the values
 #'   of \code{cluster_rows} or \code{cluster_cols} will cause errors.
@@ -199,23 +193,35 @@
 #'   the \code{annotation_colors} option in \code{pheatmap} will also be set
 #'   internally to give more vibrant colors than the default in \code{pheatmap}
 #'   (for \code{ClusterExperiment} objects, these values can also be set in the
-#'   \code{clusterLegend} slot ). Other options should be passed on to
-#'   \code{pheatmap}, though they have not been all tested. Useful options
-#'   include \code{treeheight_col=0} or \col{treeheight_row=0} to suppress
-#'   plotting of the dendrograms, \code{annotation_legend=FALSE} to suppress the
-#'   legend of factors shown beside columns/rows, and \code{show_rownames=FALSE}
-#'   or \code{show_colnames=FALSE} to suppress plotting of row/column labels.
-#'
+#'   \code{clusterLegend} slot ). 
+#' @details Other options given by the user in \code{...} should be passed on to
+#'   \code{pheatmap}, though they have not been all tested. There are some
+#'   arguments to \code{pheatmap} that we have internally changed the default
+#'   values: \code{scale="none"},\code{na_col="white"},\code{border_col=NA}. If
+#'   a user sets these values, they will be whatever the user sets, but if these
+#'   arguments are not set, our defaults are used instead. All other arguments
+#'   to \code{pheatmap} not discussed here are set to the default of
+#'   \code{pheatmap}. Useful options of \code{pheatmap} that the user might want
+#'   to adjust include \code{treeheight_col=0} or \col{treeheight_row=0} to
+#'   suppress plotting of the dendrograms, \code{annotation_legend=FALSE} to
+#'   suppress the legend of factors shown beside columns/rows, and
+#'   \code{show_rownames=FALSE} or \code{show_colnames=FALSE} to suppress
+#'   plotting of row/column labels. If you find annotation or labels are getting
+#'   cropped, you may find adjusting \code{cellwidth} or \code{cellheight} is
+#'   helpful for giving more space on the sides.
+#'   
 #' @return Returns (invisibly) a list with elements
 #' \itemize{
 #' \item{\code{heatmapOut}}{ The output from the final call of
-#' \code{\link[pheatmap]{pheatmap}}.}
+#' \code{\link[pheatmap]{pheatmap}}. This can be useful if you want heatmaps in
+#' a grid, as \code{mfrow}/\code{mfcol} will not work. See examples below for
+#' how to do this.}
 #' \item{\code{colData}}{ the annotation data.frame given to the argument
 #' \code{annotation_col} in \code{pheatmap}.}
 #' \item{\code{clusterLegend}}{ the (internally updated) \code{clusterLegend}
 #' annotation colors.}
 #' \item{\code{breaks}}{ The breaks used for \code{pheatmap}, after adjusting
-#' for quantile and to match the number of clusters.}
+#' for quantile and to match the number of colors.}
 #' }
 #' @author Elizabeth Purdom
 #' @seealso \code{\link[pheatmap]{pheatmap}}, \code{\link{makeBlankData}},
@@ -687,14 +693,9 @@ setMethod(
         pHeatmapArgs<-c(pHeatmapArgs,list(labelTracks=checkIgnore$val))
 	}
 
-    #set some defaults that I like better unless user sets them...
-    if(! "na_col" %in% names(pHeatmapArgs)){
-        pHeatmapArgs<-c( pHeatmapArgs, list(na_col="white"))
-    }
-    if(! "border_color" %in% names(pHeatmapArgs)){
-        pHeatmapArgs<-c( pHeatmapArgs, list(border_color=NA))
-    }
-		
+
+    # This is function for assigning a value (with my choice being given in argument `value`) to a pheatmap option, but making sure that I don't override a user values.
+    # If value=NULL, then just uses pheatmap default (from pHeatmapDefaultArgs)
     pHeatmapDefaultArgs<-as.list(args(pheatmap::pheatmap))
     getHeatmapValue<- function(string,value=NULL){ #note, doesn't work for pulling function 'reorder' so put in manually
       if(string %in% names(pHeatmapArgs)) val<-pHeatmapArgs[[string]]
@@ -731,8 +732,6 @@ setMethod(
     #---- features (Rowv):
     if(isSymmetric){
       Rowv<-Colv
-      ## FIXME?? aheatmap had something special for symmetric. pheatmap doesnt? Check what it looks like...might want to fix it up
-      #Colv<-"Rowv"
     }
     else{
       if(clusterFeatures){
@@ -774,7 +773,9 @@ setMethod(
     # put into pheatmap
     #############
     
-    # FIXME??? pheatmap may allow for better way to do this...
+    # Could do this more smoothly now with pheatmap 
+    # which has argument legend_breaks...
+    # But for now keeping it. 
     capBreaks<-length(breaks)==1 & capBreaksLegend
     breaks<-setBreaks(data=heatData, breaks=breaks, makeSymmetric=symmetricBreaks,returnBreaks=!capBreaks,numberOfColors=length(colorScale))
     if(capBreaks){ #so the legend is not so weird
@@ -782,26 +783,21 @@ setMethod(
         stop("coding error in new breaks function")
       heatData[which(heatData<breaks[1])]<-breaks[1]
       heatData[which(heatData>breaks[2])]<-breaks[2]
-      breaks<-seq(breaks[1],breaks[2],length=52)
+      breaks<-seq(breaks[1],breaks[2],length=length(colorScale)+1)
     }
-    colnames(heatData)<-rownames(annCol)
-    
-
+    #have to have matching names for the annotation (quirk of pheatmap)!
+    colnames(heatData)<-rownames(annCol) 
     out<-do.call(pheatmap::pheatmap,c(list(mat=heatData,
         cluster_rows=Rowv,
         cluster_cols=Colv,
         color=colorScale,
-        scale=getHeatmapValue("scale","none"), ## FIXME??? need to check this
         breaks=breaks,
+        scale=getHeatmapValue("scale","none"), 
+        na_col=getHeatmapValue("na_col","white"),
+        border_color=getHeatmapValue("border_color",NA),
         annotation_col=annCol, silent=!plot,
         annotation_colors=annColors),pHeatmapArgs))   
-    # if(plot){ ##FIXME??? pheatmap has a plot or not option... remove this option
-    #
-    #     # One quirk of ` pheatmap ` you must have row names for both your data matrix and the annotation matrix that match
-    #     # FIXME??? For now...
-    #
-    # }
-    # else out<-NULL
+
     
     invisible(list(heatmapOut=out,
         colData=annCol,
@@ -867,18 +863,10 @@ setMethod(
     #check annoteData input:
     #----
     if(NCOL(annoteData)>10){
-      # FIXME?? is this a problem with pheatmap??? Not too important perhaps to fix, but...
-      if(overRideClusterLimit) warning("More than 10 annotations/clusterings can result in incomprehensible errors in aheatmap. You have >10 but have chosen to override the internal stop by setting overRideClusterLimit=TRUE.")
-      else stop("More than 10 annotations/clusterings cannot be reliably shown in plotHeatmap. To override this limitation and try for yourself, set overRideClusterLimit=TRUE.")
+      # is this a problem with pheatmap??? Not too important perhaps to fix, but...
+      if(overRideClusterLimit) warning("More than 10 annotations/clusterings may result in errors in pheatmap. You have >10 but have chosen to override the internal stop by setting overRideClusterLimit=TRUE.")
+      else stop("More than 10 annotations/clusterings may not be reliably shown in plotHeatmap. To override this limitation and try for yourself, set overRideClusterLimit=TRUE.")
     }
-    
-    #----
-    # check that no ordered factors...
-    # FIXME Check with pheatmap...maybe not a problem? Regardless need to fix error message
-    #----
-    anyOrdered<-sapply(seq_len(ncol(annoteData)),
-        function(ii){is.ordered(annoteData[,ii])})
-    if(any(anyOrdered)) stop("The function aheatmap in the NMF package that is called to create the heatmap does not currently accept ordered factors (https://github.com/renozao/NMF/issues/83)")
     
     if(is.data.frame(annoteData)) annoteData<-droplevels(annoteData)
     if(!is.null(whColumnsCont)){
@@ -935,7 +923,6 @@ setMethod(
     else clusterLegend<-defaultColorLegend$colorList
 
     # Convert to aheatmap format, if needed
-    # FIXME?? I think this should be the same for pheatmap...      
     annColors<-.convertToAheatmap(clusterLegend, names=TRUE)
     
     ##########################
@@ -949,37 +936,36 @@ setMethod(
     }
     
     #-----
-    # Deal with extra levels, only a single level, etc. 
-    # These are all problems with NMF. Need to check on development version.
-    # Also, doesn't deal with if in rowData...
+    # Fix up annotation/clusterLegend for the heatmap
+    # Current problems with pheatmap:
+    #   If extra colors in colorLegend, will plot them regardless of drop_levels. Have submitted bug report:
+    #   https://github.com/raivokolde/pheatmap/issues/69
+    # This code gets rid of extra levels. Unlike aheatmap, doesn't seem to be a problem to have a single level in factor
+    # Also problem if not have enough colors, so regardless want to leave in that check...
     #-----
-    # FIXME?? may be able to drop this with pheatmap...
     prunedList<-lapply(whInAnnColors,function(ii){
       nam<-names(annColors)[[ii]] #the name of variable
       x<-annColors[[ii]] ##list of colors
       levs<-levels(annCol[,nam])
       if(length(x)<length(levs)) stop("number of colors given for ",nam," is less than the number of levels in the data")
-      #Note to self:
-      #It appears that if there is only 1 level of a factor, aheatmap
-      #doesn't plot it unless there are colors longer than 1
-      #But appears only problem with extra colors are just that the first ones must match the levels -- not being matched (or at least not well) to names of the colors.
-      #So going to leave "extra" colors in place, but put them at the end.
       if(is.null(names(x))){
         #if user didn't give names to colors, assign them in order of levels
-        #x<-x[1:length(levs)] #shorten if needed
+        x<-x[1:length(levs)] #shorten if needed
         names(x)<-levs
       }
       else{
         if(any(!levs %in% names(x))) stop("colors given for ",nam," do not cover all levels in the data")
         whlevs<-match(levs,names(x))
-        x<-c(x[whlevs],x[-whlevs])
+        x<-x[whlevs]
       }
       return(x)
     })
     names(prunedList)<-names(annColors)[whInAnnColors]
     annColors[whInAnnColors]<-prunedList
     
-    return(list(annCol=annCol,annColors=annColors,clusterLegend=clusterLegend))
+    return(list(annCol=annCol,
+        annColors=annColors,
+        clusterLegend=clusterLegend))
 }
 
 

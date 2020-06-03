@@ -223,7 +223,7 @@ convertClusterLegend pulls out information stored in the
 \code{showPalette} will plot the \code{colPalette} colors with their
   labels and index.
 
-if returnBreaks if FALSE, instead of returning the vector of breaks, the function will just return the second smallest and second largest value of the breaks. This is useful for alternatively just setting values of the data matrix larger than these values to this value if breaks was a percentile. This argument is only used if \code{breaks<1}, indicating truncating the breaks for large values of data.
+If returnBreaks is FALSE, instead of returning the vector of breaks, the function will just return the second smallest and second largest value of the breaks. This is useful for alternatively just setting values of the data matrix larger than these values to this value if breaks was a percentile. This argument is only used if \code{breaks<1}, indicating the   the breaks were the result of truncating large values of data.
 
 \code{setBreaks} gives a set of breaks (of length 52) equally spaced
   between the boundaries of the data. If breaks is between 0 and 1, then the

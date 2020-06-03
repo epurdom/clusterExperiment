@@ -67,6 +67,74 @@ test_that("`plotHeatmap` works with matrix objects", {
         annotation_colors=list(a=c("blue","green"))),
         "arguments to aheatmap cannot be set by the user")
     
+    #### ---------
+    ## Weird annotation data issues
+    #### ---------
+    
+    ## Test ordered factors (aheatmap couldn't handle them, now pheatmap can)
+    ordFactor<-factor(rep(c(1,2,3),length=ncol(smSimData)),ordered=TRUE)
+    colAnnotData2<-data.frame(colAnnotData[,c(1,2,3)])
+    colAnnotData2$ordered<-ordFactor
+    expect_silent(x1<-plotHeatmap(data=smSimData,
+        colData=colAnnotData2,clusterSamples=FALSE,
+        clusterFeatures=FALSE,plot=plotAll))
+
+    ## Test many levels of factor
+    largeFactor<-factor(c(1:ncol(simData)))
+    colAnnotData3<-data.frame(largeFactor)
+    expect_silent(x1<-plotHeatmap(data=simData,
+        colData=colAnnotData3,clusterSamples=FALSE,
+        clusterFeatures=FALSE,plot=plotAll))
+    
+    clLeg<-alCol[1:2]
+    clLeg<-lapply(clLeg,function(x){names(x)<-letters[1:length(x)]; return(x)})
+    names(clLeg)<-LETTERS[1:length(clLeg)]
+    colAnnot<-do.call(data.frame,lapply(clLeg,function(x){
+        factor(rep(names(x),length=ncol(smSimData)))
+    }))
+    colnames(smSimData)<-as.character(1:ncol(smSimData))
+    rownames(colAnnot)<-colnames(smSimData)
+    
+    
+    #####
+    ## These are all tests directly with pheatmap, so shouldn't be run with package. 
+    ####
+    ## Give colors for less than full number of levels -- this is a problem
+    clLeg2<-clLeg
+    clLeg2[[1]]<-tail(clLeg2[[1]],-1)
+    pheatmap(smSimData,annotation_col=colAnnot,annotation_colors=clLeg2)
+
+    ## Give extra colors -- not a problem -- already tested above
+    clLeg2<-clLeg
+    clLeg2[[1]]<-c(clLeg2[[1]],"z"="yellow")
+    pheatmap(smSimData,annotation_col=colAnnot,annotation_colors=clLeg2)
+
+    ## Give colors mixed up -- seems ok, but it shuffles the order of the names in the annotation legend.
+    clLeg2<-clLeg
+    clLeg2[[1]]<-sample(clLeg2[[1]])
+    pheatmap(smSimData,annotation_col=colAnnot,annotation_colors=clLeg2)
+
+    ## Give extra colors and in wrong order -- again seems ok, though shuffled annotation
+    clLeg2<-clLeg
+    clLeg2[[1]]<-c(clLeg2[[1]],"z"="yellow")
+    clLeg2[[1]]<-sample(clLeg2[[1]])
+    pheatmap(smSimData,annotation_col=colAnnot,annotation_colors=clLeg2,cellwidth=10)
+
+
+    ## Give data that is subset so not all the levels appear in data, but annotation has those levels -- works, but drop_levels=TRUE doesn't actually remove extra levels, so they all print. Strange, because works on another simple example. Submitted bug to pheatmap:
+    ## https://github.com/raivokolde/pheatmap/issues/69
+    pheatmap(smSimData[,colAnnot[,1]%in% c(
+        "c","d")],
+        annotation_col=colAnnot[colAnnot[,1]%in% c(
+        "c","d"),],annotation_colors=clLeg2,cellwidth=10)
+    
+    ## Only 1 level for a factor -- doesn't seem to be a problem
+    clLeg2<-clLeg
+    clLeg2<-c(clLeg2,list(singleFactor=c("a"="yellow","b"="blue")))
+    colAnnot$singleFactor<-factor(rep("a",length=nrow(colAnnot)))
+    pheatmap(smSimData,annotation_col=colAnnot,annotation_colors=clLeg2)
+
+        
     ##Should add tests that pass aheatmap arguments correctly.
 })
 
