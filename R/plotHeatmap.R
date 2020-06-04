@@ -337,22 +337,22 @@ setMethod(
   f = "plotHeatmap",
   signature = signature(data = "ClusterExperiment"),
   definition = function(data,
-                        clusterSamplesData=c("dendrogramValue", "hclust", "orderSamplesValue", "primaryCluster"),
-                        clusterFeaturesData="var", nFeatures=NA,
-                        visualizeData=c("transformed","centeredAndScaled","original"),
-                        whichClusters= c("primary","workflow","all","none"),
-                        colData=NULL,clusterFeatures=TRUE, nBlankLines=2,
-                        colorScale, whichAssay=1,
-                        ...
+        clusterSamplesData=c("dendrogramValue", "hclust", "orderSamplesValue", "primaryCluster"),
+        clusterFeaturesData="var", nFeatures=NA,
+        visualizeData=c("transformed","centeredAndScaled","original"),
+        whichClusters= c("primary","workflow","all","none"),
+        colData=NULL,clusterFeatures=TRUE, nBlankLines=2,
+        colorScale, whichAssay=1,
+        ...
   ){
 
     .convertTry<-function(x,tryResult){if(!inherits(tryResult,"try-error")) return(tryResult) else return(x)}
     userList<-list(...)    
-		checkIgnore<-.depricateArgument(passedArgs=userList,"colData","sampleData") #06/2018 added in BioC 3.8
-		if(!is.null(checkIgnore)){
-			userList<-checkIgnore$passedArgs
-			colData<-checkIgnore$val
-		}
+	checkIgnore<-.depricateArgument(passedArgs=userList,"colData","sampleData") #06/2018 added in BioC 3.8
+	if(!is.null(checkIgnore)){
+		userList<-checkIgnore$passedArgs
+		colData<-checkIgnore$val
+	}
     #########
     ##Determine visualization data and default colorScale based on that
     #########
