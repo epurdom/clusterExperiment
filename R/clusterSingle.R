@@ -16,7 +16,7 @@
 #'   \code{\link{SingleCellExperiment}}, or \code{\link{ClusterExperiment}}
 #'   object.
 #' @param distFunction a distance function to be applied to \code{inputMatrix}. Only
-#'   relevant if \code{inputType="X"}. 
+#'   relevant if \code{inputType="X"}.
 #' See details of \code{\link{clusterSingle}} for the
 #'   required format of the distance function.
 #' @param subsample logical as to whether to subsample via
@@ -68,12 +68,12 @@
 #'   \code{\link{mainClustering}},\code{\link{subsampleClustering}}, and
 #'   \code{\link{seqCluster}}. These three functions are not meant to be called
 #'   by the user, but rather accessed via calls to \code{clusterSingle}. But the
-#'   user can look at the help files of those functions for more information 
+#'   user can look at the help files of those functions for more information
 #'   regarding the parameters that they take.
 #' @details Only certain combinations of parameters are possible for certain
 #'   choices of \code{sequential} and \code{subsample}. These restrictions are
-#'   documented below. 
-#'   \itemize{ 
+#'   documented below.
+#'   \itemize{
 #'       \item{\code{clusterFunction} for
 #'   \code{mainClusterArgs}: }{The choice of \code{subsample=TRUE} also controls
 #'   what algorithm type of clustering functions can be used in the
@@ -89,19 +89,19 @@
 #'   \code{algorithmType} 'K'.  When \code{subsample=FALSE} and
 #'   \code{sequential=FALSE}, then there are no restrictions on the
 #'   \code{ClusterFunction} and that clustering is applied directly to the input
-#'   data. } 
+#'   data. }
 #'   \item{\code{clusterFunction}  for \code{subsampleArgs}: }{If the
 #'   \code{ClusterFunction} object given to the \code{clusterArgs} of
 #'   \code{subsamplingArgs} is missing the algorithm will use the default for
 #'   \code{\link{subsampleClustering}} (currently "pam"). If
 #'   \code{sequential=TRUE}, this \code{ClusterFunction} object must be of type
-#'   'K'. } 
+#'   'K'. }
 #'   \item{Setting \code{k} for subsampling: }{If \code{subsample=TRUE}
 #'   and \code{sequential=TRUE}, the current K of the sequential iteration
 #'   determines the 'k' argument passed to \code{\link{subsampleClustering}}  so
 #'   setting 'k=' in the list given to the subsampleArgs will not do anything
 #'   and will produce a warning to that effect (see documentation of
-#'   \code{\link{seqCluster}}).} 
+#'   \code{\link{seqCluster}}).}
 #'   \item{Setting \code{k} for mainClustering step:
 #'   }{If \code{sequential=TRUE} then the user should not set \code{k} in the
 #'   \code{clusterArgs} argument of \code{mainClusterArgs} because it must be
@@ -111,7 +111,7 @@
 #'   \code{subsample=TRUE}, then the \code{k} in the clustering of
 #'   mainClustering step (assuming the clustering function is of type 'K') will
 #'   use the \code{k} used in the subsampling step to make sure that the
-#'   \code{k} used in the mainClustering step is reasonable. } 
+#'   \code{k} used in the mainClustering step is reasonable. }
 #'   \item{Setting
 #'   \code{findBestK} in \code{mainClusterArgs}: }{If \code{sequential=TRUE} and
 #'   \code{subsample=FALSE}, the user should not set 'findBestK=TRUE' in
@@ -135,11 +135,11 @@
 #' @return A \code{\link{ClusterExperiment}} object if
 #'   \code{inputType} is of type "X".
 #' @return If input was not of type "X", then the result is a list with values
-#'   \itemize{ 
+#'   \itemize{
 #'        \item{clustering: }{The vector of clustering results}
 #'        \item{clusterInfo: }{A list with information about the parameters run in
-#'   the clustering} 
-#'        \item{coClusterMatrix: }{(only if \code{saveSubsamplingMatrix=TRUE}, NxB set of clusterings obtained after B subsamples.} 
+#'   the clustering}
+#'        \item{coClusterMatrix: }{(only if \code{saveSubsamplingMatrix=TRUE}, NxB set of clusterings obtained after B subsamples.}
 #'   }
 #' @details To provide a distance matrix via the argument \code{distFunction},
 #'   the function must be defined to take the distance of the rows of a matrix
@@ -170,7 +170,7 @@
 #' #(same as example in seqCluster only using clusterSingle ...)
 #' set.seed(44261)
 #' clustSeqHier_v2 <- clusterSingle(simData,
-#'      sequential=TRUE, subsample=TRUE, 
+#'      sequential=TRUE, subsample=TRUE,
 #'      subsampleArgs=list(resamp.n=100, samp.p=0.7,
 #'      clusterFunction="kmeans", clusterArgs=list(nstart=10)),
 #'      seqArgs=list(beta=0.8, k0=5), mainClusterArgs=list(minSize=5,
@@ -223,6 +223,7 @@ setMethod(
     definition = function(inputMatrix, reduceMethod="none",
                           nDims=defaultNDims(inputMatrix,reduceMethod),
                           whichAssay=1, ...) {
+
         inputArgs<-list(...)
         isDimReduced<- anyValidReducedDims(inputMatrix) && isReducedDims(inputMatrix,reduceMethod)
         isFilter<-anyValidFilterStats(inputMatrix) && isFilterStats(inputMatrix,reduceMethod)
@@ -256,7 +257,7 @@ setMethod(
             }
             #add back in the SingleCellExperiment stuff lost
             retval<-.addBackSEInfo(newObj=outval,oldObj=inputMatrix)
-            
+
         }
         return(retval)
     }
@@ -269,8 +270,8 @@ setMethod(
 #'   resulting from subsampling is returned in the coClustering slot (and
 #'   replaces any existing coClustering object in the slot \code{coClustering}
 #'   if input object is a \code{ClusterExperiment} object.)
-#' @param makeMissingDiss logical. Whether to calculate necessary distance 
-#'   matrices needed when input is not "diss". If TRUE, then when a clustering 
+#' @param makeMissingDiss logical. Whether to calculate necessary distance
+#'   matrices needed when input is not "diss". If TRUE, then when a clustering
 #'   function calls for a inputType "diss", but the given matrix is of type "X",
 #'   the function will calculate a distance function. A dissimilarity matrix
 #'   will also be calculated if a post-processing argument like \code{findBestK}
@@ -279,17 +280,17 @@ setMethod(
 setMethod(
     f = "clusterSingle",
     signature = signature(inputMatrix = "matrixOrHDF5OrNULL"),
-    definition = function(inputMatrix, inputType="X", 
+    definition = function(inputMatrix, inputType="X",
                           subsample=FALSE, sequential=FALSE, distFunction=NA,
                           mainClusterArgs=NULL, subsampleArgs=NULL, seqArgs=NULL,
-                          isCount=FALSE,transFun=NULL, 
+                          isCount=FALSE,transFun=NULL,
                           reduceMethod="none",
                           nDims=defaultNDims(inputMatrix, reduceMethod),
                           makeMissingDiss=if(ncol(inputMatrix)<1000) TRUE else FALSE,
                           clusterLabel="clusterSingle",
-                          saveSubsamplingMatrix=FALSE, 
+                          saveSubsamplingMatrix=FALSE,
                           checkDiss=FALSE, warnings=TRUE) {
-                             
+
         origInputType<-inputType
         if(saveSubsamplingMatrix & !subsample){
             warning("Setting saveSubsamplingMatrix=TRUE has no effect if subsample=FALSE")
@@ -307,8 +308,8 @@ setMethod(
         }
         ##########
         ## Check arguments and set defaults as needed
-        ## Note, some checks are duplicative of internal functions, 
-        ## but better here, because don't want to find error after 
+        ## Note, some checks are duplicative of internal functions,
+        ## but better here, because don't want to find error after
         ## already done extensive calculation...
         ##########
         checkOut<-.checkArgs(inputType=inputType, subsample=subsample, sequential=sequential, main=TRUE, mainClusterArgs=mainClusterArgs, subsampleArgs=subsampleArgs, seqArgs=seqArgs,allowMakeDiss=makeMissingDiss & !doDiss,warn=warnings)
@@ -319,8 +320,8 @@ setMethod(
         doDissPost<-checkOut$doDissPost
         if(!doDiss){
             doDiss<-checkOut$doDiss
-        } 
-        
+        }
+
         ##########
         ## Handle dimensionality reduction:
         ##########
@@ -334,7 +335,7 @@ setMethod(
             ##########
             transFun<-.makeTransFun(transFun=transFun,isCount=isCount) #need this later to build clusterExperiment object
             reduceMethod<-match.arg(reduceMethod,c("none",
-                                   listBuiltInReducedDims(), 
+                                   listBuiltInReducedDims(),
                                    listBuiltInFilterStats())) #because this is matrix method, will always have to be a built in value.
             if(length(nDims)>1 || length(reduceMethod)>1) {
                 stop("clusterSingle only handles one choice of dimensions or reduceMethod. If you want to compare multiple choices, try clusterMany")
@@ -359,10 +360,10 @@ setMethod(
             if(any(reduceMethod!="none")) stop("'reduceMethod' cannot be given if 'inputType' argument is not of type 'X'.")
             N<-nrow(inputMatrix)
         }
-        
-        
+
+
         #Make dissimilarity AFTER transforming data
-        
+
         cf<-if(subsample) subsampleArgs[["clusterFunction"]] else mainClusterArgs[["clusterFunction"]]
         if(doDiss){
             mess<-"Making nxn dissimilarity matrix"
@@ -386,7 +387,7 @@ setMethod(
                 checkDiss=FALSE, algType=algorithmType(cfPost))
             if(checkDiss) .checkDissFunction(mainClusterArgs[["diss"]], algType = algorithmType(cfPost))
         }
-        
+
         if(inputType=="diss" & checkDiss){
             .checkDissFunction(inputMatrix, algType = algorithmType(cf))
         }
@@ -410,7 +411,7 @@ setMethod(
                     subsampleArgs=subsampleArgs,
                     mainClusterArgs=mainClusterArgs)
             outlist <- list("clustering"= .clusterListToVector(finalClusterList$result, N), coClusterMatrix=t(finalClusterList$inputMatrix))
-            
+
         }
         clInfo<-list(list(clusterInfo = outlist$clusterInfo,
                           whyStop = outlist$whyStop,
@@ -425,7 +426,7 @@ setMethod(
         ##########
         ## Convert to ClusterExperiment Object
         ##########
-        if(origInputType == "X"){ 
+        if(origInputType == "X"){
             retval<-.convertOutListToCE(
                 xMatrix=origX,
                 clustering=outlist$clustering,
@@ -433,32 +434,32 @@ setMethod(
                 coClusterMatrix=outlist$coClusterMatrix,
                 transFun=transFun,
                 clusterLabel=clusterLabel,
-                sequential=sequential, 
-                subsample=subsample, 
-                saveSubsamplingMatrix=saveSubsamplingMatrix, 
+                sequential=sequential,
+                subsample=subsample,
+                saveSubsamplingMatrix=saveSubsamplingMatrix,
                 existingCE=transObj)
             return(retval)
         }
         else{
-            out<-list(clustering=outlist$clustering, 
+            out<-list(clustering=outlist$clustering,
 				clusterInfo=clInfo)
-            if(saveSubsamplingMatrix) 
+            if(saveSubsamplingMatrix)
                 out<-c(out,list(coClusterMatrix=outlist$coClusterMatrix))
             return(out)
         }
-        
+
     }
 )
-# Do this so clear how to transform diss version of output into CE 
+# Do this so clear how to transform diss version of output into CE
 # (for reuse in clusterMany...)
 .convertOutListToCE<-function(xMatrix,
-    clustering,clusterInfo, coClusterMatrix, 
-    clusterLabel,sequential, 
+    clustering,clusterInfo, coClusterMatrix,
+    clusterLabel,sequential,
     subsample, transFun,
     saveSubsamplingMatrix, existingCE){
     retval <- ClusterExperiment(xMatrix, clustering,
                                 transformation=transFun,
-                                clusterInfo=clusterInfo, 
+                                clusterInfo=clusterInfo,
                                 clusterTypes="clusterSingle",
                                 checkTransformAndAssay=FALSE)
     clusterLabels(retval)<-clusterLabel
@@ -482,13 +483,13 @@ setMethod(
     if(subsample){
         #Returns NxB matrix
         inputMatrix<-t(do.call("subsampleClustering",
-			c(list(inputMatrix=inputMatrix), 
+			c(list(inputMatrix=inputMatrix),
 			subsampleArgs)))
         mainClusterArgs[["inputType"]]<-"cat"
-    }    
+    }
     #Takes as input BxN matrix...
     resList<-do.call("mainClustering",
-		c(list(inputMatrix=inputMatrix, 
+		c(list(inputMatrix=inputMatrix,
 			format="list", returnData=TRUE),
 		mainClusterArgs))
     return(resList)

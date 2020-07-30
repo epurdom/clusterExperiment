@@ -82,7 +82,7 @@ setMethod(
     signature = signature(clusterFunction = "character"),
     definition = function(clusterFunction,...){
         subsampleClustering(getBuiltInFunction(clusterFunction),...)
-        
+
     }
 )
 
@@ -106,7 +106,7 @@ setMethod(
                         resamp.num = 100, samp.p = 0.7,
 						ncores=1,warnings=TRUE,... )
     {
-        
+
         classifyMethod<-match.arg(classifyMethod)
         ###########################
         ######## CHECKS
@@ -114,11 +114,11 @@ setMethod(
         if(missing(inputType)) stop("Internal error: inputType was not passed to subsampling step")
         moreArgs<-list(...)
         subsampleArgs<-c(list(clusterFunction=clusterFunction, clusterArgs=clusterArgs, classifyMethod=classifyMethod),moreArgs)
-        checkOut<-.checkArgs(inputType=inputType, 
+        checkOut<-.checkArgs(inputType=inputType,
                         main=FALSE, subsample=TRUE, sequential=FALSE,
                         mainClusterArgs=NULL,
-                        subsampleArgs=subsampleArgs, 
-                        warn=warnings)		
+                        subsampleArgs=subsampleArgs,
+                        warn=warnings)
         if(is.character(checkOut)) stop(checkOut)
         else{
             subsampleArgs<-checkOut$subsampleArgs
@@ -127,7 +127,7 @@ setMethod(
         clusterFunction<-subsampleArgs[["clusterFunction"]]
         clusterArgs<-subsampleArgs[["clusterArgs"]]
         inputType<-subsampleArgs[["inputType"]]
-        
+
         #-----
         # Basic parameters, subsamples
         #-----
@@ -135,7 +135,7 @@ setMethod(
         subSize <- round(samp.p * N)
         idx<-replicate(resamp.num,sample(seq_len(N),size=subSize))
         #each column a set of indices for the subsample.
-        
+
         ###########################
         # Function that calls the clustering for each subsample
         # Called over a loop (lapply or mclapply)
@@ -147,15 +147,15 @@ setMethod(
             #if doing InSample, do cluster.only because will be more efficient, e.g. pam and kmeans.
             argsClusterList <- list(inputType=inputType,
                 "cluster.only"=(classifyMethod=="InSample"))
-            if(inputType=="diss") 
-                argsClusterList<-c(argsClusterList, 
+            if(inputType=="diss")
+                argsClusterList<-c(argsClusterList,
                     list(inputMatrix=inputMatrix[ids,ids,drop=FALSE]))
             else
-                argsClusterList<-c(argsClusterList, 
+                argsClusterList<-c(argsClusterList,
                     list(inputMatrix=inputMatrix[,ids,drop=FALSE]))
             result <- do.call(clusterFunction@clusterFUN,
                               c(argsClusterList,clusterArgs))
-            
+
             ##----
             ##Classify subsample
             ##----
@@ -167,7 +167,7 @@ setMethod(
                 classElse <- do.call(clusterFunction@classifyFUN,
                                      list(clusterResult=result,
 										 inputMatrix=if(inputType!="diss") inputMatrix[,-ids,drop=FALSE] else inputMatrix[-ids,-ids,drop=FALSE]))
-                
+
                 classX <- rep(NA,N)
                 classX[-ids] <- classElse
             }
@@ -185,12 +185,12 @@ setMethod(
                     classX[ids]<-result
                 }
             }
-            
+
             #classX is length N
             #classX has NA if method does not classify all of the data.
             return(classX)
         }
-        
+
         if(ncores==1){
             DList<-apply(idx,2,perSample)
         }

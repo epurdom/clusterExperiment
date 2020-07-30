@@ -223,8 +223,8 @@ NULL
     else return(out)
 }
 
-.snn_clustering <- function(x, alpha, algorithm = c("walktrap", "louvain", "components_weak", "components_strong"), steps = 4, inputType = "cat", ...) {
-
+.snn_clustering <- function(x, alpha, algorithm = c("louvain", "walktrap", "components_weak", "components_strong"), steps = 4, inputType = "cat", ...) {
+    x <- t(x)
     algorithm <- match.arg(algorithm)
     inputType <- match.arg(inputType)
 

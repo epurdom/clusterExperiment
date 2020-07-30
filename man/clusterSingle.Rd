@@ -81,7 +81,7 @@ of \code{\link{seqCluster}}). Can be used in combination with
 \code{subsample=TRUE} or \code{FALSE}.}
 
 \item{distFunction}{a distance function to be applied to \code{inputMatrix}. Only
-  relevant if \code{inputType="X"}. 
+  relevant if \code{inputType="X"}.
 See details of \code{\link{clusterSingle}} for the
   required format of the distance function.}
 
@@ -107,8 +107,8 @@ function will throw an error. If object is of class
 \code{ClusterExperiment}, the stored transformation will be used and giving
 this parameter will result in an error.}
 
-\item{makeMissingDiss}{logical. Whether to calculate necessary distance 
-matrices needed when input is not "diss". If TRUE, then when a clustering 
+\item{makeMissingDiss}{logical. Whether to calculate necessary distance
+matrices needed when input is not "diss". If TRUE, then when a clustering
 function calls for a inputType "diss", but the given matrix is of type "X",
 the function will calculate a distance function. A dissimilarity matrix
 will also be calculated if a post-processing argument like \code{findBestK}
@@ -136,11 +136,11 @@ A \code{\link{ClusterExperiment}} object if
   \code{inputType} is of type "X".
 
 If input was not of type "X", then the result is a list with values
-  \itemize{ 
+  \itemize{
        \item{clustering: }{The vector of clustering results}
        \item{clusterInfo: }{A list with information about the parameters run in
-  the clustering} 
-       \item{coClusterMatrix: }{(only if \code{saveSubsamplingMatrix=TRUE}, NxB set of clusterings obtained after B subsamples.} 
+  the clustering}
+       \item{coClusterMatrix: }{(only if \code{saveSubsamplingMatrix=TRUE}, NxB set of clusterings obtained after B subsamples.}
   }
 }
 \description{
@@ -166,13 +166,13 @@ Unlike \code{\link{clusterMany}}, most of the relevant arguments for
   \code{\link{mainClustering}},\code{\link{subsampleClustering}}, and
   \code{\link{seqCluster}}. These three functions are not meant to be called
   by the user, but rather accessed via calls to \code{clusterSingle}. But the
-  user can look at the help files of those functions for more information 
+  user can look at the help files of those functions for more information
   regarding the parameters that they take.
 
 Only certain combinations of parameters are possible for certain
   choices of \code{sequential} and \code{subsample}. These restrictions are
-  documented below. 
-  \itemize{ 
+  documented below.
+  \itemize{
       \item{\code{clusterFunction} for
   \code{mainClusterArgs}: }{The choice of \code{subsample=TRUE} also controls
   what algorithm type of clustering functions can be used in the
@@ -188,19 +188,19 @@ Only certain combinations of parameters are possible for certain
   \code{algorithmType} 'K'.  When \code{subsample=FALSE} and
   \code{sequential=FALSE}, then there are no restrictions on the
   \code{ClusterFunction} and that clustering is applied directly to the input
-  data. } 
+  data. }
   \item{\code{clusterFunction}  for \code{subsampleArgs}: }{If the
   \code{ClusterFunction} object given to the \code{clusterArgs} of
   \code{subsamplingArgs} is missing the algorithm will use the default for
   \code{\link{subsampleClustering}} (currently "pam"). If
   \code{sequential=TRUE}, this \code{ClusterFunction} object must be of type
-  'K'. } 
+  'K'. }
   \item{Setting \code{k} for subsampling: }{If \code{subsample=TRUE}
   and \code{sequential=TRUE}, the current K of the sequential iteration
   determines the 'k' argument passed to \code{\link{subsampleClustering}}  so
   setting 'k=' in the list given to the subsampleArgs will not do anything
   and will produce a warning to that effect (see documentation of
-  \code{\link{seqCluster}}).} 
+  \code{\link{seqCluster}}).}
   \item{Setting \code{k} for mainClustering step:
   }{If \code{sequential=TRUE} then the user should not set \code{k} in the
   \code{clusterArgs} argument of \code{mainClusterArgs} because it must be
@@ -210,7 +210,7 @@ Only certain combinations of parameters are possible for certain
   \code{subsample=TRUE}, then the \code{k} in the clustering of
   mainClustering step (assuming the clustering function is of type 'K') will
   use the \code{k} used in the subsampling step to make sure that the
-  \code{k} used in the mainClustering step is reasonable. } 
+  \code{k} used in the mainClustering step is reasonable. }
   \item{Setting
   \code{findBestK} in \code{mainClusterArgs}: }{If \code{sequential=TRUE} and
   \code{subsample=FALSE}, the user should not set 'findBestK=TRUE' in
@@ -254,7 +254,7 @@ data(simData)
 #(same as example in seqCluster only using clusterSingle ...)
 set.seed(44261)
 clustSeqHier_v2 <- clusterSingle(simData,
-     sequential=TRUE, subsample=TRUE, 
+     sequential=TRUE, subsample=TRUE,
      subsampleArgs=list(resamp.n=100, samp.p=0.7,
      clusterFunction="kmeans", clusterArgs=list(nstart=10)),
      seqArgs=list(beta=0.8, k0=5), mainClusterArgs=list(minSize=5,

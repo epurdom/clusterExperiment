@@ -41,3 +41,55 @@ system.time(rsec2<-RSEC(se, isCount=TRUE, reduceMethod="PCA", nReducedDims=c(50)
                         consensusArgs = list(clusterFunction="snn")
 ))
 table(primaryCluster(rsec1), primaryCluster(rsec2))
+
+
+tmp1 <- clusterSingle(simData, subsample = TRUE, sequential = FALSE,
+              mainClusterArgs = list(clusterFunction = "hierarchical01",
+                                     clusterArgs = list(alpha = 0.9)),
+              subsampleArgs = list(clusterFunction = "kmeans",
+                                   clusterArgs = list(k = 5),
+                                   samp.p = 0.7,
+                                   resamp.num = 100))
+
+tmp2 <- clusterSingle(se[1:100,], subsample = TRUE, sequential = FALSE,
+                      mainClusterArgs = list(clusterFunction = "snn",
+                                             clusterArgs = list(alpha = 0.9)),
+                      subsampleArgs = list(clusterFunction = "kmeans",
+                                           clusterArgs = list(k = 5),
+                                           samp.p = 0.7,
+                                           resamp.num = 100))
+
+
+tmp = clusterSingle(simData, subsample=TRUE, sequential=FALSE,
+                    mainClusterArgs = list(
+                      clusterFunction="hierarchical01",
+                      clusterArgs=list(alpha=0.9)
+                    ),
+                    subsampleArgs = list(
+                      clusterFunction = "kmeans",
+                      clusterArgs = list(k = 5),
+                      samp.p = 0.7,
+                      resamp.num = 100))
+
+tmp = clusterSingle(simData, subsample=TRUE, sequential=FALSE,
+                    mainClusterArgs = list(
+                      clusterFunction="snn",
+                      clusterArgs=list(alpha=0.9)
+                    ),
+                    subsampleArgs = list(
+                      clusterFunction = "kmeans",
+                      clusterArgs = list(k = 5),
+                      samp.p = 0.7,
+                      resamp.num = 100))
+
+tmp = clusterSingle(simData,
+                    subsample=TRUE, sequential=FALSE,
+                    mainClusterArgs = list(
+                      clusterFunction="snn",
+                      clusterArgs=list(alpha=0.2, algorithm="louvain")
+                    ),
+                    subsampleArgs = list(
+                      clusterFunction = "kmeans",
+                      clusterArgs = list(k = 5),
+                      samp.p = 0.7,
+                      resamp.num = 100))

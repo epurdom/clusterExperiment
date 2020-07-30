@@ -166,8 +166,8 @@ step, see help pages of \code{\link{mainClustering}}.}
 \item{whichAssay}{numeric or character specifying which assay to use. See
 \code{\link[SummarizedExperiment]{assay}} for details.}
 
-\item{makeMissingDiss}{logical. Whether to calculate necessary distance 
-matrices needed when input is not "diss". If TRUE, then when a clustering 
+\item{makeMissingDiss}{logical. Whether to calculate necessary distance
+matrices needed when input is not "diss". If TRUE, then when a clustering
 function calls for a inputType "diss", but the given matrix is of type "X",
 the function will calculate a distance function. A dissimilarity matrix
 will also be calculated if a post-processing argument like \code{findBestK}
