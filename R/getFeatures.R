@@ -34,7 +34,7 @@
 #'   which is the starting point for both \code{edgeR} and \code{limma-voom}
 #'   methods of DE. This includes normalization factors/total count values etc.
 #' @param ... If \code{x} is a matrix, these are options to pass to 
-#'   \code{\link{topTable}} or \code{\link[limma]{topTableF}} (see 
+#'   \code{\link{topTable}}  (see 
 #'   \code{\link[limma]{limma}} package). If \code{x} is a 
 #'   \code{ClusterExperiment} object, these arguments can also be those to pass 
 #'   to the matrix version.
@@ -42,9 +42,8 @@
 #' @inheritParams getClusterIndex
 #' @details getBestFeatures returns the top ranked features corresponding to a 
 #'   cluster assignment. It uses either limma or edgeR to fit the models, and 
-#'   limma/edgeR functions \code{\link[limma]{topTable}} or 
-#'   \code{\link[limma]{topTableF}} to find the best features. See the options 
-#'   of these functions to put better control on what gets returned (e.g. only 
+#'   limma/edgeR functions \code{\link[limma]{topTable}} to find the best features. See the options 
+#'   of this function to put better control on what gets returned (e.g. only 
 #'   if significant, only if log-fc is above a certain amount, etc.). In 
 #'   particular, set `number=` to define how many significant features to return
 #'   (where number is per contrast for the `Pairs` or `Dendro` option)
@@ -275,7 +274,7 @@ definition = function(x, cluster,
                 normalize.method = "none")
       fitF <- lmFit(v, designF)
     }
-		else if(DEMethod=="edgeR"){
+	else if(DEMethod=="edgeR"){
         fitF <- edgeR::estimateDisp(dge, design = designF)
         fitF <- edgeR::glmFit(fitF,design = designF)
     } else if(DEMethod=="limma") {
@@ -399,7 +398,9 @@ setMethod(
 	if(DEMethod%in% c("limma","limma-voom")){
 	  ## basic limma design
 	  fit2 <- eBayes(fit)
-	  tops <- topTableF(fit2,genelist=rownames(fit$coef),...)
+      #browser()
+	  tops <- suppressMessages(topTable(fit2,coef=NULL,
+          genelist=rownames(fit$coef),...))
 	  colnames(tops)[colnames(tops)=="ProbeID"]<-"Feature"
 	}
 	else if(DEMethod=="edgeR"){
