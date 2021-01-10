@@ -136,10 +136,10 @@ test_that("`clusterSingle` works with reduceMethod", {
 	#check consistency
 	expect_equal(primaryCluster(clustNothing8),rep(c(1,2,3),each=100))
 
-  	expect_warning(clusterSingle(sceSimData,
+  	expect_silent(clusterSingle(sceSimData,
 		reduceMethod="PCA", nDims=NA,
 		mainClusterArgs=list(clusterArgs=list(k=3),clusterFunction="pam"),
-		subsample=FALSE, sequential=FALSE, isCount=FALSE),"all singular values are requested")
+		subsample=FALSE, sequential=FALSE, isCount=FALSE))
 
 
 
