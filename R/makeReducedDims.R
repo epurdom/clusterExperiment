@@ -146,17 +146,11 @@ setMethod(
 #' @export
 listBuiltInReducedDims<-function(){c("PCA")}
 
-#' @importFrom RSpectra svds
-.pca <- function(x, center=TRUE, scale=FALSE, k) {
-  svd_raw <- RSpectra::svds(scale(x, center=center, scale=scale), k=k, nu=k, nv=0)
-  pc_raw <- svd_raw$u %*% diag(svd_raw$d, nrow = length(svd_raw$d))
-  rownames(pc_raw) <- rownames(x)
-  return(pc_raw)
-}
-#' @importFrom stats prcomp
+#' @importFrom BiocSingular runPCA
 .pcaDimRed<-function(x,md,isPct,rowvars){	
+  tempX <- t(x[which(rowvars>0),])
   if(isPct) {
-    prcObj<-stats::prcomp(t(x[which(rowvars>0),]),center=TRUE,scale=TRUE)
+    prcObj<-BiocSingular::runPCA(tempX,rank=min(dim(tempX)),center=TRUE,scale=TRUE)
     prvar<-prcObj$sdev^2 #variance of each component
     prvar<-prvar/sum(prvar)
     prc<-prcObj$x
@@ -165,11 +159,11 @@ listBuiltInReducedDims<-function(){c("PCA")}
     prc <- prc[,seq_len(md)]
   }
   else {
-    prc <- .pca(t(x[which(rowvars>0),]), center=TRUE, scale=TRUE, k=md)
+    prcObj <- BiocSingular::runPCA(tempX, rank=md, center=TRUE, scale=TRUE)
+    prc<-prcObj$x
     if(any(md > NROW(prc)))
       stop("Internal error in coding of principal components.")
   }
-  colnames(prc)<-paste("PC",seq_len(ncol(prc)),sep="") #make them match prcomp
   return(prc)
 }
 
