@@ -138,6 +138,7 @@ test_that("RSEC works wih non default assays", {
 })
 
 test_that("RSEC works independent of assay order", {
+    local_edition(3) # allows to ignore function environment; for some reason this wasn't problem before, but now it is
     skip_on_os("windows")
     #create two with different order of the assays
     multi_se <- SummarizedExperiment(assays = list(counts = simCount,
@@ -164,10 +165,12 @@ test_that("RSEC works independent of assay order", {
                             random.seed=seedValue, whichAssay = "logcounts"),
                  "Merging will be done on")
 
-    # had to change the tests, because with new version of bioconductor, order of assays being different is caught, and for some reason wasn't caught before. Very strange passed previously.
+    # had to change the tests, because with new version of bioconductor, 
+    # order of assays being different is caught, and for some reason wasn't caught before. 
+    # Very strange passed previously.
     # Want to test everything same but assays
     out1@assays<-out2@assays
-    expect_equal(out1, out2)
+    expect_equal(out1, out2,ignore_function_env=TRUE)
 
     #use numeric
     expect_message(out1<-RSEC(x=multi_cc, reduceMethod="none",
@@ -187,7 +190,7 @@ test_that("RSEC works independent of assay order", {
                  "Merging will be done on")
     # Want to test everything same but assays
     out1@assays<-out2@assays
-    expect_equal(out1, out2)
+    expect_equal(out1, out2,ignore_function_env=TRUE)
 
     #use character, counts on both with PCA reduce
     # In 2.7.2-9001 had to change this to 60 dims -- no longer ran, probably because changed the clustering slightly?
@@ -209,7 +212,7 @@ test_that("RSEC works independent of assay order", {
 
     # Want to test everything same but assays
     out1@assays<-out2@assays
-    expect_equal(out1, out2)
+    expect_equal(out1, out2,ignore_function_env=TRUE)
 
     #use character, counts on both with var reduce
     expect_message(out1<-RSEC(x=multi_cc, reduceMethod="var",
@@ -230,6 +233,6 @@ test_that("RSEC works independent of assay order", {
 
     # Want to test everything same but assays
     out1@assays<-out2@assays
-    expect_equal(out1, out2)
+    expect_equal(out1, out2,ignore_function_env=TRUE)
 
 })

@@ -389,6 +389,7 @@ test_that("subsetting by cluster works as promised",{
 })
 
 test_that("check clusterLegend manipulations work as promised", {
+    local_edition(3)
     x<-clusterLegend(cc)
     expect_silent(clusterLegend(cc)<-x)
     expect_silent(c4<-addClusterings(ccSE,clusterMatrix(ccSE),clusterTypes="New",clusterLabels=c("new1","new2"),clusterLegend=clusterLegend(ccSE)))
@@ -402,7 +403,7 @@ test_that("check clusterLegend manipulations work as promised", {
 	#check adding clusterLegend directly to constructor
     ##########
 	newcc<-ClusterExperiment(as(cc,"SingleCellExperiment"),clusters=clusterMatrix(cc),clusterLegend=clusterLegend(cc))
-	expect_equal(cc,newcc)
+	expect_equal(cc,newcc,ignore_function_env=TRUE)
 
 	newCL<-clusterLegend(cc)
 	newCL[[1]][,"name"]<-letters[1:nrow(newCL[[1]])]
