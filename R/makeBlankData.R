@@ -71,10 +71,10 @@ makeBlankData <- function(data,groupsOfFeatures=NULL,groupsOfSamples=NULL,nBlank
 	
   if(!is.null(groupsOfSamples)){
 		testSampleIndices <- sapply(groupsOfSamples,function(x) {
-	    is.numeric(x) && all(x %in% seq_len(NROW(data)))
+	    is.numeric(x) && all(x %in% seq_len(NCOL(data)))
 	  })
 	  if (!all(testSampleIndices))
-	    stop("Invalid list of indices in groupsOfFeatures.")
+	    stop("Invalid list of indices in groupsOfSamples.")
 	}
 
   if(is.null(rownames(data))) row.names(data)<-as.character(seq_len(nrow(data)))
