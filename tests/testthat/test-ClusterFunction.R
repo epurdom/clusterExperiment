@@ -16,7 +16,7 @@ test_that("cat inputType works on relevant cluster functions", {
     catMat<-cbind(catMat,catMat)
     set.seed(32590)
     catMat<-catMat[,sample(1:ncol(catMat))]
-    expect_silent(pMat<-.clustersHammingDistance(catMat))
+    expect_silent(pMat<-clusterExperiment:::.clustersHammingDistance(catMat))
     
     kMethods<-listBuiltInTypeK()
     kMethods<-kMethods[sapply(inputType(kMethods),function(x){"cat" %in% x})]
@@ -82,5 +82,4 @@ test_that("built in cluster functions return correct clustering", {
     out<-getBuiltInFunction("kmeans")@clusterFUN(inputMatrix=mat,
          inputType="X",k=3,cluster.only=TRUE)
     expect_equal(truth,out)
-    
- })
+})
