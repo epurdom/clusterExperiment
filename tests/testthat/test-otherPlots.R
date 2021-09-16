@@ -94,7 +94,7 @@ test_that("`plotClusters` rerun above tests with colData included", {
 
     #check NAs
     naSim<-ceSim
-    colData(naSim)[sample(10,1:nrow(naSim)),]<-NA
+    colData(naSim)[sample(size=10,x=1:nrow(naSim)),c("A","B")]<-NA
     expect_silent(plotClusters(naSim,colData=c("A","B")))
 
     #test the new TRUE option for colData
