@@ -6,6 +6,7 @@
 ^.*\\.md$
 ^\\.DS_Store$
 todoForKNN.txt
+tests/timeTests.R
 
 # Travis-CI et al.
 ^.*\\.yml$
