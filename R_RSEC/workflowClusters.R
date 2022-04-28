@@ -217,7 +217,7 @@ setMethod(
       }
     }
   }
-  object<-.unnameClusterSlots(object) #just to make sure didn't have names on labels or types
+  object<-ClusterExperiment:::.unnameClusterSlots(object) #just to make sure didn't have names on labels or types
   ch<-.checkClusterTypes(object)
   if(!is.logical(ch)) stop(ch)
   ch<-.checkClusterLabels(object)

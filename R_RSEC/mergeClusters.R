@@ -218,7 +218,7 @@ setMethod(
         if(!is.numeric(cutoff) || cutoff<0 || cutoff > 1) stop("Invalid value for the parameter 'cutoff'.")
         if(is.factor(cl)){
             warning("cl is a factor. Converting to numeric, which may not result in valid conversion")
-            cl <- .convertToNum(cl)
+            cl <- clusterExperiment:::.convertToNum(cl)
         }
         if(!is.null(dendro)){
             #check valid

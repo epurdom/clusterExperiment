@@ -7,7 +7,7 @@ The following functions have been moved to the RSEC package (this is not a compl
 * clusterMany
 * clusterSingle
 * makeConsensus
-* 
+* getReducedData
 
 Other changes:
 * argument `mergeCEObjects` changed to `mergeObjects` in `addClusterings`.

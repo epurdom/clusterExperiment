@@ -274,7 +274,7 @@ setValidity("RSECClass", function(object) {
 #     }
 #     #make clusters consecutive integer valued:
 #     if(nrow(clusters)>0){
-# 	    tmp<-.makeColors(clusters, colors=massivePalette,matchClusterLegend=clusterLegend,matchTo="givenIds")
+# 	    tmp<-ClusterExperiment:::.makeColors(clusters, colors=massivePalette,matchClusterLegend=clusterLegend,matchTo="givenIds")
 # 	    if(is.null(clusterLegend)){
 # 	    	clusterLegend<-tmp$colorList
 # 	    }
