@@ -111,16 +111,16 @@ test_that("`plotClusters` rerun above tests with colData included", {
 
 
 test_that("plotClustersWorkflow", {
-	cc<-clusterMany(mat, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),reduceMethod=c("none","PCA","var"),clusterFunction="pam",
+	expect_silent(cc<-clusterMany(mat, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),reduceMethod=c("none","PCA","var"),clusterFunction="pam",
 	                       subsample=FALSE, sequential=FALSE,run=TRUE,verbose=FALSE,
-	                       isCount=FALSE)
-	cc<-makeConsensus(cc,proportion=.7,whichClusters = "clusterMany")
-	plotClustersWorkflow(cc)
-	plotClustersWorkflow(cc,clusterManyLabels=FALSE)
-	plotClustersWorkflow(cc,sortBy="clusterMany")
-	plotClustersWorkflow(cc,sortBy="clusterMany",highlightOnTop=FALSE)
-	plotClustersWorkflow(cc,highlightOnTop=FALSE)
-	plotClustersWorkflow(cc,clusterManyLabels=FALSE,clusterLabels="test")
+	                       isCount=FALSE))
+	expect_silent(cc<-makeConsensus(cc,proportion=.7,whichClusters = "clusterMany"))
+	expect_silent(plotClustersWorkflow(cc))
+	expect_silent(plotClustersWorkflow(cc,clusterManyLabels=FALSE))
+	expect_silent(plotClustersWorkflow(cc,sortBy="clusterMany"))
+	expect_silent(plotClustersWorkflow(cc,sortBy="clusterMany",highlightOnTop=FALSE))
+	expect_silent(plotClustersWorkflow(cc,highlightOnTop=FALSE))
+	expect_silent(plotClustersWorkflow(cc,clusterManyLabels=FALSE,clusterLabels="test"))
 	expect_error(plotClustersWorkflow(cc,clusterManyLabels=c("1","2"),clusterLabels="test"),"number of cluster labels given in clusterManyLabels")
 	expect_error(plotClustersWorkflow(cc,clusterManyLabels=TRUE,clusterLabels=c("A","test")),"number of cluster labels given in clusterLabels")
 
