@@ -48,30 +48,6 @@ setClassUnion("sparseOrHDF5OrNULL",members=c("numeric","sparseMatrix","DelayedAr
 #' @slot primaryIndex numeric. An index that specifies the primary set of
 #' labels.
 #' @slot clusterInfo list. A list with info about the clustering.
-#' If created from \code{\link{clusterSingle}}, clusterInfo will include the
-#' parameter used for the call, and the call itself. If \code{sequential = TRUE}
-#' it will also include the following components.
-#' \itemize{
-#' \item{\code{clusterInfo}}{if sequential=TRUE and clusters were successfully
-#' found, a matrix of information regarding the algorithm behavior for each
-#' cluster (the starting and stopping K for each cluster, and the number of
-#' iterations for each cluster).}
-#' \item{\code{whyStop}}{if sequential=TRUE and clusters were successfully
-#' found, a character string explaining what triggered the algorithm to stop.}
-#' }
-#' @slot merge_index index of the current merged cluster
-#' @slot merge_cutoff value for the cutoff used to determine whether to merge
-#'   clusters
-#' @slot merge_dendrocluster_index index of the cluster merged with the current
-#'   merge
-#' @slot merge_nodeMerge data.frame of information about nodes merged in the
-#'   current merge. See \code{\link{mergeClusters}}
-#' @slot merge_nodeProp data.frame of information of proportion estimated
-#'   non-null at each node of dendrogram. See \code{\link{mergeClusters}}
-#' @slot merge_method character indicating method used for merging. See 
-#'   \code{\link{mergeClusters}}
-#' @slot merge_demethod character indicating the DE method used for merging. See 
-#'   \code{\link{mergeClusters}}
 #' @slot clusterTypes character vector with the origin of each column of
 #' clusterMatrix.
 #' @slot dendro_samples \code{\link[phylobase]{phylo4d}} object. A dendrogram
@@ -82,20 +58,6 @@ setClassUnion("sparseOrHDF5OrNULL",members=c("numeric","sparseMatrix","DelayedAr
 #'   \code{\link{sampleDendrogram}} for details).
 #' @slot dendro_index numeric. An integer giving the cluster that was used to
 #'   make the dendrograms. NA_real_ value if no dendrograms are saved.
-#' @slot coClustering One of \itemize{ 
-#' \item{\code{NULL}, i.e. empty} 
-#' \item{a
-#'   numeric vector, signifying the indices of the clusterings in the
-#'   clusterMatrix that were used for \code{makeConsensus}. This allows for the
-#'   recreation of the distance matrix (using hamming distance) if needed for
-#'   function \code{plotClusters} but doesn't require storage of full NxN
-#'   matrix.} 
-#' \item{a \code{\link[Matrix]{sparseMatrix}} object -- a sparse 
-#'   representation of the NxN matrix with the cluster co-occurrence 
-#'   information; this can either be based on subsampling or on co-clustering 
-#'   across parameter sets (see \code{clusterMany}). The matrix is a square
-#'   matrix with number of rows/columns equal to the number of samples.}
-#' }
 #' @slot clusterLegend a list, one per cluster in \code{clusterMatrix}. Each
 #' element of the list is a matrix with nrows equal to the number of different
 #' clusters in the clustering, and consisting of at least two columns with the
@@ -125,30 +87,12 @@ setClass(
     orderSamples="numeric",
     dendro_samples = "phylo4OrNULL",
     dendro_clusters = "phylo4OrNULL",
-    dendro_index = "numeric",
-    coClustering = "sparseOrHDF5OrNULL",
-	merge_index="numeric",
-	merge_dendrocluster_index="numeric",
-	merge_method="character",
-	merge_demethod="character",
-	merge_cutoff="numeric",
-	merge_nodeProp="data.frameOrNULL",
-	merge_nodeMerge="data.frameOrNULL"
-
+    dendro_index = "numeric"
     ),
     prototype = prototype(    
         dendro_samples = NULL,
         dendro_clusters = NULL,
-        dendro_index=NA_real_, 
-        merge_index=NA_real_,
-    	merge_dendrocluster_index=NA_real_,
-        coClustering = NULL,
-    	merge_method=NA_character_,
-    	merge_demethod=NA_character_,
-    	merge_cutoff=NA_real_,
-        merge_nodeProp=NULL,
-    	merge_nodeMerge=NULL
-        
+        dendro_index=NA_real_        
         )
 )
 
@@ -170,11 +114,7 @@ setValidity("ClusterExperiment", function(object) {
 	if(!is.logical(ch))  return(ch)
 	ch<-.checkClusterLabels(object)
 	if(!is.logical(ch))  return(ch)
-	ch<-.checkMerge(object)
-	if(!is.logical(ch))  return(ch)
 	ch<-.checkDendrogram(object)
-	if(!is.logical(ch))  return(ch)
-	ch<-.checkCoClustering(object)
 	if(!is.logical(ch))  return(ch)
 	return(TRUE)
 })
@@ -266,20 +206,8 @@ setMethod(
 #'@param dendro_clusters phylo4 object. Sets the `dendro_clusters` slot (see
 #'  Slots).
 #'@param dendro_index numeric. Sets the \code{dendro_index} slot (see Slots).
-#'@param coClustering matrix. Sets the \code{coClustering} slot (see Slots).
 #'@param checkTransformAndAssay logical. Whether to check the content of the
 #'  assay and given transformation function for whether they are valid.
-#'@param merge_index integer. Sets the \code{merge_index} slot (see Slots)
-#'@param merge_cutoff numeric. Sets the \code{merge_cutoff} slot (see Slots)
-#'@param merge_dendrocluster_index integer. Sets the
-#'  \code{merge_dendrocluster_index} slot (see Slots)
-#'@param merge_demethod character, Sets the
-#'  \code{merge_demethod} slot (see Slots)
-#'@param merge_nodeMerge data.frame. Sets the \code{merge_nodeMerge} slot (see
-#'  Slots)
-#'@param merge_nodeProp data.frame. Sets the \code{merge_nodeProp} slot (see
-#'  Slots)
-#'@param merge_method character, Sets the \code{merge_method} slot (see Slots)
 #'@param clusterLegend list, Sets the \code{clusterLegend} slot (see details).
 
 #' @details The \code{clusterLegend} argument to \code{ClusterExperiment} 
@@ -310,14 +238,6 @@ setMethod(
                         dendro_samples=NULL,
                         dendro_index=NA_real_,
                         dendro_clusters=NULL,
-                        coClustering=NULL,
-                        merge_index=NA_real_,
-                        merge_cutoff=NA_real_,
-                        merge_dendrocluster_index=NA_real_,
-                        merge_nodeProp=NULL,
-                        merge_nodeMerge=NULL,
-                        merge_method=NA_character_,
-												merge_demethod=NA_character_,
                         clusterLegend=NULL,
                         checkTransformAndAssay=TRUE
   ){
@@ -386,16 +306,7 @@ setMethod(
                orderSamples=seq_len(ncol(object)),
                dendro_samples=dendro_samples,
                dendro_clusters=dendro_clusters,
-               dendro_index=dendro_index,
-               merge_index=merge_index,
-               merge_cutoff=merge_cutoff,
-               merge_dendrocluster_index=merge_dendrocluster_index,
-               merge_nodeProp=merge_nodeProp,
-               merge_nodeMerge=merge_nodeMerge,
-               merge_method=merge_method,
-			   merge_demethod=merge_demethod,
-               coClustering=coClustering
-               
+               dendro_index=dendro_index               
     )
     if(checkTransformAndAssay){
       chass<-.checkAssays(out)
