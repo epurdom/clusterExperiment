@@ -1,9 +1,18 @@
 ####### Note: These are notexported, so the documentation is commented out.
+##Note: have set so that all logicals on the filtering and dimReduce are coded here, so that if change things about filterNames, etc. only effects this code.
 
 setGeneric("filterStats", function(object,type,...) { standardGeneric("filterStats")})
 setGeneric("filterStats<-", function(object, ..., value) standardGeneric("filterStats<-"))
 
-##Note: have set so that all logicals on the filtering and dimReduce are coded here, so that if change things about filterNames, etc. only effects this code.
+# Filter/ReduceDims
+setGeneric(".matchToStats", function(object,...) { standardGeneric(".matchToStats")})
+setGeneric("filterNames", function(object,...) { standardGeneric("filterNames")})
+setGeneric("filterData", function(object,...) { standardGeneric("filterData")})
+setGeneric("defaultNDims",function(object,...){standardGeneric("defaultNDims")})
+setGeneric(name = "makeFilterStats", function(object,...){ standardGeneric("makeFilterStats")})
+setGeneric(name="makeReducedDims", function(object,...){ standardGeneric("makeReducedDims")})
+setGeneric(name = "getReducedData", def=function(object,...){ standardGeneric("getReducedData") })
+
 setGeneric("isFilterStats", function(object, ...) standardGeneric("isFilterStats"))
 setGeneric("anyValidFilterStats", function(object, ...) standardGeneric("anyValidFilterStats"))
 setGeneric("isReducedDims", function(object, ...) standardGeneric("isReducedDims"))

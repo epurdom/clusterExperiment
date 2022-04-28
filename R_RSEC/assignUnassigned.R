@@ -84,21 +84,3 @@ setMethod(
 )
 
 
-#' @rdname assignUnassigned
-#' @aliases removeUnassigned
-#' @details \code{removeUnclustered} removes all samples that are unclustered
-#'   (i.e. -1 or -2 assignment) in the designated cluster of \code{object} (so
-#'   they may be unclustered in other clusters found in
-#'   \code{clusterMatrix(object)}).
-#' @return The function \code{removeUnassigned} returns a
-#'   \code{ClusterExperiment} object with the unassigned samples removed.
-#' @export
-setMethod(
-  f = "removeUnassigned",
-  signature = "ClusterExperiment",
-  definition = function(object,whichCluster="primary") {
-    whCl<-getSingleClusterIndex(object,whichCluster)
-		cl<-clusterMatrix(object)[,whCl]
-		return(object[,which(cl>= 0)])
-  }
-)

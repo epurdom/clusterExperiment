@@ -67,14 +67,6 @@ setGeneric(name="plotDendrogram",def=function(x,...){standardGeneric("plotDendro
 # setGeneric("nTips",function(x){standardGeneric("nTips")})
 
 
-# Filter/ReduceDims
-setGeneric(".matchToStats", function(object,...) { standardGeneric(".matchToStats")})
-setGeneric("filterNames", function(object,...) { standardGeneric("filterNames")})
-setGeneric("filterData", function(object,...) { standardGeneric("filterData")})
-setGeneric("defaultNDims",function(object,...){standardGeneric("defaultNDims")})
-setGeneric(name = "makeFilterStats", function(object,...){ standardGeneric("makeFilterStats")})
-setGeneric(name="makeReducedDims", function(object,...){ standardGeneric("makeReducedDims")})
-setGeneric(name = "getReducedData", def=function(object,...){ standardGeneric("getReducedData") })
 
 # Plotting
 setGeneric(name="plotClusterLegend", function(object,...){standardGeneric("plotClusterLegend")})

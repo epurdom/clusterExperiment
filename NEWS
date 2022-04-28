@@ -2,6 +2,13 @@ Changes in version XXX
 =============
 Reconfigured package to remove the clustering/RSEC which will be in a separate package. This is to make the package more lightweight and so the basic class and useful functions that are implemented on the class, unrelated to the clustering, easier and quicker to install.
 
+The following functions have been moved to the RSEC package (this is not a complete list, but most important or unexpected):
+* assignUnassigned
+* clusterMany
+* clusterSingle
+* makeConsensus
+* 
+
 Other changes:
 * argument `mergeCEObjects` changed to `mergeObjects` in `addClusterings`.
 

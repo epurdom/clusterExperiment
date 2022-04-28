@@ -431,6 +431,7 @@ setReplaceMethod(
 )
 
 
+
 #' @rdname ClusterExperiment-methods
 #' @export
 #' @inheritParams plotClustersTable
@@ -539,3 +540,4 @@ setMethod(
     if(is.logical(ch) && ch) return(object) else stop(ch)
   }
 )
+
