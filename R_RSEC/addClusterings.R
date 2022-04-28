@@ -4,8 +4,8 @@
 #'   cluster) or matrix (multiple clusterings) to an existing RSECClass
 #'   object
 #' @param x a RSECClass object
-#' @param y additional clusters to add to x. Can be a ClusterExperiment object
-#'   or a matrix/vector of clusters.
+#' @param y additional clusters to add to x. Can be a ClusterExperiment object,
+#'   RSECClass object, or a matrix/vector of clusters.
 #' @param clusterLabels label(s) for the clusters being added. If \code{y} a
 #'   matrix, the column names of that matrix will be used by default, if
 #'   \code{clusterLabels} is not given.

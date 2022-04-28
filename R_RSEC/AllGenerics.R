@@ -35,3 +35,14 @@ setGeneric(name = "requiredArgs",def = function(object, ...) {standardGeneric("r
 setGeneric(name = "algorithmType",def = function(object, ...) {standardGeneric("algorithmType")})
 setGeneric(name = "inputType",def = function(object, ...) {standardGeneric("inputType")})
 setGeneric(name = "getPostProcessingArgs",def = function(clusterFunction, ...) {standardGeneric("getPostProcessingArgs")})
+
+## Workflow
+setGeneric("plotClustersWorkflow", function(object,...){ standardGeneric("plotClustersWorkflow")}
+)
+setGeneric(name = "setToCurrent",def = function(x,  ...) {standardGeneric("setToCurrent")})
+setGeneric(name = "setToFinal",def = function(x,  ...) {standardGeneric("setToFinal")})
+setGeneric(name = "workflowClusters",def = function(x,iteration=0) {standardGeneric("workflowClusters")})
+setGeneric(name = "workflowClusterDetails", def = function(x) {standardGeneric("workflowClusterDetails")})
+setGeneric( name = "workflowClusterTable",def = function(x) {standardGeneric("workflowClusterTable")})
+
+

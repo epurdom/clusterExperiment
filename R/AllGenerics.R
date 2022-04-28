@@ -92,16 +92,6 @@ setGeneric(name="plotContrastHeatmap",def=function(object,...){standardGeneric("
 setGeneric(name="clusterContrasts",def=function(cluster,...){standardGeneric("clusterContrasts")})
 setGeneric(name = "getBestFeatures",def = function(x, ...) {standardGeneric("getBestFeatures")})
 
-## Workflow
-setGeneric("plotClustersWorkflow", function(object,...){ standardGeneric("plotClustersWorkflow")}
-)
-setGeneric(name = "setToCurrent",def = function(x,  ...) {standardGeneric("setToCurrent")})
-setGeneric(name = "setToFinal",def = function(x,  ...) {standardGeneric("setToFinal")})
-setGeneric(name = "workflowClusters",def = function(x,iteration=0) {standardGeneric("workflowClusters")})
-setGeneric(name = "workflowClusterDetails", def = function(x) {standardGeneric("workflowClusterDetails")})
-setGeneric( name = "workflowClusterTable",def = function(x) {standardGeneric("workflowClusterTable")})
-
-
 
 
  

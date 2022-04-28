@@ -50,13 +50,6 @@ setMethod(
     print(table(primaryClusterNamed(object)))
     cat("Total number of clusterings:", NCOL(clusterMatrix(object)),"\n")
     if(!is.na(dendroClusterIndex(object)) ) cat("Dendrogram run on '",clusterLabels(object)[dendroClusterIndex(object)],"' (cluster index: ", dendroClusterIndex(object),")\n",sep="") else cat("No dendrogram present\n")
-    cat("-----------\n")
-    cat("Workflow progress:\n")
-    typeTab<-names(table(clusterTypes(object)))
-    cat("clusterMany run?",if("clusterMany" %in% typeTab) "Yes" else "No","\n")
-    cat("makeConsensus run?",if("makeConsensus" %in% typeTab) "Yes" else "No","\n")
-    cat("makeDendrogram run?",if(!is.null(object@dendro_samples) & !is.null(object@dendro_clusters) ) "Yes" else "No","\n")
-    cat("mergeClusters run?",if("mergeClusters" %in% typeTab) "Yes" else "No","\n")
   }
 )
 
@@ -287,56 +280,6 @@ setMethod(
 )
 
 
-
-#' @rdname ClusterExperiment-methods
-#' @return \code{coClustering} returns/sets the co-clustering matrix.
-#' @export
-#' @aliases coClustering
-setMethod(
-  f = "coClustering",
-  signature = "ClusterExperiment",
-  definition = function(x) {
-    return(x@coClustering)
-  }
-)
-#' @rdname ClusterExperiment-methods
-#' @export
-#' @aliases coClustering<-
-setReplaceMethod(
-  f = "coClustering",
-  signature = signature(object="ClusterExperiment", value="matrix"),
-  definition = function(object, value) {
-    #This appears to detect if matrix is symmetric without any further effort
-    object@coClustering <- Matrix::Matrix(value,sparse=TRUE)        
-    ch<-.checkCoClustering(object)
-    if(is.logical(ch) && ch) return(object) else stop(ch)
-  }
-)
-#' @rdname ClusterExperiment-methods
-#' @export
-#' @aliases coClustering<-
-setReplaceMethod(
-  f = "coClustering",
-  signature = signature(object="ClusterExperiment", value="dsCMatrix"),
-  definition = function(object, value) {
-    object@coClustering <- value
-    ch<-.checkCoClustering(object)
-    if(is.logical(ch) && ch) return(object) else stop(ch)
-  }
-)
-
-#' @rdname ClusterExperiment-methods
-#' @export
-#' @aliases coClustering<-
-setReplaceMethod(
-  f = "coClustering",
-  signature = signature(object="ClusterExperiment", value="numeric"),
-  definition = function(object, value) {
-    object@coClustering <- value
-    ch<-.checkCoClustering(object)
-    if(is.logical(ch) && ch) return(object) else stop(ch)
-  }
-)
 
 
 
