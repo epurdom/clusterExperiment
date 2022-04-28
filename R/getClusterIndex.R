@@ -13,7 +13,7 @@
 #' @param passedArgs other arguments passed to the function (only used internally)
 #' @details The function \code{getClusterIndex} is largely used internally to parse the argument \code{whichClusters} which is used as an argument extensively across functions in this package. Note that some functions require the match return a single clustering, in which case those functions use the function \code{getSingleClusterIndex} with the singular argument \code{whichCluster} and returns an error if it indicates more than one clustering. Furthermore \code{getSingleClusterIndex} does not allow for any mismatches (\code{noMatch="throwError"}. Otherwise the parsing of the two arguments \code{whichClusters} and \code{whichCluster} is the same, and is described in what follows.
 #' @details If \code{whichClusters} is numeric, then the function just returns the 
-#'  numeric values of \code{whichClusters}, after checking that they are valid. If any are invalid, they are silently removed if \code{silentlyRemove=TRUE}. The values will be returned  \emph{in the order given}, so this argument can also be used to defined by functions to give an
+#'  numeric values of \code{whichClusters}, after checking that they are valid. If any are invalid, they are silently removed if \code{silentlyRemove=TRUE}. The values will be returned  \emph{in the order given}, so this argument can also be used by functions to give an
 #'   ordering for the clusterings (as relevant).
 #' @details If \code{whichClusters} is a character value, then it the function attempts to use the character value to identify the clustering. The value of the argument is first matched against a set of "special" values: "workflow","all","none","primaryCluster","dendro" using the argument \code{\link{match.arg}}, which does partial matching. If whichClusters is a vector of values, only the first value of the vector is matched against these values and if it matches, the remaining values are ignored.  If it matches one of these values, then the cluster indices are given as follows.
 ##' \itemize{
@@ -30,53 +30,36 @@
 #' @examples
 #' #load CE object
 #' data(rsecFluidigm)
-#' # get the cluster index from mergeClusters step
-#' getClusterIndex(rsecFluidigm,whichClusters="mergeClusters")
-#' # get the cluster indices from mergeClusters step
+#' # get the cluster index from mergeObjectsClusters step
+#' getClusterIndex(rsecFluidigm,whichClusters="mergeObjectsClusters")
+#' # get the cluster indices from mergeObjectsClusters step
 #' getClusterIndex(rsecFluidigm,whichClusters="clusterMany")
 setMethod(
 	f="getClusterIndex",
 	signature="ClusterExperiment",
 	definition=function(object,whichClusters,noMatch=c("silentlyRemove","throwError")){
 	noMatch<-match.arg(noMatch)
-	.createMismatch<-function(errorMessage){
-	  if(noMatch=="silentlyRemove")
-		  return(vector("integer",length=0))
-	  else if(noMatch=="throwError")
-		  stop(errorMessage)
-	  else if(noMatch=="NA")
-		  return(NA)  
-	}
+	
 	if(is.numeric(whichClusters)) wh<-whichClusters
 	else{
-	  test<-try( match.arg(whichClusters[1], c("workflow","all","none","primaryCluster","dendro")), silent=TRUE)
+	  test<-try( match.arg(whichClusters[1], c("all","none","primaryCluster","dendro")), silent=TRUE)
 	  if(!inherits(test,"try-error")){
-	    if(test=="workflow"){
-	      ppIndex<-workflowClusterDetails(object)
-	      if(!is.null(ppIndex) && sum(ppIndex[,"iteration"]==0)>0){
-	        wh<-unlist(lapply(.workflowValues,function(tt){
-	          ppIndex[ppIndex[,"iteration"]==0 & ppIndex[,"type"]==tt,"index"]
-	        }))
-	      }
-	      else{
-			  wh<-.createMismatch("There are no workflow clusterings")
-		  }
-	    }
+			if(length(whichClusters)>1) .mynote("You gave more than one value, but the first value matched one of the special character values so the remaining values are ignored")
 	    if(test=="all"){
 	      #put primary cluster first
 	      ppcl<-primaryClusterIndex(object)
 	      wh<-c(ppcl,c(seq_len(nClusterings(object)))[-ppcl])
 	    }
-	    if(test=="none") wh<-.createMismatch("No clusterings requested")
+	    if(test=="none") wh<-.createMismatch("No clusterings requested",noMatch)
 	    if(test=="primaryCluster") wh<-primaryClusterIndex(object)
 	    if(test=="dendro"){
 	      wh<-dendroClusterIndex(object)
-	      if(is.na(wh)) wh<-.createMismatch("There is no dendrogram, cannot return clustering that created one")
+	      if(is.na(wh)) wh<-.createMismatch("There is no dendrogram, cannot return clustering that created one",noMatch)
 	    }
 	  }
 	  else{
 	    #first match to clusterTypes  
-		mClType<-match(whichClusters,clusterTypes(object))  
+		  mClType<-match(whichClusters,clusterTypes(object))  
 	    mClLabel<-match(whichClusters,clusterLabels(object))  
 	    totalMatch<-mapply(whichClusters,mClType,mClLabel,FUN=function(cl,type,lab){
 	      if(is.na(type) & !is.na(lab)) return(lab)
@@ -110,7 +93,14 @@ setMethod(
 
 
 })
-	
+.createMismatch<-function(errorMessage,noMatch){
+  if(noMatch=="silentlyRemove")
+	  return(vector("integer",length=0))
+  else if(noMatch=="throwError")
+	  stop(errorMessage)
+  else if(noMatch=="NA")
+	return(NA)  
+}	
 #' @rdname getClusterIndex
 #' @aliases getSingleClusterIndex
 #' @param ... Not for user use. Argument allows function \code{getSingleClusterIndex}  
