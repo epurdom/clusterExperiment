@@ -7,6 +7,13 @@
   ############
   ##Check merge related slots
   ############
+	
+  if(!is.null(object@dendro_clusters)){
+		#further checks with dendro
+  	data.cl<-phylobase::tdata(object@dendro_clusters,type="all")
+  	if(any(!gsub("ClusterId","",na.omit(data.cl$ClusterIdMerge)) %in% as.character(object@clusterMatrix[,object@merge_index]))) return("ClusterIdMerge information in dendrogram slot must match the corresponding cluster ids in clustering defined by merge_index slot")
+	}
+	
   #these slots must all be same (either all empty or all set)
   emptyMergeMethod<-is.na(object@merge_method) || length(object@merge_method)==0
   emptyMergeIndex<- is.na(object@merge_index) || length(object@merge_index)==0

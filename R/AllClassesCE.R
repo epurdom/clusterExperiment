@@ -196,7 +196,8 @@ setMethod(
 #'@rdname ClusterExperiment-class
 #'@param clusterTypes a string describing the nature of the clustering. The
 #'  values `clusterSingle`, `clusterMany`, `mergeClusters`, `makeConsensus` are
-#'  reserved for the clustering coming from the package workflow and should not
+#'  reserved for the clustering coming from the package workflow in the 
+#'  accompanying package \code{RSEC} and should not
 #'  be used when creating a new object with the constructor.
 #'@param clusterInfo a list with information on the clustering (see Slots).
 #'@param primaryIndex integer. Sets the `primaryIndex` slot (see Slots).

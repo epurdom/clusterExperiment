@@ -16,8 +16,7 @@
 #' @return A \code{ClusterExperiment} object.
 #' @details addClusterings adds y to x, and is thus not symmetric in the two
 #'   arguments. In particular, the \code{primaryCluster}, all of the dendrogram
-#'   information, the merge information, \code{coClustering}, and 
-#'   \code{orderSamples} are all kept from
+#'   information, and  \code{orderSamples} are all kept from
 #'   the x object, even if y is a ClusterExperiment.
 #' @export
 #' @examples
@@ -53,13 +52,13 @@ setMethod(
 #' @rdname addClusterings
 #' @param transferFrom If x and y are both \code{ClusterExperiment} objects
 #'   indicates from which object the clustering info should be taken (regarding merging, dendrogram, etc). Does not affect the order of the clusterings, which will always be the clusterings of x, followed by those of y (along with slots `clusterType`, `clusterInfo`, `clusterLegend`)
-#' @param mergeCEObjects logical If x and y are both \code{ClusterExperiment} objects indicates as to whether should try to grab in the information missing from x from y (or vice versa if transferFrom=y).
+#' @param mergeObjects logical If x and y are both \code{ClusterExperiment} objects indicates as to whether should try to grab in the information missing from x from y (or vice versa if transferFrom=y).
 
 #' @export
 setMethod(
     f = "addClusterings",
     signature = signature("ClusterExperiment", "ClusterExperiment"),
-    definition = function(x, y, transferFrom=c("x","y"),mergeCEObjects=FALSE) 
+    definition = function(x, y, transferFrom=c("x","y"),mergeObjects=FALSE) 
 {
     transferFrom<-match.arg(transferFrom)
     if(!all(dim(assay(y)) == dim(assay(x))) || !all(assay(y) == assay(x))) {
@@ -78,14 +77,11 @@ setMethod(
     }
     if(transferFrom=="y"){
         retval@dendro_index<-y@dendro_index+nClusterings(x)
-        retval@merge_index<-y@merge_index+nClusterings(x) #update index to where merge from
-        retval@merge_dendrocluster_index <- 
-            y@merge_dendrocluster_index + nClusterings(x)
         if(.typeOfCoClustering(y)=="indices")
             retval@coClustering<-y@coClustering+nClusterings(x)
     }
 
-    if(mergeCEObjects){
+    if(mergeObjects){
         ### If missing in transfer object, pull from the other one
         if(transferFrom=="x"){
             addedObj<-y
@@ -102,27 +98,10 @@ setMethod(
                 retval@dendro_index <- 
                     addedObj@dendro_index+ nClusterings(defaultObj) 
         }
-        if(is.na(retval@merge_index) & !is.na(addedObj@merge_index)){
-            if(transferFrom=="x") 
-                retval@merge_index<-addedObj@merge_index+nClusterings(defaultObj) 
-            retval@merge_nodeMerge<-addedObj@merge_nodeMerge
-            retval@merge_cutoff<-addedObj@merge_cutoff
-            retval@merge_method<-addedObj@merge_method
-            retval@merge_demethod<-addedObj@merge_demethod
-        }
-        if(is.null(retval@merge_nodeProp) & !is.null(addedObj@merge_nodeProp)){
-            retval@merge_nodeProp<-addedObj@merge_nodeProp
-            retval@merge_dendrocluster_index<-
-                addedObj@merge_dendrocluster_index+nClusterings(defaultObj)                }
         #put back orderSamples
         if(all(retval@orderSamples==seq_len(nSamples(retval))) & 
             !all(addedObj@orderSamples==seq_len(nSamples(retval)))) 
                 retval@orderSamples<-addedObj@orderSamples
-        if(is.null(retval@coClustering)){
-            if(transferFrom=="x" & .typeOfCoClustering(addedObj)=="indices")    
-                retval@coClustering<-addedObj@coClustering + nClusterings(defaultObj)
-            else retval@coClustering<-addedObj@coClustering
-        }
     }
     retval<-.unnameClusterSlots(retval) #just gets rid of the names of objects that shouldn't have them
 

@@ -124,7 +124,6 @@
         #further checks that require full CE object:
         data.cl<-phylobase::tdata(object@dendro_clusters,type="all")
         if(any(!gsub("ClusterId","",na.omit(data.cl$ClusterIdDendro)) %in% as.character(object@clusterMatrix[,object@dendro_index]))) return("ClusterIdDendro information in dendrogram slot must match the corresponding cluster ids in clustering defined by dendro_index slot")
-        if(any(!gsub("ClusterId","",na.omit(data.cl$ClusterIdMerge)) %in% as.character(object@clusterMatrix[,object@merge_index]))) return("ClusterIdMerge information in dendrogram slot must match the corresponding cluster ids in clustering defined by merge_index slot")
     }
     else{
         if(!is.null(object@dendro_samples)) return("dendro_clusters should not be null if dendro_samples is non-null") #if comment out now optional to have samples
