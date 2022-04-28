@@ -1,7 +1,10 @@
-## Additional Object
+
+## Object manipulations
 setGeneric( name = "coClustering", def = function(x) { standardGeneric("coClustering")})
 setGeneric(name = "coClustering<-",def = function(object, value) {standardGeneric("coClustering<-")})
 
+## Other operations
+setGeneric(name = "assignUnassigned", def=function(object,...){ standardGeneric("assignUnassigned") })
 
 
 ###Merge Info

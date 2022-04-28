@@ -29,7 +29,6 @@ setGeneric( name = "clusteringInfo", def = function(x) { standardGeneric("cluste
 
 # Subsetting
 setGeneric(name="subsetByCluster", def = function(x,...) {standardGeneric("subsetByCluster")})
-setGeneric(name = "assignUnassigned", def=function(object,...){ standardGeneric("assignUnassigned") })
 setGeneric( name = "removeUnassigned", def = function(object,...) {standardGeneric("removeUnassigned")})
 setGeneric( name = "removeClusters", def = function(x, ...) {standardGeneric("removeClusters")})
 setGeneric( name = "addClusterings", def = function(x, y,...) {standardGeneric("addClusterings")})
