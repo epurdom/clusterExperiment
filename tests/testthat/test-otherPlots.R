@@ -128,19 +128,19 @@ test_that("plotClustersWorkflow", {
 
 
 test_that("plotting helpers", {
-  convertClusterLegend(smSimCE,output="aheatmap")
-  convertClusterLegend(smSimCE,output="plotAndLegend")
-  convertClusterLegend(smSimCE,output="matrixNames")
-  convertClusterLegend(smSimCE,output="matrixColors")
-  convertClusterLegend(smSimCE,output="matrixNames",whichClusters=c("cluster1"))
-  convertClusterLegend(smSimCE,output="matrixNames",whichClusters=1:3)
-  convertClusterLegend(smSimCE,output="plotAndLegend",whichClusters=c("cluster1"))
+  expect_silent(convertClusterLegend(smSimCE,output="aheatmap"))
+  expect_silent(convertClusterLegend(smSimCE,output="plotAndLegend"))
+  expect_silent(convertClusterLegend(smSimCE,output="matrixNames"))
+  expect_silent(convertClusterLegend(smSimCE,output="matrixColors"))
+  expect_silent(convertClusterLegend(smSimCE,output="matrixNames",whichClusters=c("cluster1")))
+  expect_silent(convertClusterLegend(smSimCE,output="matrixNames",whichClusters=1:3))
+  expect_silent(convertClusterLegend(smSimCE,output="plotAndLegend",whichClusters=c("cluster1")))
   expect_error(convertClusterLegend(smSimCE,output="plotAndLegend",whichClusters=1:3),"given whichClusters indicates more than 1 clustering which is not allowed for option")
 
-  plotClusterLegend(smSimCE)
-  plotClusterLegend(smSimCE,whichCluster="cluster1")
-    showPalette()
-  showPalette(massivePalette)
+  expect_silent(plotClusterLegend(smSimCE))
+  expect_silent(plotClusterLegend(smSimCE,whichCluster="cluster1"))
+  expect_silent(showPalette())
+  expect_silent(showPalette(massivePalette))
 })
 
 
