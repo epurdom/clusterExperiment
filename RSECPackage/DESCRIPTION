@@ -1,0 +1,88 @@
+Package: clusterExperiment
+Title: Compare Clusterings for Single-Cell Sequencing 
+Version: 2.17.1
+Description: Provides functionality for running and comparing many
+    different clusterings of single-cell sequencing data or other large mRNA Expression data sets.
+Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
+            role = c("aut", "cre", "cph")),
+	     person("Davide","Risso", role = "aut",email = "risso.davide@gmail.com"))
+BugReports: https://github.com/epurdom/clusterExperiment/issues
+License: Artistic-2.0
+Encoding: UTF-8
+Depends:
+    R (>= 3.6.0),
+    SingleCellExperiment,
+	SummarizedExperiment (>= 1.15.4),
+	BiocGenerics
+Imports:
+	methods,
+	NMF,
+	RColorBrewer,
+	ape (>= 5.0),
+	cluster,
+	stats,
+	limma,
+	howmany,
+	locfdr,
+	matrixStats,
+	graphics,
+	parallel,
+	BiocSingular,
+	kernlab,
+	stringr,
+	S4Vectors,
+	grDevices,
+	DelayedArray (>= 0.7.48),
+	HDF5Array (>= 1.7.10),
+	Matrix,
+	Rcpp,
+	edgeR,
+	scales,
+	zinbwave,
+	phylobase,
+	pracma,
+	mbkmeans
+Suggests:
+	BiocStyle,
+	knitr,
+	testthat,
+	MAST,
+	Rtsne,
+	scran,
+	igraph,
+    rmarkdown
+VignetteBuilder: knitr
+LazyData: false
+LazyLoad: false
+RoxygenNote: 7.1.1
+biocViews: Clustering, RNASeq, Sequencing, Software, SingleCell
+Collate: 
+    'AllChecks.R'
+    'AllClassesCE.R'
+    'AllGenerics.R'
+    'AllHelper.R'
+    'AllHelperDendro.R'
+    'addClusterings.R'
+    'clusterContrasts.R'
+    'dataCreation.R'
+    'deprecateFunctions.R'
+    'getClusterIndex.R'
+    'getFeatures.R'
+    'internalDendroFunctions.R'
+    'internalFunctions.R'
+    'makeBlankData.R'
+    'makeDendrogram.R'
+    'plotBarplot.R'
+    'plotClusters.R'
+    'plotClustersTable.R'
+    'plotContrastHeatmap.R'
+    'plotDendrogram.R'
+    'plotFeatureBoxplot.R'
+    'plotFeatureScatter.R'
+    'plotHeatmap.R'
+    'plotReduceDim.R'
+    'plottingHelpers.R'
+    'subset.R'
+    'transformFunction.R'
+    'updateObject.R'
+LinkingTo: Rcpp
