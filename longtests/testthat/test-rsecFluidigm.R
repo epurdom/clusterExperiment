@@ -7,7 +7,7 @@ test_that("saved rsecFluidigm is still valid object", {
     #checks that current code will still recreate same basic rsecFluidigm
     # takes a bit of time, so skip on bioc, just want on travis so get alert
     # that need to deal with this.
-    skip_on_bioc()
+#    skip_on_bioc()
     data(fluidigmData)
     data(fluidigmColData)
     expect_silent(se<-SummarizedExperiment(assays=fluidigmData,
