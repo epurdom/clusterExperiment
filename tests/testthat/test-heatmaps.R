@@ -14,6 +14,7 @@ test_that("`setBreaks`", {
 	expect_equal(length(y),10)
 })
 test_that("`plotHeatmap` works with matrix objects", {
+	# these require that they actually be plotted...
     expect_silent(x1<-plotHeatmap(data=smSimData))
     a1<-NMF::aheatmap(smSimData)
     expect_equal(x1$aheatmapOut,a1)
@@ -40,19 +41,19 @@ test_that("`plotHeatmap` works with matrix objects", {
 #   Should get this working so proper test, but more a problem because in different order, otherwise the same. Don't want to deal with this right now.
 #    expect_equal(lapply(x1$clusterLegend,function(x){x[,c("clusterIds","color")]}),lapply(x2$clusterLegend,function(x){x[,c("clusterIds","color")]}))
 
-    expect_error( plotHeatmap(data=smSimData,Rowv=TRUE),
+    expect_error( plotHeatmap(data=smSimData,Rowv=TRUE, plot=plotAll),
         "arguments to aheatmap cannot be set by the user")
-    expect_error( plotHeatmap(data=smSimData,Colv=TRUE),
+    expect_error( plotHeatmap(data=smSimData,Colv=TRUE, plot=plotAll),
         "arguments to aheatmap cannot be set by the user")
     expect_error( plotHeatmap(data=smSimData,
-        colorScale=seqPal5,color=TRUE),
+        colorScale=seqPal5,color=TRUE, plot=plotAll),
         "arguments to aheatmap cannot be set by the user")
 
     expect_error( plotHeatmap(data=smSimData,
-        annCol=rnorm(n=ncol(smSimData))),
+        annCol=rnorm(n=ncol(smSimData)), plot=plotAll),
         "arguments to aheatmap cannot be set by the user")
     expect_error( plotHeatmap(data=smSimData,
-        annColors=list(a=c("blue","green"))),
+        annColors=list(a=c("blue","green")), plot=plotAll),
         "arguments to aheatmap cannot be set by the user")
     
     ##Should add tests that pass aheatmap arguments correctly.
@@ -60,41 +61,43 @@ test_that("`plotHeatmap` works with matrix objects", {
 
 
 test_that("`plotHeatmap` works with hdf5 objects", {
+	# These are slow!
+	skip_on_os("windows")
+	skip_on_os("mac")
+	
     expect_silent(plotHeatmap(hdfObj))
 
 })
 test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment objects", {
   
   expect_silent(plotHeatmap(cc))
-  expect_silent(plotHeatmap(cc,whichClusters="none"))
-  expect_warning(plotHeatmap(cc,whichClusters="workflow",
-      plot=plotAll) ,
+  expect_silent(plotHeatmap(cc,whichClusters="none", plot=plotAll))
+  expect_warning(plotHeatmap(cc,whichClusters="workflow", plot=plotAll) ,
       "whichClusters value does not match any clusters") #there are no workflow for this one
   
-  expect_warning(plotHeatmap(smSimCE,whichClusters="workflow",
+  expect_warning(plotHeatmap(smSimCE,whichClusters="workflow", plot=plotAll,
       overRideClusterLimit=TRUE),
       "More than 10 annotations/clusterings can result in incomprehensible errors in aheamap")
-  expect_warning(plotHeatmap(smSimCE,whichClusters=15:20,
-      plot=plotAll),
+  expect_warning(plotHeatmap(smSimCE,whichClusters=15:20, plot=plotAll),
       "given whichClusters value does not match any clusters")
-  expect_error( plotHeatmap(smSimCE,whichClusters="all", 
+  expect_error( plotHeatmap(smSimCE,whichClusters="all", plot=plotAll, 
       alignColData=TRUE, overRideClusterLimit=FALSE), 
       "More than 10 annotations/clusterings")
-  expect_warning(plotHeatmap(smSimCE,
+  expect_warning(plotHeatmap(smSimCE, plot=plotAll,
       whichClusters="all",
       alignColData=FALSE,overRideClusterLimit=TRUE))
   
   
   #test colData
-  expect_error(plotHeatmap(cc,colData="A"), "no colData for object data")
+  expect_error(plotHeatmap(cc,colData="A", plot=plotAll), "no colData for object data")
   
-  expect_silent(plotHeatmap(smSimCE,colData="all"))
+  expect_silent(plotHeatmap(smSimCE,colData="all", plot=plotAll))
   expect_silent(plotHeatmap(smSimCE,colData="A",plot=plotAll))
   expect_silent(plotHeatmap(smSimCE,colData=2:3,plot=plotAll))
   
   #check that it pulls the names, not the clusterIds.
-  clusterLegend(cc)[[1]][,"name"]<-letters[1:nrow(clusterLegend(cc)[[1]])]
-  expect_silent(plotHeatmap(cc))
+  expect_silent(clusterLegend(cc)[[1]][,"name"]<-letters[1:nrow(clusterLegend(cc)[[1]])])
+  expect_silent(plotHeatmap(cc, plot=plotAll))
   
   #check user setting clusterLegend
   x<-palette()[1:7]
@@ -102,7 +105,7 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
   expect_silent(plotHeatmap(cc,
       clusterLegend=list("Cluster1"=x),plot=plotAll))
   
-  expect_silent(plotHeatmap(cc,
+  expect_silent(plotHeatmap(cc, plot=plotAll,
       clusterLegend=list("Cluster1"=palette()[1:7])))
   expect_silent(plotHeatmap(smSimCE,
       colData="A",clusterLegend=list("A"=palette()[1:4]),
@@ -175,7 +178,7 @@ test_that("`plotHeatmap` visualization choices/feature choices all work", {
     ##set rownames and should work
     smSimCE2<-smSimCE
     row.names(smSimCE2)<-paste("Gene",1:NROW(smSimCE))
-    expect_silent(plotHeatmap(smSimCE2, 
+    expect_silent(plotHeatmap(smSimCE2, plot=plotAll, 
       visualizeData="transform", 
       clusterFeaturesData=paste("Gene",3:5), nFeatures=3))
 

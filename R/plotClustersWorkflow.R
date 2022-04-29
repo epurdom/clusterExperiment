@@ -50,6 +50,7 @@
 #' @return A plot is produced, nothing is returned.
 #' @examples
 #' #clustering using pam: try using different dimensions of pca and different k
+#' \dontrun{
 #' data(simData)
 #'
 #' cl <- clusterMany(simData, nReducedDims=c(5, 10, 50), reduceMethod="PCA",
@@ -57,6 +58,7 @@
 #' removeSil=c(TRUE,FALSE), makeMissingDiss=TRUE)
 #' cl <- makeConsensus(cl, proportion=0.7)
 #' plotClustersWorkflow(cl)
+#' }
 #' @export
 setMethod(
   f = "plotClustersWorkflow",

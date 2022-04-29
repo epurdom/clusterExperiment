@@ -136,6 +136,7 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' #clustering using pam: try using different dimensions of pca and different k
 #' data(simData)
 #'
@@ -200,6 +201,7 @@
 #' cl2 <- ClusterExperiment(assay(cl), clMatNew,
 #' transformation=transformation(cl))
 #' plotClusters(cl2)
+#' }
 #' @rdname plotClusters
 #' @export
 #' @importFrom grDevices gray

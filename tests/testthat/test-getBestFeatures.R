@@ -176,6 +176,10 @@ test_that("`plotContrastHeatmap` works", {
 })
 
 test_that("`getBestFeatures` works with weights", {
+	# These are slow!
+	skip_on_os("windows")
+	skip_on_os("mac")
+	
 	set.seed(258179)
 	weights<-matrix(runif(nrow(seSimCount)*ncol(seSimCount)),nrow=nrow(seSimCount),ncol=ncol(seSimCount))
 	ceSimW<-ceSim

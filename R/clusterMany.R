@@ -134,6 +134,7 @@
 #'   arguments to subsampleArgs} }
 #'
 #' @examples
+#' \dontrun{
 #' data(simData)
 #'
 #' #Example: clustering using pam with different dimensions of pca and different
@@ -161,7 +162,6 @@
 #' plotClusters(cl, axisLine=-2,clusterLabels=clNames)
 #'
 #'
-#' \dontrun{
 #'	#following code takes around 1+ minutes to run because of the subsampling
 #'	#that is redone each time:
 #'	system.time(clusterTrack <- clusterMany(simData, ks=2:15,

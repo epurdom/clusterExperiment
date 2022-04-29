@@ -74,6 +74,7 @@
 #'  matrix stored in the \code{coClustering} slot.
 #'
 #' @examples
+#' \dontrun{
 #' data(simData)
 #'
 #' cl <- clusterMany(simData,nReducedDims=c(5,10,50),  reduceMethod="PCA",
@@ -102,7 +103,7 @@
 #' minSize=10)
 #' plotClusters(clCommon)
 #' par(oldpar)
-#'
+#' }
 #' @aliases makeConsensus,matrix-method
 #' @export
 setMethod(

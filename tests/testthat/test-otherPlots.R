@@ -237,7 +237,9 @@ test_that("plotFeatureBoxplot works",{
 
 test_that("plotClustersTable works",{
   
+	# These are slow!
 	skip_on_os("windows")
+	skip_on_os("mac")
 	#test where should be diagonal
 	expect_silent(plotClustersTable(cc,whichClusters=c(1,2)))
 	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,margin=2))

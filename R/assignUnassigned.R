@@ -25,6 +25,7 @@
 #' @seealso \code{\link{getReducedData}}
 #' @examples
 #' #load CE object
+#' \dontrun{
 #' data(rsecFluidigm)
 #' smallCE<-rsecFluidigm[,1:50]
 #' #assign the unassigned samples
@@ -32,6 +33,7 @@
 #' 
 #' #note how samples are REMOVED:
 #' removeUnassigned(smallCE)
+#' }
 #' @inheritParams addClusterings
 #' @inheritParams reduceFunctions
 #' @export

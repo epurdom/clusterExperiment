@@ -51,6 +51,7 @@
 #'   assessing transcriptional changes and characterizing heterogeneity in
 #'   single-cell RNA sequencing data. Genome Biology (2015).
 #' @examples 
+#' \dontrun{
 #' data(simData)
 #' cl <- clusterMany(simData,nReducedDims=c(5,10,50),  
 #' reduceMethod="PCA", makeMissingDiss=TRUE,
@@ -61,6 +62,7 @@
 #' #Dendrogram
 #' cl<-makeDendrogram(cl)
 #' clusterContrasts(cl,contrastType="Pairs")
+#' }
 #' @export
 #' @rdname clusterContrasts
 setMethod(

@@ -17,6 +17,7 @@
 #' @name workflowClusters
 #' @export
 #' @examples
+#' \dontrun{
 #' data(simData)
 #'
 #' cl <- clusterMany(simData,nReducedDims=c(5,10,50),  reduceMethod="PCA",
@@ -33,6 +34,7 @@
 #' head(workflowClusters(clMerged))
 #' workflowClusterDetails(clMerged)
 #' workflowClusterTable(clMerged)
+#' }
 setMethod(
   f = "workflowClusters",
   signature = signature("ClusterExperiment"),

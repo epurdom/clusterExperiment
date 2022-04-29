@@ -250,6 +250,10 @@ test_that("`clusterMany` works with reduceMethod a filtering",{
    )
 })
 test_that("`clusterMany` works with hdf5", {
+	# These are slow!
+	skip_on_os("windows")
+	skip_on_os("mac")
+	
 	########
 	#Check if use PCA (not in hdf5) changes nothing, as expect.
 	########
@@ -302,6 +306,10 @@ test_that("`clusterMany` works with hdf5", {
 })
 
 test_that("`clusterMany` works changing parameters", {
+	# These are slow!
+	skip_on_os("windows")
+	skip_on_os("mac")
+	
 	#--------
   #check dim reduce in combination
 	#--------

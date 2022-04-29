@@ -47,6 +47,7 @@
 #' @inheritParams plotClusters
 #' @inheritParams getClusterIndex
 #' @examples
+#' \dontrun{
 #' #clustering using pam: try using different dimensions of pca and different k
 #' data(simData)
 #'
@@ -56,7 +57,7 @@
 #'
 #' plotBarplot(cl)
 #' plotBarplot(cl,whichClusters=1:2)
-#'
+#' }
 #' @rdname plotBarplot
 #' @export
 setMethod(

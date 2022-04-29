@@ -37,7 +37,11 @@ test_that("`RSEC` works with matrix, ClusterExperiment, summarizedExperiment",{
 
 
 test_that("`RSEC` works with no merging",{
-  #do the same, only don't do merging:
+	# These are slow!
+	skip_on_os("windows")
+	skip_on_os("mac")
+  
+	#do the same, only don't do merging:
     expect_message(rsecOut<-RSEC(x=assay(seSimCount), 
         isCount=TRUE,reduceMethod="none",
         k0s=4:5,clusterFunction="hierarchical01", alphas=0.1,
@@ -49,6 +53,10 @@ test_that("`RSEC` works with no merging",{
 })
 
 test_that("`RSEC` returns clusterMany even when errors later",{
+	# These are slow!
+	skip_on_os("windows")
+	skip_on_os("mac")
+	
 	#error in makeConsensus param
 	expect_message(rsecOut1<-
         RSEC(x=mat, isCount=FALSE,k0s=4:5,

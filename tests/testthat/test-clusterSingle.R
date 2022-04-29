@@ -384,6 +384,10 @@ test_that("all built-in clustering methods",{
 
 test_that("`clusterSingle` works with hdf5Matrix",{
 
+	# These are slow!
+	skip_on_os("windows")
+	skip_on_os("mac")
+
  	 ####Test sequential option,
      expect_silent(clustSeq <- clusterSingle(hdfObj,
          reduceMethod="none",
