@@ -85,8 +85,8 @@ setMethod(
         unassignedSamples<-match.arg(unassignedSamples)
         whCl<-getSingleClusterIndex(x,whichCluster,passedArgs)
         cl<-clusterMatrix(x)[,whCl]
-        ##erase merge information
-        if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)
+        # ##FIXME: ADD TO RSEC version erase merge information
+        # if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)
         
         ########
         ##Transform the data

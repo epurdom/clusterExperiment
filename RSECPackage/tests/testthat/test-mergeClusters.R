@@ -381,7 +381,7 @@ test_that("`mergeClusters` preserves the colData and rowData of SE", {
 
 test_that("`mergeClusters` works with unassignedSamples", {
 
-  expect_silent(clustWithDendro <- makeDendrogram(ceSim,unassignedSamples = c("outgroup")))
+  expect_silent(clustWithDendro <- makeDendrogram(ceSimCount,unassignedSamples = c("outgroup")))
 
 	expect_message(clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma",
 	 mergeMethod="adjP",
@@ -395,7 +395,7 @@ test_that("`mergeClusters` works with unassignedSamples", {
 	expect_message(clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma",
 	 mergeMethod="adjP", plotInfo="mergeMethod",leafType="clusters",plotType="name"))
 
-  expect_silent(clustWithDendro <- makeDendrogram(ceSim,reduceMethod="mad",unassignedSamples = c("cluster")))
+  expect_silent(clustWithDendro <- makeDendrogram(ceSimCount,reduceMethod="mad",unassignedSamples = c("cluster")))
 
 	expect_warning(mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma", plotInfo="mergeMethod",leafType="samples",plotType="colorblock"),"You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing")
 	expect_warning(mergeClusters(clustWithDendro, mergeMethod="adjP", DEMethod="limma", plotInfo="mergeMethod",leafType="samples",plotType="name"),"You cannot set 'leafType' to 'samples' in plotting mergeClusters unless the dendrogram was made with unassigned/missing")
@@ -409,7 +409,7 @@ test_that("`mergeClusters` works with unassignedSamples", {
 })
 
 test_that("cluster labels not being internally changed from user input",{
-  expect_silent(clustWithDendro <- makeDendrogram(ceSim,unassignedSamples = c("outgroup")))
+  expect_silent(clustWithDendro <- makeDendrogram(ceSimCount,unassignedSamples = c("outgroup")))
   
   expect_message(clustMerged <- mergeClusters(clustWithDendro, DEMethod="limma", mergeMethod="adjP",
                                               plotInfo="mergeMethod",leafType="samples",plotType="colorblock"))

@@ -40,6 +40,8 @@ setMethod(
   signature = "ClusterExperiment",
   definition = function(object) {
 		callNextMethod(object)
+    cat("reducedDimNames:",if(anyValidReducedDims(object)) reducedDimNames(object) else "no reduced dims stored","\n")
+    cat("filterStats:",if(anyValidFilterStats(object)) filterNames(object) else "no valid filtering stats stored","\n")
     cat("Workflow progress:\n")
     typeTab<-names(table(clusterTypes(object)))
     cat("clusterMany run?",if("clusterMany" %in% typeTab) "Yes" else "No","\n")

@@ -81,8 +81,8 @@ clMatNew<-apply(clusterMatrix(test),2,function(x){
 })
 
 #make a new object with -1 values
-ceSim<-ClusterExperiment(seSimCount,clMatNew,transformation=function(x){log2(x+1)})
-clusterTypes(ceSim)<-clusterTypes(test)
+ceSimCount<-ClusterExperiment(seSimCount,clMatNew,transformation=function(x){log2(x+1)})
+clusterTypes(ceSimCount)<-clusterTypes(test)
 
 ceSimData<-ClusterExperiment(seSimData,clMatNew,transformation=function(x){x})
 clusterTypes(ceSimData)<-clusterTypes(test)
@@ -93,10 +93,10 @@ rm(test)
 ### 15 samples from each of groups (including -2,-1)
 ###
 #################################
-whSamp<-unlist(tapply(1:nSamples(ceSim),primaryCluster(ceSim),function(x){sample(x,size=3)})) #15
+whSamp<-unlist(tapply(1:nSamples(ceSimCount),primaryCluster(ceSimCount),function(x){sample(x,size=3)})) #15
 smSimData<-simData[1:20,whSamp]
 smSimCount<-simCount[1:20,whSamp]
-smSimCE<-ceSim[1:20,whSamp]
+smSimCE<-ceSimCount[1:20,whSamp]
 smSimSE <- seSimData[1:20,whSamp]
 
 

@@ -5,23 +5,23 @@ context("Non-heatmap related plot functions")
 test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 
     #test matrix version
-    x<-plotClusters(object=clusterMatrix(ceSim))
-    expect_equal(dim(clusterMatrix(ceSim)),dim(x$colors))
-    expect_equal(dim(clusterMatrix(ceSim)),dim(x$aligned))
-    expect_equal(length(x$clusterLegend),ncol(clusterMatrix(ceSim)))
+    x<-plotClusters(object=clusterMatrix(ceSimCount))
+    expect_equal(dim(clusterMatrix(ceSimCount)),dim(x$colors))
+    expect_equal(dim(clusterMatrix(ceSimCount)),dim(x$aligned))
+    expect_equal(length(x$clusterLegend),ncol(clusterMatrix(ceSimCount)))
 
     #test CE version
-    x<-plotClusters(ceSim)
+    x<-plotClusters(ceSimCount)
     expect_is(x,"ClusterExperiment")
-    expect_equal( x,ceSim)
+    expect_equal( x,ceSimCount)
 
-    xx<-plotClusters(ceSim,whichClusters="clusterMany")
-    xx2<-plotClusters(object=ceSim,whichClusters="workflow") #only clusterMany values so should be the same
+    xx<-plotClusters(ceSimCount,whichClusters="clusterMany")
+    xx2<-plotClusters(object=ceSimCount,whichClusters="workflow") #only clusterMany values so should be the same
     expect_equal(xx2,xx)
 
     #check reset -- should add combinations of resetColors and resetNames to make sure works independently.
     par(mfrow=c(1,2)) #so can visually check if desired.
-    xx3<-plotClusters(ceSim,resetOrderSamples=TRUE,resetColors=TRUE,resetNames=TRUE)
+    xx3<-plotClusters(ceSimCount,resetOrderSamples=TRUE,resetColors=TRUE,resetNames=TRUE)
     plotClusters(xx3,existingColors="all")
     expect_false(isTRUE(all.equal(xx2,xx3))) #not a great test. Doesn't really say whether does it right, just whether it does something!
 
@@ -29,28 +29,28 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     col<-(unlist(lapply(clusterLegend(xx3),function(x){x[,"color"]})))
     wh<-which(col %in% c("white","grey"))
     expect_equal(match(col[-wh],bigPalette),nm[-wh])
-    nmOld<-as.numeric(unlist(lapply(clusterLegend(ceSim),function(x){x[,"name"]})))
+    nmOld<-as.numeric(unlist(lapply(clusterLegend(ceSimCount),function(x){x[,"name"]})))
     expect_false(isTRUE(all.equal(nm,nmOld)))
-    idOld<-as.numeric(unlist(lapply(clusterLegend(ceSim),function(x){x[,"clusterIds"]})))
+    idOld<-as.numeric(unlist(lapply(clusterLegend(ceSimCount),function(x){x[,"clusterIds"]})))
     idNew<-as.numeric(unlist(lapply(clusterLegend(xx3),function(x){x[,"clusterIds"]})))
     expect_equal(idOld,idNew)
 
     #check existing colors
-    x2<-plotClusters(ceSim,existingColors="all")
+    x2<-plotClusters(ceSimCount,existingColors="all")
 
     #test -1
-    plotClusters(ceSim)
+    plotClusters(ceSimCount)
 
     #CE object with mixture of workflow and other types
-    x1<-plotClusters(object=ceSim,whichClusters="workflow",resetColors=TRUE)
-    x2<-plotClusters(object=removeClusterings(ceSim,"User"),resetColors=TRUE)
-    whP<-getClusterIndex(ceSim,"workflow")
+    x1<-plotClusters(object=ceSimCount,whichClusters="workflow",resetColors=TRUE)
+    x2<-plotClusters(object=removeClusterings(ceSimCount,"User"),resetColors=TRUE)
+    whP<-getClusterIndex(ceSimCount,"workflow")
     expect_equal(clusterLegend(x2),clusterLegend(x1)[whP])
 
     #test specifying indices
-    wh<-c(3,4,NCOL(clusterMatrix(ceSim)))
-    x3<-plotClusters(ceSim,whichClusters=wh,axisLine=-2,resetColors=TRUE)
-    x4<-plotClusters(ceSim,whichClusters=wh[c(3,2,1)],axisLine=-2,resetColors=TRUE)
+    wh<-c(3,4,NCOL(clusterMatrix(ceSimCount)))
+    x3<-plotClusters(ceSimCount,whichClusters=wh,axisLine=-2,resetColors=TRUE)
+    x4<-plotClusters(ceSimCount,whichClusters=wh[c(3,2,1)],axisLine=-2,resetColors=TRUE)
     expect_false(isTRUE(all.equal(x3,x4)))
 
     par(mfrow=c(1,1)) #otherwise will affect other tests.
@@ -61,14 +61,14 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 test_that("`plotClusters` rerun above tests with colData included", {
 
     #test matrix version
-    expect_silent(x<-plotClusters(object=clusterMatrix(ceSim),
-        colData=as.data.frame(colData(ceSim))))
-    expect_equal(ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)),
+    expect_silent(x<-plotClusters(object=clusterMatrix(ceSimCount),
+        colData=as.data.frame(colData(ceSimCount))))
+    expect_equal(ncol(clusterMatrix(ceSimCount))+ncol(colData(ceSimCount)),
         ncol(x$colors))
-    expect_equal(ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)),
+    expect_equal(ncol(clusterMatrix(ceSimCount))+ncol(colData(ceSimCount)),
         ncol(x$aligned))
     expect_equal(length(x$clusterLegend),
-        ncol(clusterMatrix(ceSim))+ncol(colData(ceSim)))
+        ncol(clusterMatrix(ceSimCount))+ncol(colData(ceSimCount)))
 
     #---    
     #test CE version
@@ -81,19 +81,19 @@ test_that("`plotClusters` rerun above tests with colData included", {
         clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE)
     ) )
     expect_error(plotClusters(test,
-        colData=as.data.frame(colData(ceSim))),
+        colData=as.data.frame(colData(ceSimCount))),
         "no colData for object data")
-    expect_error(plotClusters(ceSim,
-        colData=as.data.frame(colData(ceSim))),
+    expect_error(plotClusters(ceSimCount,
+        colData=as.data.frame(colData(ceSimCount))),
         "invalid values for pulling sample data from colData of object")
-    expect_silent(plotClusters(ceSim,colData="all"))
+    expect_silent(plotClusters(ceSimCount,colData="all"))
     par(mfrow=c(1,2))
-    expect_silent(x2<-plotClusters(ceSim,colData="all",resetColors=TRUE))
-    expect_silent(x1<-plotClusters(ceSim,resetColors=TRUE))
+    expect_silent(x2<-plotClusters(ceSimCount,colData="all",resetColors=TRUE))
+    expect_silent(x1<-plotClusters(ceSimCount,resetColors=TRUE))
 
 
     #check NAs
-    naSim<-ceSim
+    naSim<-ceSimCount
     colData(naSim)[sample(size=10,x=1:nrow(naSim)),c("A","B")]<-NA
     expect_silent(plotClusters(naSim,colData=c("A","B")))
 
@@ -103,8 +103,8 @@ test_that("`plotClusters` rerun above tests with colData included", {
   #this is not working because first one puts -1/-2 last and second puts them first, and so then assigns different colors to the groups
 #  expect_equal(x1,x2)
 #   par(mfrow=c(1,2))
-#   x2<-plotClusters(ceSim,colData="all",resetColors=FALSE)
-#   x1<-plotClusters(ceSim,resetColors=FALSE)
+#   x2<-plotClusters(ceSimCount,colData="all",resetColors=FALSE)
+#   x1<-plotClusters(ceSimCount,resetColors=FALSE)
     par(mfrow=c(1,1))
 
 })
@@ -148,22 +148,22 @@ test_that("plotting helpers", {
 test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
 
     #test numeric matrix version
-    expect_silent(plotBarplot(object=clusterMatrix(ceSim)[,1:2]))
+    expect_silent(plotBarplot(object=clusterMatrix(ceSimCount)[,1:2]))
     #test vector version
-    expect_silent(plotBarplot(object=clusterMatrix(ceSim)[,1]))
+    expect_silent(plotBarplot(object=clusterMatrix(ceSimCount)[,1]))
     #check error
-    expect_error(plotBarplot(object=clusterMatrix(ceSim)),"if 'object' a matrix, must contain at most 2 clusters")
+    expect_error(plotBarplot(object=clusterMatrix(ceSimCount)),"if 'object' a matrix, must contain at most 2 clusters")
 
     #test CE version with no defaults
-    expect_silent(plotBarplot(ceSim))
+    expect_silent(plotBarplot(ceSimCount))
     #test CE version whichClusters arguments
-    expect_silent(plotBarplot(ceSim,whichClusters="workflow"))
-    expect_silent(plotBarplot(ceSim,whichClusters="primaryCluster"))
-    expect_silent(plotBarplot(ceSim))
+    expect_silent(plotBarplot(ceSimCount,whichClusters="workflow"))
+    expect_silent(plotBarplot(ceSimCount,whichClusters="primaryCluster"))
+    expect_silent(plotBarplot(ceSimCount))
 
 
-    test<-ceSim
-    expect_silent(clusterLegend(test)[[1]][,"name"]<-LETTERS[1:nrow(clusterLegend(ceSim)[[1]])])
+    test<-ceSimCount
+    expect_silent(clusterLegend(test)[[1]][,"name"]<-LETTERS[1:nrow(clusterLegend(ceSimCount)[[1]])])
     #test character matrix version
     expect_silent(plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1:2]))
     #test character vector version
@@ -171,7 +171,7 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
     #test labels argument
     expect_silent(plotBarplot(test,whichClusters=1:2,labels="id"))
     expect_silent(plotBarplot(test,whichClusters=1:2,labels="name"))
-    #plotBarplot(ceSim,whichClusters="primaryCluster")
+    #plotBarplot(ceSimCount,whichClusters="primaryCluster")
 
 })
 
@@ -256,19 +256,19 @@ test_that("plotClustersTable works",{
 	
 	#test more complicated
 	#so different numbers of clusters in the two clusters
-	expect_silent(ceSim<-renameClusters(ceSim,whichCluster=1,val=letters[1:nClusters(ceSim)[1]]))
-	expect_silent(ceSim<-subsetByCluster(ceSim,whichCluster=1,c("a","b","d")))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab="Cluster1",margin=2,legend=TRUE))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab=NULL,ylab=NA,margin=0,legend=TRUE))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab=NA,ylab=NULL,margin=1,legend=TRUE))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NA,ylab="Cluster2",legend=TRUE ))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NULL,legend=TRUE))
+	expect_silent(ceSimCount<-renameClusters(ceSimCount,whichCluster=1,val=letters[1:nClusters(ceSimCount)[1]]))
+	expect_silent(ceSimCount<-subsetByCluster(ceSimCount,whichCluster=1,c("a","b","d")))
+	expect_silent(plotClustersTable(ceSimCount,whichClusters=c(1,2),xlab="Cluster1",margin=2,legend=TRUE))
+	expect_silent(plotClustersTable(ceSimCount,whichClusters=c(1,2),xlab=NULL,ylab=NA,margin=0,legend=TRUE))
+	expect_silent(plotClustersTable(ceSimCount,whichClusters=c(1,2),xlab=NA,ylab=NULL,margin=1,legend=TRUE))
+	expect_silent(plotClustersTable(ceSimCount,whichClusters=c(1,2),margin=NA,ylab="Cluster2",legend=TRUE ))
+	expect_silent(plotClustersTable(ceSimCount,whichClusters=c(1,2),margin=NULL,legend=TRUE))
 	
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab="Cluster1",margin=2,plotType="bubble"))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab=NULL,ylab=NA,margin=0,plotType="bubble"))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),xlab=NA,ylab=NULL,margin=1,plotType="bubble"))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NA,ylab="Cluster2",plotType="bubble" ))
-	expect_silent(plotClustersTable(ceSim,whichClusters=c(1,2),margin=NULL,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSimCount,whichClusters=c(1,2),xlab="Cluster1",margin=2,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSimCount,whichClusters=c(1,2),xlab=NULL,ylab=NA,margin=0,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSimCount,whichClusters=c(1,2),xlab=NA,ylab=NULL,margin=1,plotType="bubble"))
+	expect_silent(plotClustersTable(ceSimCount,whichClusters=c(1,2),margin=NA,ylab="Cluster2",plotType="bubble" ))
+	expect_silent(plotClustersTable(ceSimCount,whichClusters=c(1,2),margin=NULL,plotType="bubble"))
 	
 	
 })

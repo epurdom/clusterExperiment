@@ -87,10 +87,10 @@ setMethod(
 	dendroSlots<-c("dendro_samples", "dendro_clusters",
   "dendro_index")
 
-	mergeSlots<-c("merge_index",
-"merge_dendrocluster_index",
-"merge_method", "merge_demethod", "merge_cutoff",
-"merge_nodeProp", "merge_nodeMerge")
+#     mergeSlots<-c("merge_index",
+# "merge_dendrocluster_index",
+# "merge_method", "merge_demethod", "merge_cutoff",
+# "merge_nodeProp", "merge_nodeMerge")
 
 	if(any(!dendroSlots %in% snames)& any(dendroSlots %in% snames)){
 		warning("'object' does not contain ALL required slots saving the dendro-related information. Updated object will remove all dendro AND merge related slots")
@@ -98,10 +98,10 @@ setMethod(
 		snames<-snames[-which(snames %in% mergeSlots)]
 	}
 
-	if(any(!mergeSlots %in% snames) & any(mergeSlots %in% snames)){
-		warning("'object' does not contain ALL required slots saving the merge-related information.  Updated object will remove all merge related slots")
-		snames<-snames[-which(snames %in% mergeSlots)]
-	}
+    # if(any(!mergeSlots %in% snames) & any(mergeSlots %in% snames)){
+    #     warning("'object' does not contain ALL required slots saving the merge-related information.  Updated object will remove all merge related slots")
+    #     snames<-snames[-which(snames %in% mergeSlots)]
+    # }
 
 	#--------
 	# Get included slots of ones I create 
@@ -109,11 +109,12 @@ setMethod(
 	myslots<- c("transformation",
   	"primaryIndex", "clusterInfo",
   "clusterTypes", "dendro_samples", "dendro_clusters",
-  "dendro_index", "coClustering",
-  "clusterLegend", "orderSamples", "merge_index",
-"merge_dendrocluster_index",
-"merge_method", "merge_demethod", "merge_cutoff",
-"merge_nodeProp", "merge_nodeMerge")
+  "dendro_index", 
+  "clusterLegend", "orderSamples"# , "coClustering", "merge_index",
+# "merge_dendrocluster_index",
+# "merge_method", "merge_demethod", "merge_cutoff",
+# "merge_nodeProp", "merge_nodeMerge"
+)
 	snames<-snames[snames %in% myslots]
 
 	## Fix class of the dendrograms:
@@ -272,11 +273,11 @@ setMethod(
 		}
 	}
 
-	##Fix class of coClustering -- have turned this off for now after changed coClustering.
-	if(!is.null(object@coClustering) &&
-        inherits(object@coClustering,"matrix")){
-		coClustering(object)<-object@coClustering
-	}
+    # ##Fix class of coClustering -- have turned this off for now after changed coClustering.
+    # if(!is.null(object@coClustering) &&
+    #         inherits(object@coClustering,"matrix")){
+    #     coClustering(object)<-object@coClustering
+    # }
     passedSlots<-attributes(object)[snames]
     ### NULL values will be turned into `\001NULL\001` (class 'name', but appears to work to compare to character value)
     whNotNULL<-which(!sapply(passedSlots,function(x){inherits(x,"name") && 

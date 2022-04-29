@@ -56,21 +56,21 @@ test_that("`getBestFeatures`  matrix and CE return same", {
 
   logcpm <- t(log2(t(simCount + 0.5)/(colSums(simCount) + 1) * 1e+06))
   expect_silent(voom1 <- getBestFeatures(simCount, 
-	  primaryCluster(ceSim), contrastType="F",
+	  primaryCluster(ceSimCount), contrastType="F",
                         DEMethod="limma-voom"))
   idx <- voom1$IndexInOriginal
-  expect_equal(rowMeans(logcpm[idx,primaryCluster(ceSim)>0]), voom1$AveExpr)
+  expect_equal(rowMeans(logcpm[idx,primaryCluster(ceSimCount)>0]), voom1$AveExpr)
 
   expect_silent(voom2 <- getBestFeatures(simCount,
-	   primaryCluster(ceSim), contrastType="Pairs",
+	   primaryCluster(ceSimCount), contrastType="Pairs",
                         DEMethod="limma-voom"))
   idx <- voom2$IndexInOriginal
-  expect_equal(rowMeans(logcpm[idx,primaryCluster(ceSim)>0]), voom2$AveExpr)
+  expect_equal(rowMeans(logcpm[idx,primaryCluster(ceSimCount)>0]), voom2$AveExpr)
 
-  expect_silent(voom3 <- getBestFeatures(simCount, primaryCluster(ceSim), contrastType="OneAgainstAll",
+  expect_silent(voom3 <- getBestFeatures(simCount, primaryCluster(ceSimCount), contrastType="OneAgainstAll",
                         DEMethod="limma-voom"))
   idx <- voom3$IndexInOriginal
-  expect_equal(rowMeans(logcpm[idx,primaryCluster(ceSim)>0]), voom3$AveExpr)
+  expect_equal(rowMeans(logcpm[idx,primaryCluster(ceSimCount)>0]), voom3$AveExpr)
 
 
 
@@ -112,7 +112,7 @@ test_that("`getBestFeatures` works with ClusterExperiment objects", {
 test_that("'Dendro' contrasts works for ClusterExperiment object in `getBestFeatures`",{
     #test dendrogram
     ## test dendrogram
-    expect_error(getBestFeatures(simData, primaryCluster(ceSim), contrastType="Dendro"), "must provide dendro")
+    expect_error(getBestFeatures(simData, primaryCluster(ceSimCount), contrastType="Dendro"), "must provide dendro")
   
     expect_silent(dendro <- makeDendrogram(simData, primaryCluster(ceSimData)))
     expect_error(getBestFeatures(simData, primaryCluster(ceSimData), contrastType="Dendro", dendro=dendro$samples,DEMethod="limma"), "dendro don't match")
@@ -178,24 +178,24 @@ test_that("`plotContrastHeatmap` works", {
 test_that("`getBestFeatures` works with weights", {
 	set.seed(258179)
 	weights<-matrix(runif(nrow(seSimCount)*ncol(seSimCount)),nrow=nrow(seSimCount),ncol=ncol(seSimCount))
-	ceSimW<-ceSim
-	assay(ceSimW,"weights")<-weights
+	ceSimCountW<-ceSimCount
+	assay(ceSimCountW,"weights")<-weights
 
-	expect_silent(outW<-getBestFeatures(ceSim,weights=weights,DEMethod="edgeR",contrastType="F"))
-	expect_silent(outNW<-getBestFeatures(ceSim,weights=NULL,DEMethod="edgeR",contrastType="F"))
-	expect_silent(outV<-getBestFeatures(ceSim,weights=weights,DEMethod="limma-voom",contrastType="F"))
-	expect_silent(outV2<-getBestFeatures(ceSim,DEMethod="limma-voom",contrastType="F"))
+	expect_silent(outW<-getBestFeatures(ceSimCount,weights=weights,DEMethod="edgeR",contrastType="F"))
+	expect_silent(outNW<-getBestFeatures(ceSimCount,weights=NULL,DEMethod="edgeR",contrastType="F"))
+	expect_silent(outV<-getBestFeatures(ceSimCount,weights=weights,DEMethod="limma-voom",contrastType="F"))
+	expect_silent(outV2<-getBestFeatures(ceSimCount,DEMethod="limma-voom",contrastType="F"))
 	expect_equal(outV,outV2)
 
-	expect_silent(outNW_C<-getBestFeatures(ceSim,weights=NULL,DEMethod="edgeR",contrastType="Pairs"))
-	expect_silent(outW_C<-getBestFeatures(ceSim,weights=weights,DEMethod="edgeR",contrastType="Pairs"))
-	expect_silent(getBestFeatures(ceSim,weights=weights,DEMethod="edgeR",contrastType="Pairs",contrastAdj="PerContrast"))
-	expect_silent(getBestFeatures(ceSim,weights=weights,DEMethod="edgeR",contrastType="Pairs",contrastAdj="AfterF"))
+	expect_silent(outNW_C<-getBestFeatures(ceSimCount,weights=NULL,DEMethod="edgeR",contrastType="Pairs"))
+	expect_silent(outW_C<-getBestFeatures(ceSimCount,weights=weights,DEMethod="edgeR",contrastType="Pairs"))
+	expect_silent(getBestFeatures(ceSimCount,weights=weights,DEMethod="edgeR",contrastType="Pairs",contrastAdj="PerContrast"))
+	expect_silent(getBestFeatures(ceSimCount,weights=weights,DEMethod="edgeR",contrastType="Pairs",contrastAdj="AfterF"))
 	
 	#-------
 	##Test get right answers with weights (have to remove unassigned)
 	#-------
-	expect_silent(cleanSim<-removeUnassigned(ceSimW,whichCluster="primary"))
+	expect_silent(cleanSim<-removeUnassigned(ceSimCountW,whichCluster="primary"))
 	expect_true(all(primaryCluster(cleanSim)>0))
 	expect_silent(pairsContrasts<-clusterContrasts(cleanSim,contrastType="Pairs"))
   designContr <- model.matrix(~ 0 + factor(primaryCluster(cleanSim)))
@@ -210,19 +210,19 @@ test_that("`getBestFeatures` works with weights", {
 	expect_equal(unname(data.matrix(resultsC1[,c("logFC","logCPM","LR","P.Value","padjFilter","adj.P.Val")])), unname(data.matrix(data.frame(resultsManual))))
 	
 	### check when weights in assay picks them up automatically (when have right name...)
-	expect_silent(outNW_C2<-getBestFeatures(ceSimW,weights=NULL,DEMethod="edgeR",contrastType="Pairs"))
+	expect_silent(outNW_C2<-getBestFeatures(ceSimCountW,weights=NULL,DEMethod="edgeR",contrastType="Pairs"))
 	expect_equal(outNW_C2,outNW_C)
 
-	expect_silent(outW_C2<-getBestFeatures(ceSimW,DEMethod="edgeR",contrastType="Pairs"))
+	expect_silent(outW_C2<-getBestFeatures(ceSimCountW,DEMethod="edgeR",contrastType="Pairs"))
 	expect_equal(outW_C2,outW_C)
 	
 	##Test mergeClusters
-	expect_silent(ceSimW<-makeDendrogram(ceSimW))
-	expect_message(mergeClusters(ceSimW,DEMethod="edgeR"),"Merging will be done on")
-	expect_message(mergeClusters(ceSimW,DEMethod="edgeR",weights=NULL,forceCalculate=TRUE),"Merging will be done on")
+	expect_silent(ceSimCountW<-makeDendrogram(ceSimCountW))
+	expect_message(mergeClusters(ceSimCountW,DEMethod="edgeR"),"Merging will be done on")
+	expect_message(mergeClusters(ceSimCountW,DEMethod="edgeR",weights=NULL,forceCalculate=TRUE),"Merging will be done on")
 	
 	##Test RSEC
-	expect_message(RSEC(ceSimW,sequential=FALSE,subsample=FALSE,ks=4:15,isCount=TRUE,stopOnError=TRUE),"merging with these parameters did not result in any clusters being merged")
+	expect_message(RSEC(ceSimCountW,sequential=FALSE,subsample=FALSE,ks=4:15,isCount=TRUE,stopOnError=TRUE),"merging with these parameters did not result in any clusters being merged")
 	
 	sceCountData<-SingleCellExperiment(simCount)
 	reducedDims(sceCountData) <- reducedDims(sceSimDataDimRed)	

@@ -1,6 +1,6 @@
-Package: clusterExperiment
+Package: RSEC
 Title: Compare Clusterings for Single-Cell Sequencing 
-Version: 2.17.1
+Version: 0.0.99.0
 Description: Provides functionality for running and comparing many
     different clusterings of single-cell sequencing data or other large mRNA Expression data sets.
 Authors@R: c(person("Elizabeth", "Purdom", email = "epurdom@stat.berkeley.edu",
@@ -11,8 +11,7 @@ License: Artistic-2.0
 Encoding: UTF-8
 Depends:
     R (>= 3.6.0),
-    SingleCellExperiment,
-	SummarizedExperiment (>= 1.15.4),
+    clusterExperiment,
 	BiocGenerics
 Imports:
 	methods,

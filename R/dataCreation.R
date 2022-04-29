@@ -12,7 +12,10 @@
 #'   observations being in one of 3 groups. \code{simCount} is simulated count
 #'   data of the same dimensions. \code{trueCluster} gives the true cluster
 #'   identifications of the samples. The true clusters are each of size 100 and
-#'   are in order in the columns of the data.frames.
+#'   are in order in the columns of the data.frames. 
+#'   \code{ceSimData} and \code{ceSimCount} are \code{ClusterExperiment} objects 
+#'   created from this data with clusters based on doing simple PAM clustering
+#'   of the top PC dimensions (using code from \code{RSECPackage})
 #' @keywords data
 #' @examples
 #' #code used to create data:
@@ -51,8 +54,48 @@
 #' =as.vector(countMean)+.1),nrow=nrow(countMean),ncol=ncol(countMean))
 #' #labels for the truth
 #' trueCluster<-rep(c(1:3),each=n)
+#' 
 #' save(list=c("simCount","simData","trueCluster"),file="data/simData.rda")
+#' #################################
+#' ###Create ClusterExperiment Objects based on simData/simCount:
+#' #################################
+#' set.seed(2415)
+#' seSimData <-simSEObject(simData)
+#' # Same meta data, but with the counts
+#' set.seed(2415)
+#' seSimCount <-simSEObject(simCount)
+#' 
+#' # Create matrix of clusters:
+#' library(RSECPackage)
+#' test<- clusterMany(simCount,reduceMethod="PCA",
+#'    nReducedDims=c(5,10,50), 
+#'    isCount=TRUE, verbose=FALSE,
+#'    clusterFunction="pam", makeMissingDiss=TRUE,
+#'    ks=2:4,
+#'    findBestK=c(TRUE,FALSE))
+#' set.seed(1291)					
+#' test<-addClusterings(test,
+#'    sample(2:5,size=NCOL(simData),replace=TRUE),clusterTypes="User")
+#' set.seed(493)					
+#' clMatNew<-apply(clusterMatrix(test),2,function(x){
+#'    wh<-sample(1:nSamples(test),size=10)
+#'    x[wh]<- -1
+#'    wh<-sample(1:nSamples(test),size=10)
+#'    x[wh]<- -2
+#'    return(x)
+#' })
+#'
+#' #make CE Object
+#' ceSimCount<-ClusterExperiment(seSimCount,clMatNew,
+#'    transformation=function(x){log2(x+1)})
+#' clusterTypes(ceSimCount)<-clusterTypes(test)
+#'
+#' ceSimData<-ClusterExperiment(seSimData,clMatNew,
+#'    transformation=function(x){x})
+#' clusterTypes(ceSimData)<-clusterTypes(test)
+#' save(list=c("ceSimData","ceSimCount"),file="data/simCEData.rda")
 #' }
+
 NULL
 
 
@@ -78,4 +121,44 @@ NULL
 #' usethis::use_data(fluidigmData, fluidigmColData, overwrite=FALSE)
 #' }
 NULL
+
+
+#' Functions for creating simulated objects for testing/examples
+#'
+#' @name simFunctions
+#' @aliases simSEObject
+#' @author Elizabeth Purdom \email{epurdom@@stat.berkeley.edu}
+#' @examples
+#' mat <- matrix(data=rnorm(20*15), ncol=15)
+#' mat[1,1]<- -1 #force a negative value
+#' colnames(mat)<-paste("Sample",1:ncol(mat))
+#' rownames(mat)<-paste("Gene",1:nrow(mat))
+#' se<-simSEObject(mat)
+#' se
+simSEObject<-function(mat){
+   #create sample data: factor, integer, and character
+    sData<-data.frame(
+        sample(letters[2:5],size=NCOL(mat),replace=TRUE),
+        sample(2:5,size=NCOL(mat),replace=TRUE),
+        stringsAsFactors=TRUE)
+    sData<-data.frame(sData,
+        sample(LETTERS[2:5],size=NCOL(mat),replace=TRUE),
+        stringsAsFactors=FALSE)
+    colnames(sData)<-c("A","B","C")
+   
+   # Create gene data: factor, integer, and character
+    gData<-data.frame(
+        sample(letters[2:5],size=NROW(mat),replace=TRUE),
+        sample(2:5,size=NROW(mat),replace=TRUE),
+        stringsAsFactors=TRUE)
+    gData<-data.frame(gData,
+        sample(LETTERS[2:5],size=NROW(mat),replace=TRUE),
+        stringsAsFactors=FALSE)
+    colnames(gData)<-c("a","b","c")
+    mData<-list(first=c(1,2,3),second=c("Information"))
+    
+    se <- SummarizedExperiment(mat,
+        colData=sData,rowData=gData,metadata=mData)
+    return(se)
+}
 

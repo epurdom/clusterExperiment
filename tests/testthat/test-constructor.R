@@ -63,7 +63,7 @@ test_that("`getClusterIndex` works", {
 	expect_error(getSingleClusterIndex(ccSE,whichCluster="workflow"),"There are no workflow clusterings")
 	
 	
-    expect_message(ccM<-makeConsensus(ceSim,proportion=.2,clusterLabel="mySpecialLabel"),"no clusters specified to combine")
+    expect_message(ccM<-makeConsensus(ceSimCount,proportion=.2,clusterLabel="mySpecialLabel"),"no clusters specified to combine")
     expect_message(ccM<-makeConsensus(ccM,proportion=.2),"no clusters specified to combine")
     expect_silent(indCM<-getClusterIndex(ccM,wh=c("clusterMany")))
     expect_equal(length(indCM),sum(clusterTypes(ccM)=="clusterMany"))
@@ -81,11 +81,11 @@ test_that("`ClusterExperiment` constructor works with hdf5",{
 })
 
 test_that("whichClusters works with clusterMatrix",{
-	 expect_silent(x<-dim(clusterMatrix(ceSim)))
-	 expect_equal(dim(clusterMatrix(ceSim,whichClusters="all")),x)
-	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters="workflow")),12)
-	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters=1:3)),3)
-	 expect_equal(ncol(clusterMatrix(ceSim,whichClusters="dendro")),0)
+	 expect_silent(x<-dim(clusterMatrix(ceSimCount)))
+	 expect_equal(dim(clusterMatrix(ceSimCount,whichClusters="all")),x)
+	 expect_equal(ncol(clusterMatrix(ceSimCount,whichClusters="workflow")),12)
+	 expect_equal(ncol(clusterMatrix(ceSimCount,whichClusters=1:3)),3)
+	 expect_equal(ncol(clusterMatrix(ceSimCount,whichClusters="dendro")),0)
 })
 
 test_that("subsetting works as promised",{
@@ -427,12 +427,12 @@ test_that("assigning unassigned samples works as promised",{
 	expect_silent(assignUnassigned(cc))
 	expect_silent(ccUn<-assignUnassigned(cc,whichCluster="Cluster2"))
 	expect_true("Cluster2_AllAssigned" %in% clusterLabels(ccUn))
-	expect_silent(assignUnassigned(ceSim,reduceMethod="b"))
-	expect_silent(assignUnassigned(ceSim,reduceMethod="mad"))
-	expect_silent(ceUn<-assignUnassigned(ceSim,reduceMethod="PCA"))
+	expect_silent(assignUnassigned(ceSimCount,reduceMethod="b"))
+	expect_silent(assignUnassigned(ceSimCount,reduceMethod="mad"))
+	expect_silent(ceUn<-assignUnassigned(ceSimCount,reduceMethod="PCA"))
 	expect_equal(reducedDimNames(ceUn),"PCA")
-	expect_silent(ceUn2<-assignUnassigned(ceSim,reduceMethod="PCA",makePrimary=FALSE))
-	expect_true(all.equal(primaryCluster(ceSim),primaryCluster(ceUn2)))
+	expect_silent(ceUn2<-assignUnassigned(ceSimCount,reduceMethod="PCA",makePrimary=FALSE))
+	expect_true(all.equal(primaryCluster(ceSimCount),primaryCluster(ceUn2)))
 
 
 	#check basic error catching
@@ -459,7 +459,7 @@ test_that("workflow functions work",{
   expect_equal(dim(workflowClusters(ppC,iteration=NA)),c(nSamples(cc),2))
   expect_null(workflowClusters(cc,iteration=NA))
           
-  expect_message(ceNew<-makeConsensus(ceSim,proportion=0.7))
+  expect_message(ceNew<-makeConsensus(ceSimCount,proportion=0.7))
   expect_message(ceNew<-makeConsensus(ceNew,proportion=0.3,clusterLabel="makeConsensus,v2"))
   expect_equal(clusterLabels(ceNew)[1:2],c("makeConsensus,v2","makeConsensus.1"))
   expect_equal(clusterTypes(ceNew)[1:2],c("makeConsensus","makeConsensus.1"))

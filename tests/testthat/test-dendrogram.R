@@ -32,7 +32,7 @@ test_that("`makeDendrogram` works with ClusterExperiment objects", {
     expect_error(makeDendrogram(cc1),"Only 1 cluster given")
 	
 	#check whichClusters for clusterMatrix
- 	expect_silent(dend<-makeDendrogram(ceSim))
+ 	expect_silent(dend<-makeDendrogram(ceSimCount))
 	expect_equal(ncol(clusterMatrix(dend,whichClusters="dendro")),1)
 	
 	#--------
@@ -107,7 +107,7 @@ test_that("`makeDendrogram` works with whichCluster and updates dendrogram corre
     expect_silent(x2<-makeDendrogram(ccSE,whichCluster=2))
     expect_equal(x1,x2)
     
-    bigCE<-ceSim
+    bigCE<-ceSimCount
     expect_silent(bigCE<-makeDendrogram(bigCE,whichCluster="cluster1"))
     x1<-bigCE
     #--- check clusterMany updates dendrogram correctly

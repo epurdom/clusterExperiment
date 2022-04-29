@@ -58,7 +58,10 @@ setGeneric("nodeIds",function(x,type){standardGeneric("nodeIds")})
 setGeneric("checkDendrogram",function(x,dendroCluster,dendroSample,...){standardGeneric("checkDendrogram")})
 setGeneric("nInternalNodes",function(x){standardGeneric("nInternalNodes")})
 setGeneric(name="plotDendrogram",def=function(x,...){standardGeneric("plotDendrogram")})
-# #Have to recreate these generics, because phylobase's are nonstandardGenericFunctions because used braces.
+
+# # Chicken and egg issue for the following commands: 
+# # If the NAMESPACE hasn't been created yet, it won't import the phylobase class and load_all() hits error that nTips et al don't have a setGeneric. But document first runs load_all(), so can't get a NAMESPACE until load_all will run. So I need to uncomment these the first time to create NAMESPACE, but then can comment them back. 
+# # Note phylobase's are nonstandardGenericFunctions because used braces. But seems to work regardless
 # setGeneric("nodeLabels",function(x){standardGeneric("nodeLabels")})
 # setGeneric("nodeLabels<-",function(x,...,value){standardGeneric("nodeLabels<-")})
 # setGeneric("tipLabels",function(x){standardGeneric("tipLabels")})
