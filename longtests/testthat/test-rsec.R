@@ -1,3 +1,9 @@
+## Construct ClusterExperiment with multiple named assays
+suppressMessages(multi_se <- SummarizedExperiment(assays = list(counts = simCount,
+                                               logcounts = log1p(simCount))))
+suppressMessages(multi_cc <- ClusterExperiment(multi_se, trueCluster))
+suppressMessages(ccTrue <- ClusterExperiment(simCount, trueCluster))
+suppressMessages(ccTrue2 <- ClusterExperiment(simCount, trueCluster, transformation = log1p))
 seedValue<-01875 #works for sample.kind="Rejection"
 
 test_that("RSEC works wih non default assays", {
