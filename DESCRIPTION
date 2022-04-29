@@ -62,6 +62,7 @@ Collate:
     'AllGenerics.R'
     'AllHelper.R'
     'AllHelperDendro.R'
+    'RcppExports.R'
     'addClusterings.R'
     'clusterContrasts.R'
     'dataCreation.R'

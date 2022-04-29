@@ -8,6 +8,9 @@
 todoForKNN.txt
 tests/timeTests.R
 
+# RSEC Package
+^RSECPackage/*
+
 # Travis-CI et al.
 ^.*\\.yml$
 ^[.]travis[.]yml$
