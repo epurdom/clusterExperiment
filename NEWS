@@ -8,6 +8,8 @@ The following functions have been moved to the RSEC package (this is not a compl
 * clusterSingle
 * makeConsensus
 * getReducedData
+* makeFilterStats
+* makeReducedDims
 
 Other changes:
 * argument `mergeCEObjects` changed to `mergeObjects` in `addClusterings`.

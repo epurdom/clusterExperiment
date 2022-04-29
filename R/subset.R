@@ -47,35 +47,6 @@ setMethod(
         else 
             pIndex<-match(primaryClusterIndex(x),seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
         
-        ## Fix CoClustering information
-        ## Erase if any are part of clusters to remove
-        coMat<-coClustering(x)
-        typeCoCl<-.typeOfCoClustering(x)
-        if(typeCoCl=="indices"){
-            if(any(coMat %in% whichClusters)){
-                warning("removing clusterings that were used in makeConsensus (i.e. stored in CoClustering slot). Will delete the coClustering slot")
-                coMat<-NULL
-            }
-            else{
-                #Fix so indexes the right clustering...
-                coMat<-match(coMat,
-                     seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
-            }
-            
-        }
-        
-        #fix merge info:
-        #erase merge info if either dendro or merge index deleted.
-        if(mergeClusterIndex(x) %in% whichClusters | x@merge_dendrocluster_index %in% whichClusters){
-            x<-.eraseMerge(x)
-            merge_index<-x@merge_index
-            merge_dendrocluster_index<-x@merge_dendrocluster_index
-        }
-        else{
-            merge_index<-match(x@merge_index, seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
-            merge_dendrocluster_index<-match(x@merge_dendrocluster_index,  seq_len(NCOL(clusterMatrix(x)))[-whichClusters])
-            
-        }
         #fix dendro info
         dend_samples <- x@dendro_samples
         dend_cl <- x@dendro_clusters
@@ -98,14 +69,6 @@ setMethod(
             dendro_samples=dend_samples,
             dendro_clusters=dend_cl,
             dendro_index=dend_ind,
-            merge_index=merge_index,
-            merge_dendrocluster_index=merge_dendrocluster_index,
-            merge_cutoff=x@merge_cutoff,
-            merge_nodeProp=x@merge_nodeProp,
-            merge_nodeMerge=x@merge_nodeMerge,
-            merge_method=x@merge_method,
-            merge_demethod=x@merge_demethod,                              
-            coClustering=coMat,
             orderSamples=orderSamples,
             clusterLegend=newClusterColors,
             checkTransformAndAssay=FALSE

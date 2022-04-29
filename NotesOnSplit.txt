@@ -1,0 +1,3 @@
+* Need to deal with plotReducedDims -- should it stay in ClusterExperiment, or move with reduceDims stuff?
+* Should contrasts for clusters be in clusterExperiment?
+* need a constructor function that will add RSEC info to ClusterExperiment object. 
