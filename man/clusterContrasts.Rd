@@ -73,6 +73,7 @@ The input vector must be numeric clusters, but the external commands
   be "X.1","X.2", etc.
 }
 \examples{
+\dontrun{
 data(simData)
 cl <- clusterMany(simData,nReducedDims=c(5,10,50),  
 reduceMethod="PCA", makeMissingDiss=TRUE,
@@ -83,6 +84,7 @@ clusterContrasts(cl,contrastType="Pairs")
 #Dendrogram
 cl<-makeDendrogram(cl)
 clusterContrasts(cl,contrastType="Pairs")
+}
 }
 \references{
 Ritchie, ME, Phipson, B, Wu, D, Hu, Y, Law, CW, Shi, W, and

@@ -123,6 +123,7 @@ The method calls \code{\link{mainClustering}} on the proportion
  \code{\link{mainClustering}} for more details.
 }
 \examples{
+\dontrun{
 data(simData)
 
 cl <- clusterMany(simData,nReducedDims=c(5,10,50),  reduceMethod="PCA",
@@ -151,5 +152,5 @@ clCommon <- makeConsensus(cl, whichClusters="workflow", proportion=0.7,
 minSize=10)
 plotClusters(clCommon)
 par(oldpar)
-
+}
 }

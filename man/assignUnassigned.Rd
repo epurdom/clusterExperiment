@@ -74,6 +74,7 @@ All unassigned samples in the cluster are given a clustering,
 }
 \examples{
 #load CE object
+\dontrun{
 data(rsecFluidigm)
 smallCE<-rsecFluidigm[,1:50]
 #assign the unassigned samples
@@ -81,6 +82,7 @@ assignUnassigned(smallCE, makePrimary=TRUE)
 
 #note how samples are REMOVED:
 removeUnassigned(smallCE)
+}
 }
 \seealso{
 \code{\link{getReducedData}}

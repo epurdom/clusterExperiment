@@ -280,6 +280,7 @@ The given \code{reduceMethod} values must either be \emph{all}
   \code{\link{makeReducedDims}}).
 }
 \examples{
+\dontrun{
 data(simData)
 
 #Example: clustering using pam with different dimensions of pca and different
@@ -307,7 +308,6 @@ par(mar=c(2, 10, 1, 1))
 plotClusters(cl, axisLine=-2,clusterLabels=clNames)
 
 
-\dontrun{
 #following code takes around 1+ minutes to run because of the subsampling
 #that is redone each time:
 system.time(clusterTrack <- clusterMany(simData, ks=2:15,

@@ -206,6 +206,7 @@ If \code{whichClusters = "workflow"}, then the workflow clusterings
   clusterMany.
 }
 \examples{
+\dontrun{
 #clustering using pam: try using different dimensions of pca and different k
 data(simData)
 
@@ -270,6 +271,7 @@ return(x)
 cl2 <- ClusterExperiment(assay(cl), clMatNew,
 transformation=transformation(cl))
 plotClusters(cl2)
+}
 }
 \references{
 Wilkerson, D. M, Hayes and Neil D (2010). "ConsensusClusterPlus: a class discovery tool with confidence assessments and item tracking." Bioinformatics, 26(12), pp. 1572-1573.

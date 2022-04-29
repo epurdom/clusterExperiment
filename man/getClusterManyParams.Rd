@@ -55,10 +55,12 @@ Specifically, it splits the label of each clustering by the
   ('123') and associates that value as the value of the parameter ('ABC')
 }
 \examples{
+\dontrun{
 data(simData)
 
 cl <- clusterMany(simData, nReducedDims=c(5, 10), reduceMethod="PCA",
      clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE), 
      makeMissingDiss=TRUE, removeSil=c(TRUE,FALSE))
 getClusterManyParams(cl)
+}
 }

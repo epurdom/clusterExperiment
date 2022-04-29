@@ -95,6 +95,7 @@ If \code{whichClusters = "workflow"}, then the most recent two
   clustering, the same length as the number of clusters in that clustering.
 }
 \examples{
+\dontrun{
 #clustering using pam: try using different dimensions of pca and different k
 data(simData)
 
@@ -104,7 +105,7 @@ removeSil=c(TRUE,FALSE), makeMissingDiss=TRUE)
 
 plotBarplot(cl)
 plotBarplot(cl,whichClusters=1:2)
-
+}
 }
 \author{
 Elizabeth Purdom

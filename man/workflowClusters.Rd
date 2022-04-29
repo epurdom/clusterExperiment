@@ -70,6 +70,7 @@ The main workflow of the package is made of
   documented here.
 }
 \examples{
+\dontrun{
 data(simData)
 
 cl <- clusterMany(simData,nReducedDims=c(5,10,50),  reduceMethod="PCA",
@@ -86,4 +87,5 @@ clMerged <- mergeClusters(clCommon,mergeMethod="adjP", DEMethod="limma")
 head(workflowClusters(clMerged))
 workflowClusterDetails(clMerged)
 workflowClusterTable(clMerged)
+}
 }

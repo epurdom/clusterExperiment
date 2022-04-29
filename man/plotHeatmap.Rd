@@ -364,6 +364,7 @@ Many arguments can be passed on to \code{aheatmap}, however, some are set
   been calculated.
 }
 \examples{
+\dontrun{
 data(simData)
 
 cl <- rep(1:3,each=100)
@@ -402,7 +403,6 @@ anno2 <- cbind(anno, Cont=c(rnorm(100, 0), rnorm(100, 2), rnorm(100, 3)))
 plotHeatmap(simData, colData=anno2, whColDataCont=3)
 
 #compare changing breaks quantile on visual effect
-\dontrun{
 par(mfrow=c(2,2))
 plotHeatmap(simData, colorScale=seqPal1, breaks=1, main="Full length")
 plotHeatmap(simData,colorScale=seqPal1, breaks=.99, main="0.99 Quantile Upper
