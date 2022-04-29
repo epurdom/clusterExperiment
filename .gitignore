@@ -9,5 +9,5 @@ vignettes/*_figure
 vignettes/*.R
 vignettes/*.html
 vignettes/*.h5
-tests/checkClusterMany/*
+RSECPackage/tests/checkClusterMany/*
 tests/testthat/*.h5
