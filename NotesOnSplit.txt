@@ -6,11 +6,9 @@
 * Not sure why suggests Rtsne
 
 * testing:
--- hdf5 setup using filterStats/ReducedDims for constructing object -- maybe don't need for clusterExperiment?? For now commenting out.
+-- hdf5 setup using filterStats/ReducedDims for constructing object -- For now commenting out, but need to test clusterExperiment compatibility. 
 
 * makeDendrogram:
-Need to move merge stuff to RSEC:
-Error in mergeClusterIndex(x) : 
-  could not find function "mergeClusterIndex"
+-- made simplified version for clusterExperiment object that uses *entire* assay (based on whichAssay), instead of doing reduced dimensions. But running on *entire* assay seems problematic. 
 
-Error in wanting to do reduced dims... uses getReducedData
+* plotHeatmap similar problems with disentangle from reducedDims. 

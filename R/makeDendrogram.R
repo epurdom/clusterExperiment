@@ -1,6 +1,5 @@
 #' @title Make hierarchy of set of clusters
 #'
-#' @aliases makeDendrogram,ClusterExperiment-method
 #' @description Makes a dendrogram of a set of clusters based on hclust on the
 #'   medoids of the cluster.
 #' @param x data to define the medoids from. Matrix and
@@ -65,56 +64,21 @@
 #' plotDendrogram(hcl)
 #' plotDendrogram(hcl, leafType="samples",plotType="colorblock")
 #'
-#' @name makeDendrogram
-#' @rdname makeDendrogram
+
 setMethod(
     f = "makeDendrogram",
     signature = "ClusterExperiment",
-    definition = function(x, whichCluster="primaryCluster",reduceMethod="mad",
-                          nDims=defaultNDims(x,reduceMethod),filterIgnoresUnassigned=TRUE,
-                          unassignedSamples=c("outgroup", "cluster"),
-                          whichAssay=1,...)
+    definition = function(x, whichCluster="primaryCluster",
+        whichAssay=1,...)
     {
         passedArgs<-list(...)
-        
-        checkIgnore<-.depricateArgument(passedArgs=passedArgs,"filterIgnoresUnassigned","ignoreUnassignedVar") #06/2018 added in BioC 3.8
-        if(!is.null(checkIgnore)){
-            passedArgs<-checkIgnore$passedArgs
-            filterIgnoresUnassigned<-checkIgnore$val
-        }
-        unassignedSamples<-match.arg(unassignedSamples)
         whCl<-getSingleClusterIndex(x,whichCluster,passedArgs)
         cl<-clusterMatrix(x)[,whCl]
-        # ##FIXME: ADD TO RSEC version erase merge information
-        # if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)
-        
-        ########
-        ##Transform the data
-        ########
-        if(length(reduceMethod)>1) stop('makeDendrogram only takes one choice of "reduceMethod" as argument')
-        if(reduceMethod!="coCluster"){
-            #need to change name of reduceMethod to make it match the
-            #clustering information if that option chosen.
-            datList<-getReducedData(object=x,whichCluster=whCl,reduceMethod=reduceMethod,
-                                    nDims=nDims,filterIgnoresUnassigned=TRUE,  whichAssay=whichAssay,returnValue="list")
-            x<-datList$objectUpdate
-            dat<-datList$dat
-            
-            outlist <- do.call("makeDendrogram",c(list(
-                x=dat, 
-                cluster=cl,calculateSample=TRUE,
-                unassignedSamples=unassignedSamples),
-                passedArgs))
-        }
-        else{
-            if(is.null(x@coClustering)) stop("Cannot choose 'coCluster' if 'coClustering' slot is empty. Run makeConsensus before running 'makeDendrogram' or choose another option for 'reduceMethod'")
-            if(is.null(dimnames(x@coClustering))) stop("This ClusterExperiment object was made with an old version of clusterExperiment and did not give dimnames to the coClustering slot.")
-            outlist<-do.call("makeDendrogram",c(list(
-                x=as.dist(1-x@coClustering),
-                cluster=cl,calculateSample=TRUE,
-                unassignedSamples=unassignedSamples),
-                passedArgs)) 
-        }
+        dat<-transformData(x, whichAssay=whichAssay)
+        outlist <- do.call("makeDendrogram",c(list(
+            x=dat, 
+            cluster=cl,calculateSample=TRUE),
+            passedArgs))
         
         #Add clusterNames as Ids to cluster and sample dendrogram.
 		x@dendro_clusters <- outlist$clusters
@@ -124,9 +88,9 @@ setMethod(
         ch<-.checkDendrogram(x)
         if(!is.logical(ch)) stop(ch)
         return(x)
-})
-
-
+    
+    }
+)
 
 #' @rdname makeDendrogram
 #' @export
