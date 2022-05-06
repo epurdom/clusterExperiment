@@ -6,14 +6,30 @@
 	message(paste("Note:",x))
 }
 
-# Small function to identify what type of CoClustering information is stored in co-clustering slot
-# (might make sense to make it a slot, but then have to update object, for something not so important...)
-.typeOfCoClustering<-function(ceObj){
-	if(is.null(ceObj@coClustering)) return("null")
-    if(is.null(dim(ceObj@coClustering))) return("indices")
-        else if(!isSymmetric(ceObj@coClustering)) return("clusterings")
-            else return("distance")
+## Small function to classify samples to centers. Here instead of RSEC because used by makeDendrogram...
+## requires inport of pracma package...
+.makeNumeric<-function(x){
+    if(is.integer(x)){
+        if(!is.null(dim(x))){
+            x<-matrix(as.numeric(x),nrow=nrow(x),ncol=ncol(x))	  	
+        }
+        else x<-as.numeric(x)
+    }
+    return(x)
 }
+.genericClassify<-function(inputMatrix, inputType, centers){
+    if(inherits(inputMatrix,"DelayedArray") || inherits(centers,"DelayedArray")){
+        inputMatrix<-as.matrix(DelayedArray::DelayedArray(inputMatrix))
+        centers<-as.matrix(DelayedArray::DelayedArray(centers))
+    }
+    #avoid integer overflow...
+    inputMatrix<-.makeNumeric(inputMatrix)
+    centers<-.makeNumeric(centers)
+    distMat<-pracma::distmat(t(inputMatrix),centers)
+    apply(distMat,1,which.min)	
+}
+
+
 
 
 #' @title Convert numeric values to character that sort correctly
@@ -285,8 +301,6 @@ numericalAsCharacter<-function(values,prefix=""){
   yrgb<-col2rgb(y)
   match(data.frame(xrgb), data.frame(yrgb))
 }
-
-
 
 
 

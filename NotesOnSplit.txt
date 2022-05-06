@@ -4,3 +4,4 @@
 --> Could just use the setup objects for testing -- that way don't have to replicate as much code between packages...
 * Not sure why package suggests Rtsne -- vignette?
 
+makeDendrogram: issue that ".genericClassify" is in new RSEC package if unassignedSamples=="cluster"

@@ -8,26 +8,7 @@ NULL
 ################
 ##Internal wrapper functions for kmeans and pam
 ################
-.makeNumeric<-function(x){
-    if(is.integer(x)){
-        if(!is.null(dim(x))){
-            x<-matrix(as.numeric(x),nrow=nrow(x),ncol=ncol(x))	  	
-        }
-        else x<-as.numeric(x)
-    }
-    return(x)
-}
-.genericClassify<-function(inputMatrix, inputType, centers){
-    if(inherits(inputMatrix,"DelayedArray") || inherits(centers,"DelayedArray")){
-        inputMatrix<-as.matrix(DelayedArray::DelayedArray(inputMatrix))
-        centers<-as.matrix(DelayedArray::DelayedArray(centers))
-    }
-    #avoid integer overflow...
-    inputMatrix<-.makeNumeric(inputMatrix)
-    centers<-.makeNumeric(centers)
-    distMat<-pracma::distmat(t(inputMatrix),centers)
-    apply(distMat,1,which.min)	
-}
+
 ## Function to get the passed args (i.e. from a list(...)) and keep only those that are needed by FUN. If checkArgs=TRUE, then will give a warning that not all of the arguments passed are used by FUN. 
 ## This is mainly used as a way for all the ClusterFunctions to have a certain required arguments and the others get passed by ... mechanism, and how to keep them apart. 
 .myArgNames<-c("removeDup")

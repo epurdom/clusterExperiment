@@ -77,8 +77,6 @@ setMethod(
     }
     if(transferFrom=="y"){
         retval@dendro_index<-y@dendro_index+nClusterings(x)
-        if(.typeOfCoClustering(y)=="indices")
-            retval@coClustering<-y@coClustering+nClusterings(x)
     }
 
     if(mergeObjects){

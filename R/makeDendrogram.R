@@ -287,7 +287,7 @@ setMethod(
                 }
             }
             if(unassignedSamples=="cluster"){
-                if(type=="dist")stop("cannot use unassigned='cluster' if input is a distance matrix")
+                if(type=="dist") stop("cannot use unassigned='cluster' if input is a distance matrix")
                 #code from assignUnassigned
                 clFactor <- factor(cl[-whNeg])
                 medoids <- do.call("rbind", by(t(x[,-whNeg]), clFactor, function(z){apply(z, 2, median)}))

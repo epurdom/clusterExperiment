@@ -32,6 +32,7 @@ Imports:
 	scales,
 	zinbwave,
 	phylobase,
+	pracma
 Suggests:
 	BiocStyle,
 	knitr,
