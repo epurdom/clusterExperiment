@@ -1,14 +1,6 @@
-* Need to deal with plotReducedDims -- should it stay in ClusterExperiment, or move with reduceDims stuff?
 * Should contrasts for clusters be in clusterExperiment?
 * need a constructor function that will add RSEC info to ClusterExperiment object. 
 * Need to create data object that is ClusterExperiment object. Currently examples run clusterSingle/clusterMany to create it. 
 --> Could just use the setup objects for testing -- that way don't have to replicate as much code between packages...
-* Not sure why suggests Rtsne
+* Not sure why package suggests Rtsne -- vignette?
 
-* testing:
--- hdf5 setup using filterStats/ReducedDims for constructing object -- For now commenting out, but need to test clusterExperiment compatibility. 
-
-* makeDendrogram:
--- made simplified version for clusterExperiment object that uses *entire* assay (based on whichAssay), instead of doing reduced dimensions. But running on *entire* assay seems problematic. 
-
-* plotHeatmap similar problems with disentangle from reducedDims. 
