@@ -260,7 +260,7 @@ If \code{data} is a matrix, then \code{colData} is a data.frame
 If \code{data} is a \code{ClusterExperiment} object,
   \code{clusterFeaturesData} is not a dataset, but instead indicates which
   features should be shown in the heatmap. In this case
-  \code{clusterFeatures} can be one of the following: \itemize{ \item{"all"}{
+  \code{clusterFeaturesData} can be one of the following: \itemize{ \item{"all"}{
   All rows/genes will be shown} \item{character giving dimensionality
   reduction}{Should match one of values saved in \code{reducedDims} slot or a
   builtin function in \code{listBuiltInReducedDims()}. \code{nFeatures} then

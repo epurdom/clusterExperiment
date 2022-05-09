@@ -32,6 +32,7 @@ Imports:
 	scales,
 	zinbwave,
 	phylobase,
+	pracma
 Suggests:
 	BiocStyle,
 	knitr,
@@ -44,7 +45,7 @@ Suggests:
 VignetteBuilder: knitr
 LazyData: false
 LazyLoad: false
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 biocViews: Clustering, RNASeq, Sequencing, Software, SingleCell
 Collate: 
     'AllChecks.R'
@@ -52,16 +53,20 @@ Collate:
     'AllGenerics.R'
     'AllHelper.R'
     'AllHelperDendro.R'
+    'AllHelperFilter.R'
     'addClusterings.R'
     'clusterContrasts.R'
     'dataCreation.R'
     'deprecateFunctions.R'
     'getClusterIndex.R'
     'getFeatures.R'
+    'getReducedData.R'
     'internalDendroFunctions.R'
     'internalFunctions.R'
     'makeBlankData.R'
     'makeDendrogram.R'
+    'makeFilterStats.R'
+    'makeReducedDims.R'
     'plotBarplot.R'
     'plotClusters.R'
     'plotClustersTable.R'

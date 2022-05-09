@@ -51,8 +51,19 @@ co-Clustering matrix stored in the 'coClustering' slot of the
 \item{nDims}{The number of dimensions to keep from \code{reduceMethod}. If
 missing calls \code{\link{defaultNDims}}.}
 
+\item{filterIgnoresUnassigned}{logical. Whether filtering statistics should 
+ignore the unassigned samples within the clustering. Only relevant if 
+'reduceMethod' matches one of built-in filtering statistics in 
+\code{\link{listBuiltInFilterStats}()}, in which case the clustering 
+identified in \code{whichCluster} is passed to \code{makeFilterStats} and
+the unassigned samples are excluded in calculating the statistic. See 
+\code{\link{makeFilterStats}}  for more details.}
+
 \item{unassignedSamples}{how to handle unassigned samples("-1") ; only
 relevant for sample clustering. See details.}
+
+\item{whichAssay}{numeric or character specifying which assay to use. See
+\code{\link[SummarizedExperiment]{assay}} for details.}
 
 \item{...}{for makeDendrogram, if signature \code{matrix}, arguments passed
 to hclust; if signature \code{ClusterExperiment} passed to the method for

@@ -1,7 +1,15 @@
 .mynote<-function(x){
 	ClusterExperiment:::.mynote
 }
-.typeOfCoClustering<-function(x){ClusterExperiment:::.typeOfCoClustering}
+# Small function to identify what type of CoClustering information is stored in co-clustering slot
+# (might make sense to make it a slot, but then have to update object, for something not so important...)
+.typeOfCoClustering<-function(ceObj){
+	if(is.null(ceObj@coClustering)) return("null")
+    if(is.null(dim(ceObj@coClustering))) return("indices")
+        else if(!isSymmetric(ceObj@coClustering)) return("clusterings")
+            else return("distance")
+}
+
 ## FIXME: Some day, if update addClusterings so could choose where to put new clusterings, could just use that so don't replicate code here.
 .addNewResult<-function(newObj,oldObj){
     # want most recent addition on top of clusterMatrix

@@ -77,27 +77,27 @@ smSimSE <- seSimData[1:20,whSamp]
 
 
 
-# #################################
-# ###Make reduce dimensions and filters 
-# ###... needed for creation of hdf5 object
-# #################################
-# sce<-as(se,"SingleCellExperiment")
-# sceFull<-sce
-# clusterExperiment:::filterStats(sceFull,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sce)),ncol=2)
-# reducedDim(sceFull,type="Red1")<-matrix(rnorm(2*ncol(sce)),ncol=2)
-#
-#
-# sceSimData<-as(seSimData,"SingleCellExperiment")
-# sceSimDataDimRed<-sceSimData
-# pca_data <- prcomp(t(assay(sceSimData)),scale=TRUE,center=TRUE)
-# tsne_data <- matrix(rnorm(NCOL(sceSimData)*2),ncol=2)
-# reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data)
-# clusterExperiment:::filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sceSimDataDimRed)),ncol=2)
-#
-# #####################
-# ## Create hdf5 SCE version
-# ## Note is matrix of doubles....
-# #####################
-# hdfSCE<-HDF5Array::saveHDF5SummarizedExperiment(sceSimDataDimRed, dir="sceRedDem.h5", replace=TRUE)
-# hdfObj<-HDF5Array::saveHDF5SummarizedExperiment(sceSimData, dir="sce.h5", replace=TRUE)
+#################################
+###Make reduce dimensions and filters
+###... needed for creation of hdf5 object
+#################################
+sce<-as(se,"SingleCellExperiment")
+sceFull<-sce
+clusterExperiment:::filterStats(sceFull,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sce)),ncol=2)
+reducedDim(sceFull,type="Red1")<-matrix(rnorm(2*ncol(sce)),ncol=2)
+
+
+sceSimData<-as(seSimData,"SingleCellExperiment")
+sceSimDataDimRed<-sceSimData
+pca_data <- prcomp(t(assay(sceSimData)),scale=TRUE,center=TRUE)
+tsne_data <- matrix(rnorm(NCOL(sceSimData)*2),ncol=2)
+reducedDims(sceSimDataDimRed) <- SimpleList(PCA=pca_data$x, TSNE=tsne_data)
+clusterExperiment:::filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-matrix(rnorm(2*nrow(sceSimDataDimRed)),ncol=2)
+
+#####################
+## Create hdf5 SCE version
+## Note is matrix of doubles....
+#####################
+hdfSCE<-HDF5Array::saveHDF5SummarizedExperiment(sceSimDataDimRed, dir="sceRedDem.h5", replace=TRUE)
+hdfObj<-HDF5Array::saveHDF5SummarizedExperiment(sceSimData, dir="sce.h5", replace=TRUE)
 

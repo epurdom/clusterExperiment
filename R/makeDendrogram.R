@@ -1,5 +1,6 @@
 #' @title Make hierarchy of set of clusters
 #'
+#' @aliases makeDendrogram,ClusterExperiment-method
 #' @description Makes a dendrogram of a set of clusters based on hclust on the
 #'   medoids of the cluster.
 #' @param x data to define the medoids from. Matrix and
@@ -12,9 +13,7 @@
 #' @param reduceMethod character A character identifying what type of
 #'   dimensionality reduction to perform before clustering. Can be either a
 #'   value stored in either of reducedDims or filterStats slot or a built-in
-#'   diminsionality reduction/filtering. The option "coCluster" will use the
-#'   co-Clustering matrix stored in the 'coClustering' slot of the
-#'   \code{ClusterExperiment} object
+#'   diminsionality reduction/filtering. 
 #' @param calculateSample only relevant for \code{matrix} or \code{dist}
 #'  version of function. Indicates whether to calculate the sample dendrogram.
 #' @param nDims The number of dimensions to keep from \code{reduceMethod}. If
@@ -23,7 +22,6 @@
 #'   to hclust; if signature \code{ClusterExperiment} passed to the method for
 #'   signature \code{matrix}. For plotDendrogram, passed to
 #'   \code{\link{plot.dendrogram}}.
-#' @inheritParams clusterSingle
 #' @inheritParams reduceFunctions
 #' @inheritParams getClusterIndex
 #' @details The function returns two dendrograms (as a list if x is a matrix or
@@ -64,33 +62,59 @@
 #' plotDendrogram(hcl)
 #' plotDendrogram(hcl, leafType="samples",plotType="colorblock")
 #'
-
+#' @name makeDendrogram
+#' @rdname makeDendrogram
 setMethod(
     f = "makeDendrogram",
     signature = "ClusterExperiment",
-    definition = function(x, whichCluster="primaryCluster",
-        whichAssay=1,...)
+    definition = function(x, whichCluster="primaryCluster",reduceMethod="mad",
+                          nDims=defaultNDims(x,reduceMethod),filterIgnoresUnassigned=TRUE,
+                          unassignedSamples=c("outgroup", "cluster"),
+                          whichAssay=1,...)
     {
         passedArgs<-list(...)
+        
+        checkIgnore<-.depricateArgument(passedArgs=passedArgs,
+            "filterIgnoresUnassigned","ignoreUnassignedVar") #06/2018 added in BioC 3.8
+        if(!is.null(checkIgnore)){
+            passedArgs<-checkIgnore$passedArgs
+            filterIgnoresUnassigned<-checkIgnore$val
+        }
+        unassignedSamples<-match.arg(unassignedSamples)
         whCl<-getSingleClusterIndex(x,whichCluster,passedArgs)
         cl<-clusterMatrix(x)[,whCl]
-        dat<-transformData(x, whichAssay=whichAssay)
+        # ##FIXME: ADD TO RSEC version erase merge information
+        # if(!is.na(mergeClusterIndex(x)) || !is.na(x@merge_dendrocluster_index)) x<-.eraseMerge(x)
+        
+        ########
+        ##Transform the data
+        ########
+        if(length(reduceMethod)>1) stop('makeDendrogram only takes one choice of "reduceMethod" as argument')
+       
+        #need to change name of reduceMethod to make it match the
+        #clustering information if that option chosen.
+        datList<-getReducedData(object=x,whichCluster=whCl,reduceMethod=reduceMethod,
+                                nDims=nDims,filterIgnoresUnassigned=TRUE,  whichAssay=whichAssay,returnValue="list")
+        x<-datList$objectUpdate
+        dat<-datList$dat
+        
         outlist <- do.call("makeDendrogram",c(list(
             x=dat, 
-            cluster=cl,calculateSample=TRUE),
+            cluster=cl,calculateSample=TRUE,
+            unassignedSamples=unassignedSamples),
             passedArgs))
         
         #Add clusterNames as Ids to cluster and sample dendrogram.
-		x@dendro_clusters <- outlist$clusters
-		phylobase::tipLabels(x@dendro_clusters)<-NA #erase any labels of the tips, internal nodes already have the defaults.
-		x@dendro_samples <- outlist$samples #labels should have been erased already
+		 		x@dendro_clusters <- outlist$clusters
+				phylobase::tipLabels(x@dendro_clusters)<-NA #erase any labels of the tips, internal nodes already have the defaults.
+				x@dendro_samples <- outlist$samples #labels should have been erased already
         x@dendro_index<-whCl
         ch<-.checkDendrogram(x)
         if(!is.logical(ch)) stop(ch)
         return(x)
-    
-    }
-)
+})
+
+
 
 #' @rdname makeDendrogram
 #' @export
@@ -261,7 +285,7 @@ setMethod(
                 }
             }
             if(unassignedSamples=="cluster"){
-                if(type=="dist")stop("cannot use unassigned='cluster' if input is a distance matrix")
+                if(type=="dist") stop("cannot use unassigned='cluster' if input is a distance matrix")
                 #code from assignUnassigned
                 clFactor <- factor(cl[-whNeg])
                 medoids <- do.call("rbind", by(t(x[,-whNeg]), clFactor, function(z){apply(z, 2, median)}))

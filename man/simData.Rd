@@ -20,7 +20,10 @@ Simulated data for running examples
   observations being in one of 3 groups. \code{simCount} is simulated count
   data of the same dimensions. \code{trueCluster} gives the true cluster
   identifications of the samples. The true clusters are each of size 100 and
-  are in order in the columns of the data.frames.
+  are in order in the columns of the data.frames. 
+  \code{ceSimData} and \code{ceSimCount} are \code{ClusterExperiment} objects 
+  created from this data with clusters based on doing simple PAM clustering
+  of the top PC dimensions (using code from \code{RSECPackage})
 }
 \examples{
 #code used to create data:
@@ -59,7 +62,46 @@ simCount<-matrix(rpois(n=length(as.vector(countMean)), lambda
 =as.vector(countMean)+.1),nrow=nrow(countMean),ncol=ncol(countMean))
 #labels for the truth
 trueCluster<-rep(c(1:3),each=n)
+
 save(list=c("simCount","simData","trueCluster"),file="data/simData.rda")
+#################################
+###Create ClusterExperiment Objects based on simData/simCount:
+#################################
+set.seed(2415)
+seSimData <-simSEObject(simData)
+# Same meta data, but with the counts
+set.seed(2415)
+seSimCount <-simSEObject(simCount)
+
+# Create matrix of clusters:
+library(RSECPackage)
+test<- clusterMany(simCount,reduceMethod="PCA",
+   nReducedDims=c(5,10,50), 
+   isCount=TRUE, verbose=FALSE,
+   clusterFunction="pam", makeMissingDiss=TRUE,
+   ks=2:4,
+   findBestK=c(TRUE,FALSE))
+set.seed(1291)					
+test<-addClusterings(test,
+   sample(2:5,size=NCOL(simData),replace=TRUE),clusterTypes="User")
+set.seed(493)					
+clMatNew<-apply(clusterMatrix(test),2,function(x){
+   wh<-sample(1:nSamples(test),size=10)
+   x[wh]<- -1
+   wh<-sample(1:nSamples(test),size=10)
+   x[wh]<- -2
+   return(x)
+})
+
+#make CE Object
+ceSimCount<-ClusterExperiment(seSimCount,clMatNew,
+   transformation=function(x){log2(x+1)})
+clusterTypes(ceSimCount)<-clusterTypes(test)
+
+ceSimData<-ClusterExperiment(seSimData,clMatNew,
+   transformation=function(x){x})
+clusterTypes(ceSimData)<-clusterTypes(test)
+save(list=c("ceSimData","ceSimCount"),file="data/simCEData.rda")
 }
 }
 \author{
