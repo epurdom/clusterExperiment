@@ -44,9 +44,7 @@ indicating the \emph{single} clustering to be used. Giving values that result in
 \item{reduceMethod}{character A character identifying what type of
 dimensionality reduction to perform before clustering. Can be either a
 value stored in either of reducedDims or filterStats slot or a built-in
-diminsionality reduction/filtering. The option "coCluster" will use the
-co-Clustering matrix stored in the 'coClustering' slot of the
-\code{ClusterExperiment} object}
+diminsionality reduction/filtering.}
 
 \item{nDims}{The number of dimensions to keep from \code{reduceMethod}. If
 missing calls \code{\link{defaultNDims}}.}
