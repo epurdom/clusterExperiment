@@ -311,7 +311,6 @@ numericalAsCharacter<-function(values,prefix=""){
                             clusterTypes=clusterTypes(newObj),
                             clusterInfo=clusteringInfo(newObj),
                             orderSamples=orderSamples(newObj),
-                            coClustering=coClustering(newObj),
                             dendro_samples=newObj@dendro_samples,
                             dendro_clusters=newObj@dendro_clusters,
                             dendro_index=newObj@dendro_index,

@@ -10,8 +10,6 @@ Existing problems (FIXME):
 
 * Problem with dataGeneration that uses RSECPackage -- will create class of RSECClass and not a CE. Need to fix
 * makedendrogram not working where relies on reduce (dependence on coClustering...)
-* May have lost changes in makeDendrogram!
-* plotdendrogram not working bc relies on merge.
 
 Tests working (clusterExperiment):
 * test-constructor

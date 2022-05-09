@@ -38,16 +38,23 @@
 #' @description phylo4d objects for cluster and sample dendrograms with pretty (and matched!) node and tip labels.
 #' @param object a ClusterExperiment object
 #' @param labelType. If 'id' returns the NodeId value for all the internal nodes that match the cluster dendrogram (cluster and sample dendrograms) and the cluster id for the tips (cluster dendrogram) or sample index for the tips (sample dendrogram). If "name", then the cluster ids and sample indices are converted into the cluster names (in the clusterMat) and the sample names (in colnames)
-#' @param useMergeClusters if TRUE and there is an active merge, will remove the dendrogram cluster ids, and instead use merge cluster ids (which means will nave no label for dendrogram cluster merged). Not relevant for ClusterExperiment class after splitting with RSEC, but since internal function, kept it here rather than recreating same function in RSEC package.
-#' @param overrideExistingNode logical. if TRUE, 
+#' @param useMergeClusters if TRUE and there is an active merge, will remove the dendrogram cluster ids, and instead use merge cluster ids (which means will nave no label for dendrogram cluster merged). No longer an option, since never used. Not sure why was there
+#' @param overrideExistingNode logical. ditto above.
 #' @return Returns list of the two dendrograms with nodes that have been updated with names 'dendro_clusters' and 'dendro_samples'. Note they do not match requirement of the clusterExperiment object because have labels for nodes they "shouldn't". 	 
 #' @details  Different from convertToPhyClasses, which is trying to get the needed info into the phylo or phylo4 class that doesn't have tdata. Calls that function internally
+#' @details 
 #' @noRd
-.setNodeLabels<-function(object,labelType=c("name","id"),useMergeClusters=FALSE,overrideExistingNode=FALSE,singletonCluster=c("sample","cluster"),...){
+.setNodeLabels<-function(object,labelType=c("name","id"),
+  singletonCluster=c("sample","cluster"),...){
+  # Note that currently calls to function always have useMergeClusters=FALSE,overrideExistingNode=FALSE
+  # So have set them internally; doesn't work after the split, because relies on merge, so this way don't have to update code. 
+  # Not sure anymore why that code is there...
+  useMergeClusters=FALSE
+  overrideExistingNode=FALSE
 	labelType<-match.arg(labelType)
 	singletonCluster<-match.arg(singletonCluster)
 	 if(!inherits(object,"ClusterExperiment")) stop("coding error -- function should be used for ClusterExperiment objects")
-	 if(is.na(object@merge_index)|| all(is.na(phylobase::tdata(object@dendro_clusters)$ClusterIdMerge))) useMergeClusters<-FALSE
+   # if(is.na(object@merge_index)|| all(is.na(phylobase::tdata(object@dendro_clusters)$ClusterIdMerge))) useMergeClusters<-FALSE
 	 if(is.null(object@dendro_clusters)) return(NULL)
 	 #internal option returns same as the .convertPhyClasses with both =TRUE
 	 internalCluster<-.convertToPhyClasses(object@dendro_clusters, returnClass=c("phylo4d"), convertNodes=TRUE, convertTips=TRUE)

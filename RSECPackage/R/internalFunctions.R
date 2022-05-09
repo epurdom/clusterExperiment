@@ -32,6 +32,7 @@
                 merge_nodeMerge=newObj@merge_nodeMerge,
                 merge_method=newObj@merge_method,
                 merge_demethod=newObj@merge_demethod,
+                coClustering=coClustering(newObj)
                 checkTransformAndAssay=FALSE
   )
   return(retval)
