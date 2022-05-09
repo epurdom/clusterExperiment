@@ -68,12 +68,7 @@ test_that("`getClusterIndex` works", {
 		match(c("mySpecialLabel"),clusterTypes(ccM)))
 })
 
-test_that("`ClusterExperiment` constructor works with hdf5",{
-    #test creation
-    expect_silent(ClusterExperiment(assay(hdfSCE), sample(1:3,size=ncol(hdfSCE),replace=TRUE)))
-	
-	
-})
+
 
 test_that("whichClusters works with clusterMatrix",{
 	 expect_silent(x<-dim(clusterMatrix(ceSimCount)))

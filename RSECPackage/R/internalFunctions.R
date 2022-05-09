@@ -23,26 +23,16 @@
 
 #this function keeps everything from new, except grabs SE info from old
 .addBackSEInfo<-function(newObj,oldObj){
-  retval<-ClusterExperiment(as(oldObj,"SingleCellExperiment"),
-                            clusters=clusterMatrix(newObj),
-                            transformation=transformation(newObj),
-                            clusterTypes=clusterTypes(newObj),
-                            clusterInfo=clusteringInfo(newObj),
-                            orderSamples=orderSamples(newObj),
-                            coClustering=coClustering(newObj),
-                            dendro_samples=newObj@dendro_samples,
-                            dendro_clusters=newObj@dendro_clusters,
-                            dendro_index=newObj@dendro_index,
-                            merge_index=newObj@merge_index,
-                            merge_cutoff=newObj@merge_cutoff,
-                            merge_dendrocluster_index=newObj@merge_dendrocluster_index,
-                            merge_nodeProp=newObj@merge_nodeProp,
-                            merge_nodeMerge=newObj@merge_nodeMerge,
-                            merge_method=newObj@merge_method,
-                            merge_demethod=newObj@merge_demethod,
-                            primaryIndex=primaryClusterIndex(newObj),
-                            clusterLegend=clusterLegend(newObj),
-                            checkTransformAndAssay=FALSE
+    retval<-clusterExperiment:::.addBackSEInfo(newObj,oldObj) #Creates ClusterExperiment object with everything. 
+    retval<-RSECClass(retval,
+                merge_index=newObj@merge_index,
+                merge_cutoff=newObj@merge_cutoff,
+                merge_dendrocluster_index=newObj@merge_dendrocluster_index,
+                merge_nodeProp=newObj@merge_nodeProp,
+                merge_nodeMerge=newObj@merge_nodeMerge,
+                merge_method=newObj@merge_method,
+                merge_demethod=newObj@merge_demethod,
+                checkTransformAndAssay=FALSE
   )
   return(retval)
 }

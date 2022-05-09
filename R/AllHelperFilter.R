@@ -12,6 +12,9 @@ setGeneric("defaultNDims",function(object,...){standardGeneric("defaultNDims")})
 setGeneric(name = "makeFilterStats", function(object,...){ standardGeneric("makeFilterStats")})
 setGeneric(name="makeReducedDims", function(object,...){ standardGeneric("makeReducedDims")})
 setGeneric(name = "getReducedData", def=function(object,...){ standardGeneric("getReducedData") })
+setGeneric(name = "removeFilterStats", function(object,...){ standardGeneric("removeFilterStats")})
+
+
 
 setGeneric("isFilterStats", function(object, ...) standardGeneric("isFilterStats"))
 setGeneric("anyValidFilterStats", function(object, ...) standardGeneric("anyValidFilterStats"))
@@ -56,7 +59,34 @@ setMethod( "anyValidReducedDims","SingleCellExperiment",function(object){
 	length(reducedDimNames(object))>0
 
 })		
-	
+
+
+setMethod( "removeFilterStats","SingleCellExperiment",function(object,type){
+    if(!all(type %in% filterNames(object))) stop("invalid name for filtering statistic")
+    whColumns<-match(type, colnames(rowData(object)))
+    rowData(object)<-rowData(object)[,-whColumns]
+    return(object)
+
+})		
+
+#' @rdname reduceFunctions
+#' @return \code{filterNames} returns a vector of the columns of the rowData
+#'   that are considered valid filtering statistics. Currently any numeric
+#'   column in rowData is a valid filtering statistic.
+#' @aliases filterNames
+#' @export
+setMethod( "filterNames","SummarizedExperiment",function(object){
+  checkValid<-TRUE
+  if(!checkValid || ncol(rowData(object))==0) colnames(rowData(object))
+  else{
+    whValid<- sapply(rowData(object),is.numeric)
+    # #for now, do not allow NA values for valid filters.
+    # whNa<-which(apply(rowData,2,anyNA))
+    # whValid[whNA]<-FALSE
+    return(names(rowData(object))[whValid])
+    
+  }
+})	
 
 # #' @rdname reduceFunctions
 # #' @aliases filterNames<-

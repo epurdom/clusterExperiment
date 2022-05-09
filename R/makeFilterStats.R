@@ -232,21 +232,4 @@ setMethod(
 )	
 
 
-#' @rdname reduceFunctions
-#' @return \code{filterNames} returns a vector of the columns of the rowData
-#'   that are considered valid filtering statistics. Currently any numeric
-#'   column in rowData is a valid filtering statistic.
-#' @aliases filterNames
-#' @export
-setMethod( "filterNames","SummarizedExperiment",function(object){
-  checkValid<-TRUE
-  if(!checkValid || ncol(rowData(object))==0) colnames(rowData(object))
-  else{
-    whValid<- sapply(rowData(object),is.numeric)
-    # #for now, do not allow NA values for valid filters.
-    # whNa<-which(apply(rowData,2,anyNA))
-    # whValid[whNA]<-FALSE
-    return(names(rowData(object))[whValid])
-    
-  }
-})	
+

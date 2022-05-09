@@ -38,7 +38,8 @@
 #' @description phylo4d objects for cluster and sample dendrograms with pretty (and matched!) node and tip labels.
 #' @param object a ClusterExperiment object
 #' @param labelType. If 'id' returns the NodeId value for all the internal nodes that match the cluster dendrogram (cluster and sample dendrograms) and the cluster id for the tips (cluster dendrogram) or sample index for the tips (sample dendrogram). If "name", then the cluster ids and sample indices are converted into the cluster names (in the clusterMat) and the sample names (in colnames)
-#' @param useMergeClusters if TRUE and there is an active merge, will remove the dendrogram cluster ids, and instead use merge cluster ids (which means will nave no label for dendrogram cluster merged)
+#' @param useMergeClusters if TRUE and there is an active merge, will remove the dendrogram cluster ids, and instead use merge cluster ids (which means will nave no label for dendrogram cluster merged). Not relevant for ClusterExperiment class after splitting with RSEC, but since internal function, kept it here rather than recreating same function in RSEC package.
+#' @param overrideExistingNode logical. if TRUE, 
 #' @return Returns list of the two dendrograms with nodes that have been updated with names 'dendro_clusters' and 'dendro_samples'. Note they do not match requirement of the clusterExperiment object because have labels for nodes they "shouldn't". 	 
 #' @details  Different from convertToPhyClasses, which is trying to get the needed info into the phylo or phylo4 class that doesn't have tdata. Calls that function internally
 #' @noRd

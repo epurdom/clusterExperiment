@@ -35,10 +35,19 @@ test_that("`makeDendrogram` works with ClusterExperiment objects", {
  	expect_silent(dend<-makeDendrogram(ceSimCount))
 	expect_equal(ncol(clusterMatrix(dend,whichClusters="dendro")),1)
 	
+    #--------
+	#test subsetting works if have dendrogram attached:
+    #--------
+    expect_silent(dend[1:3,1:2])
+  
+})
+
+test_that("`makeDendrogram` works with filtering statistics", {
 	#--------
-    #Check filters created when ignoriing cluster for variance
+    #Check filters are created (when don't exist) when ignoring cluster for variance
 	#--------
-    expect_silent(cl1 <- clusterSingle(smSimData, subsample=FALSE, sequential=FALSE, mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),isCount=FALSE))
+    cl1<-removeFilterStats(ceSimCount,type=filterNames(ceSimCount))
+    clusterLabels(cl1)[primaryClusterIndex(cl1)]<-"clusterSingle"
     leg<-clusterLegend(cl1)[[primaryClusterIndex(cl1)]]
     leg[,"name"]<-letters[1:6]
     expect_silent(clusterLegend(cl1)[[primaryClusterIndex(cl1)]]<-leg)
@@ -47,32 +56,11 @@ test_that("`makeDendrogram` works with ClusterExperiment objects", {
     #redo
 	expect_silent(clustWithDendro <- makeDendrogram(clustWithDendro))
 	expect_equal(filterNames(clustWithDendro),"mad_clusterSingle")
+     
     
-	
-	#--------
-    #Check remove clusters when have dendrogram
-	#--------
-	expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adj", plotInfo="none",DEMethod="limma"),"Merging will be done on ' clusterSingle ', with clustering index 1")
-    expect_silent(removeClusterings(clustMerged,whichClusters="mergeClusters")) #remove merged, keep one with dendrogram
-    expect_silent(removeClusterings(clustMerged,whichClusters=2)) #remove one with dendrogram
-  
-    #--------
-	#test subsetting works if have dendrogram attached:
-    #--------
-	expect_silent(x<-makeDendrogram(ccSE,reduceMethod="PCA",nDims=3))
-    expect_silent(x[1:3,1:2])
-  
+    
 })
 
-test_that("`makeDendrogram` works with hdf5",{
-    expect_silent(clustNothing <- clusterMany(hdfSCE,
-		 ks=c(3,4),clusterFunction="pam",
-		 subsample=FALSE, sequential=FALSE,
-		 isCount=FALSE,verbose=FALSE))
-    expect_silent(clustNothing<-makeConsensus(clustNothing, proportion=1,whichClusters = "clusterMany"))
-	expect_silent(makeDendrogram(clustNothing))
-	
-})
 
 test_that("`makeDendrogram` preserves the colData and rowData of SE", {
 
@@ -83,23 +71,38 @@ test_that("`makeDendrogram` preserves the colData and rowData of SE", {
   expect_equal(rownames(dend),rownames(se))
   expect_equal(colnames(dend),colnames(se))
   expect_equal(metadata(dend),metadata(se))
+ 
+  # ----
+  # Check preserves existing rowData when makes filter
+  # ----
+  # get name of filter that will be created
+  expect_silent(newFilter<-
+        clusterExperiment:::.makeClusterFilterStats("mad",
+        clusterLabels(ccSE)[whCl]))
   x<-rowData(dend)
-  expect_silent(newFilter<-clusterExperiment:::.makeClusterFilterStats("mad",clusterLabels(ccSE)[whCl]))
   expect_equal(x[,-grep(newFilter,colnames(x))],rowData(se))
+
 
 })
 
 test_that("`makeDendrogram` with reduceMethod options", {
     expect_silent(x<-makeDendrogram(ccSE,reduceMethod="PCA",nDims=3))
 	expect_error(makeDendrogram(ccSE,reduceMethod=c("PCA","var"),nDims=3))
-    expect_silent(x2<-makeDendrogram(ccSE,reduceMethod=c("PCA"),nDims=3,filterIgnoresUnassigned=TRUE))
+    expect_silent(x2<-makeDendrogram(ccSE,reduceMethod=c("PCA"),nDims=3,
+        filterIgnoresUnassigned=TRUE))
     expect_equal(x,x2)
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,filterIgnoresUnassigned=FALSE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,filterIgnoresUnassigned=TRUE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,filterIgnoresUnassigned=FALSE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,filterIgnoresUnassigned=TRUE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,filterIgnoresUnassigned=FALSE))
-    expect_silent(makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,filterIgnoresUnassigned=TRUE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,
+        filterIgnoresUnassigned=FALSE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("var"),nDims=3,
+        filterIgnoresUnassigned=TRUE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,
+        filterIgnoresUnassigned=FALSE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("abscv"),nDims=3,
+        filterIgnoresUnassigned=TRUE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,
+        filterIgnoresUnassigned=FALSE))
+    expect_silent(makeDendrogram(ccSE,reduceMethod=c("mad"),nDims=3,
+        filterIgnoresUnassigned=TRUE))
     
 })
 test_that("`makeDendrogram` works with whichCluster and updates dendrogram correctly", {
@@ -107,55 +110,13 @@ test_that("`makeDendrogram` works with whichCluster and updates dendrogram corre
     expect_silent(x2<-makeDendrogram(ccSE,whichCluster=2))
     expect_equal(x1,x2)
     
-    bigCE<-ceSimCount
-    expect_silent(bigCE<-makeDendrogram(bigCE,whichCluster="cluster1"))
-    x1<-bigCE
-    #--- check clusterMany updates dendrogram correctly
-    expect_silent(bigCE<-clusterMany(bigCE,
-        k=2:8,clusterFunction="hierarchicalK",
-        verbose=FALSE,
-        makeMissingDiss=TRUE))
-    expect_equal(clusterLabels(bigCE)[bigCE@dendro_index],
-        clusterLabels(x1)[x1@dendro_index])
-    expect_equal(bigCE@dendro_clusters,x1@dendro_clusters) 
-    #takes a long time!
-    #expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
-    expect_error(makeDendrogram(bigCE,whichCluster="workflow"),
-        "Invalid value for 'whichCluster'")
- 
-    #--- check makeConsensus updates dendrogram correctly
-    expect_message(bigCE<-makeConsensus(bigCE,proportion=0.3),
-        "no clusters specified to combine, using results from clusterMany")
-    expect_equal(clusterLabels(bigCE)[bigCE@dendro_index],
-        clusterLabels(x1)[x1@dendro_index])
-    expect_equal(bigCE@dendro_clusters,x1@dendro_clusters) 
-    expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
-    expect_silent(makeDendrogram(bigCE,whichCluster="makeConsensus") )
-    
-    
-    #--- check mergeClusters updates dendrogram correctly
-    expect_message(bigCE<-mergeClusters(bigCE,
-        mergeMethod="adjP",cutoff=0.2, DEMethod="limma"),
-        "Merging will be done on ")
-    expect_equal(clusterLabels(bigCE)[bigCE@dendro_index],
-        clusterLabels(x1)[x1@dendro_index])
-    #Note, x1 doesn't give any merged clusters in dendrogram because before mergeClusters step...  so going to remove that element from bigCE
-	tdf<-phylobase::tdata(bigCE@dendro_clusters)
-	tdf$ClusterIdMerge<-NA
-	phylobase::tdata(bigCE@dendro_clusters)<-tdf
-	expect_equal(bigCE@dendro_clusters,x1@dendro_clusters)  
-    expect_equal(bigCE@dendro_samples,x1@dendro_samples) 
-    
-    expect_error(getBestFeatures(bigCE,contrastType="Dendro"),
-        "only single cluster in clustering -- cannot run getBestFeatures")
-	expect_silent(primaryClusterIndex(bigCE)<-3)
-	expect_error( getBestFeatures(bigCE,contrastType="Dendro"),"does not match either the cluster on which the dendrogram was made or the merge cluster from this dendrogram")
+
 })
 
 test_that("plotDendrogram works with colData", {
-  leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
-  leg[,"name"]<-letters[1:nrow(leg)]
-  clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
+    leg<-clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]
+    leg[,"name"]<-letters[1:nrow(leg)]
+    clusterLegend(ccSE)[[primaryClusterIndex(ccSE)]]<-leg
 	expect_silent(dend <- makeDendrogram(ccSE))
 	expect_silent(plotDendrogram(dend,colData="A"))
 	expect_warning(plotDendrogram(dend,colData=c("A","B","C")),"implies using columns of colData that are continuous")

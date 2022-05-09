@@ -303,5 +303,22 @@ numericalAsCharacter<-function(values,prefix=""){
 }
 
 
-
+#this function keeps everything from new, except grabs SE info from old
+.addBackSEInfo<-function(newObj,oldObj){
+  retval<-ClusterExperiment(as(oldObj,"SingleCellExperiment"),
+                            clusters=clusterMatrix(newObj),
+                            transformation=transformation(newObj),
+                            clusterTypes=clusterTypes(newObj),
+                            clusterInfo=clusteringInfo(newObj),
+                            orderSamples=orderSamples(newObj),
+                            coClustering=coClustering(newObj),
+                            dendro_samples=newObj@dendro_samples,
+                            dendro_clusters=newObj@dendro_clusters,
+                            dendro_index=newObj@dendro_index,
+                            primaryIndex=primaryClusterIndex(newObj),
+                            clusterLegend=clusterLegend(newObj),
+                            checkTransformAndAssay=FALSE
+  )
+  return(retval)
+}
 
