@@ -3,52 +3,10 @@
 #'@description Extends plotDendrogram to RSECClass object
 #'  
 #'@param x a \code{\link{RSECClass}} object.
-#'@param leafType if "samples" the dendrogram has one leaf per sample, otherwise
-#'  it has one per cluster.
-#'@param main passed to the \code{plot.phylo} function to set main title.
-#'@param sub passed to the \code{plot.phylo} function to set subtitle.
-#'@param plotType one of 'name', 'colorblock' or 'id'. If 'Name' then dendrogram
-#'  will be plotted, and name of cluster or sample (depending on type of value 
-#'  for \code{leafType}) will be plotted next to the leaf of the dendrogram. If 
-#'  'colorblock', rectangular blocks, corresponding to the color of the cluster 
-#'  will be plotted, along with cluster name legend. If 'id' the internal 
-#'  clusterIds value will be plotted (only appropriate if 
-#'  \code{leafType="clusters"}).
-#'@param ... arguments passed to the \code{\link{plot.phylo}} function of 
-#'  \code{ape} that plots the dendrogram.
-#'@param removeOutbranch logical, only applicable if there are missing samples 
-#'  (i.e. equal to -1 or -2), \code{leafType="samples"} and the dendrogram for 
-#'  the samples was made by putting missing samples in an outbranch. In which 
-#'  case, if this parameter is TRUE, the outbranch will not be plotted, and if 
-#'  FALSE it will be plotted.
-#'@param legend character, only applicable if \code{plotType="colorblock"}. 
-#'  Passed to \code{\link{phydataplot}} in \code{\link{ape}} package that is 
-#'  used to draw the color values of the clusters/samples next to the 
-#'  dendrogram. Options are 'none', 'below', or 'side'. (Note 'none' is only 
-#'  available for 'ape' package >= 4.1-0.6).
-#'@param nodeColors named vector of colors to be plotted on a node in the 
-#'  dendrogram (calls \code{\link[ape]{nodelabels}}). Names should match the 
-#'  \emph{internal} name of the node (the "NodeId" value, see 
-#'  \code{\link{clusterDendrogram}}).
-#'@param clusterLabelAngle angle at which label of cluster will be drawn. Only 
-#'  applicable if \code{plotType="colorblock"}.
 #'@param mergeInfo What kind of information about merge to plot on dendrogram. 
 #'  If not equal to "none", will replicate the kind of plot that 
 #'  \code{\link{mergeClusters}} creates, and the input to \code{mergeInfo} 
 #'  corresponds to that of \code{plotInfo} in \code{mergeClusters}.
-#' @param colData index (by integer or name) the sample data stored as a 
-#'   \code{DataFrame} in \code{colData} slot of the object. Only discrete valued
-#'   ("character" or "factor" variables) will be plotted; indexing of continous 
-#'   variables will be ignored. Whether that data is continuous or not will be 
-#'   determined by the properties of \code{colData} (no user input is needed).
-#'   This argument is only relevant if \code{plotType=="colorblock"} and
-#'   \code{leafType=="samples"}
-#' @param clusterLegend Assignment of colors to the clusters or sample data (as
-#'   designated by \code{colData} argument) plotted with the dendrogram . If
-#'   \code{NULL} or a particular variable/cluster are not assigned a color, 
-#'   colors will be assigned internally for sample data and pull from the
-#'   \code{clusterLegend} slot of the x for the clusters.
-#' @inheritParams getClusterIndex
 #' @return A dendrogram is plotted. Returns (invisibly) a list with elements
 #' \itemize{
 #' \item{\code{plottedObject}}{ the \code{phylo} object that is plotted.}
@@ -56,14 +14,9 @@
 #' node/tip labels. }
 #' }
 #' @aliases plotDendrogram
-#' @details If \code{leafType="clusters"}, the plotting function will work best
-#'   if the clusters in the dendrogram correspond to the primary cluster. This
-#'   is because the function colors the cluster labels based on the colors of
-#'   the clusterIds of the primaryCluster
 #' @importFrom ape plot.phylo nodelabels
 #' @seealso
-#'   \code{\link{mergeClusters}},\code{\link[ape]{plot.phylo}},
-#'   \code{\link[ape]{nodelabels}},\code{\link[ape]{tiplabels}}
+#'   \code{\link{mergeClusters}},\code{\link[clusterExperiment]{plotDendrogram}}
 #'   
 #' @export
 #' 
@@ -87,23 +40,9 @@
 #' @rdname plotDendrogram
 setMethod(
   f = "plotDendrogram",
-  signature = "ClusterExperiment",
+  signature = "RSECClass",
   definition = function(x,mergeInfo="none", ...)
-  {
-    
-    passArgs<-list(...)
-    plotValues<-.processCEObject(x=x,
-      whichClusters=whichClusters,
-      leafType=leafType,  
-      plotType=plotType,
-      main=main, 
-      sub=sub,
-      clusterLegend=clusterLegend,
-      legend=legend)
-    phyloOut<-do.call(".plotDendro",c(list(leafType=leafType,
-        removeOutbranch=removeOutbranch,
-        clusterLabelAngle=clusterLabelAngle),plotValues,passArgs))
-    
+  {    
     possibleMergeValues<-c("none", "all","mergeMethod",.availMergeMethods)
     if(!is.null(x@merge_nodeProp)){
       otherVals<-colnames(x@merge_nodeProp)[!colnames(x@merge_nodeProp)
@@ -133,25 +72,12 @@ setMethod(
     } else{
       warning("There is no information about merging -- will ignore input to 'mergeInfo'")
     }
+    mergeList<-list(
+      mergeMethod=mergeMethod,
+      mergePlotType=mergeInfo,
+      mergeOutput=nodeMergeInfo(x))
     
-    phyloOut<-clusterExperiment:::.plotDendro(dendro=dend,
-        leafType=leafType,mergeMethod=mergeMethod,mergePlotType=mergeInfo,
-        mergeOutput=nodeMergeInfo(x),clusterLegendMat=leg,clObj=cl,
-        plotType=label,main=main,sub=sub,
-        removeOutbranch=removeOutbranch,legend=legend,
-        clusterLabelAngle=clusterLabelAngle,...)
-    
-    if(!is.null(nodeColors)){
-      if(is.null(names(nodeColors))) warning("Must give names to node colors, ignoring argument nodeColors")
-      m<-match(names(nodeColors),phyloOut$originalObject$node.label)
-      nodeColors<-nodeColors[!is.na(m)]
-      m<-m[!is.na(m)]
-      if(length(m)>0){
-        ape::nodelabels(rep("",length(nodeColors)),m+length(phyloOut$originalObject$tip.label), frame = "c", bg = nodeColors,cex=1/par("cex"))
-      }
-      else{warning("No names of node colors match node name, ignoring argument nodeColors")}
-    }
-    invisible(phyloOut)
+    callNextMethod(x=x,mergeInfo=mergeList,...)
     
   })
 

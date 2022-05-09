@@ -7,6 +7,7 @@
 #'  it has one per cluster.
 #'@param main passed to the \code{plot.phylo} function to set main title.
 #'@param sub passed to the \code{plot.phylo} function to set subtitle.
+#'@param mergeInfo This argument mainly exists for compatibility with downstream package \code{RSEC}. If not using the package RSEC, users will want this to be "none". 
 #'@param plotType one of 'name', 'colorblock' or 'id'. If 'Name' then dendrogram
 #'  will be plotted, and name of cluster or sample (depending on type of value 
 #'  for \code{leafType}) will be plotted next to the leaf of the dendrogram. If 
@@ -32,10 +33,7 @@
 #'  \code{\link{clusterDendrogram}}).
 #'@param clusterLabelAngle angle at which label of cluster will be drawn. Only 
 #'  applicable if \code{plotType="colorblock"}.
-#'@param mergeInfo What kind of information about merge to plot on dendrogram. 
-#'  If not equal to "none", will replicate the kind of plot that 
-#'  \code{\link{mergeClusters}} creates, and the input to \code{mergeInfo} 
-#'  corresponds to that of \code{plotInfo} in \code{mergeClusters}.
+
 #' @param colData index (by integer or name) the sample data stored as a 
 #'   \code{DataFrame} in \code{colData} slot of the object. Only discrete valued
 #'   ("character" or "factor" variables) will be plotted; indexing of continous 
@@ -88,113 +86,119 @@
 setMethod(
   f = "plotDendrogram",
   signature = "ClusterExperiment",
-  definition = function(x,whichClusters="dendro",leafType=c("samples","clusters" ),  plotType=c("colorblock","name","ids"), mergeInfo="none", main, sub, clusterLabelAngle=45, removeOutbranch=TRUE, legend=c("side","below", "none"),nodeColors=NULL,colData=NULL,clusterLegend=NULL,...)
-  {
-    if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
-    leafType<-match.arg(leafType)
-    plotType<-match.arg(plotType)
-    
-    possibleMergeValues<-c("none", "all","mergeMethod",.availMergeMethods)
-    if(!is.null(x@merge_nodeProp)){
-      otherVals<-colnames(x@merge_nodeProp)[!colnames(x@merge_nodeProp)%in%c("NodeId","Contrast")]
-      possibleMergeValues<-unique(c(possibleMergeValues,otherVals))
+  definition = function(x,
+    whichClusters="dendro",
+    leafType=c("samples","clusters" ),  
+    plotType=c("colorblock","name","ids"), 
+    mergeInfo="none", main, sub, clusterLabelAngle=45, 
+    removeOutbranch=TRUE, 
+    legend=c("side","below", "none"),
+    nodeColors=NULL,colData=NULL,
+    clusterLegend=NULL,...)
+{
+  if(is.null(x@dendro_samples) || is.null(x@dendro_clusters)) stop("No dendrogram is found for this ClusterExperiment Object. Run makeDendrogram first.")
+  leafType<-match.arg(leafType)
+  plotType<-match.arg(plotType)
       
-    }
-    mergeInfo<-match.arg(mergeInfo,possibleMergeValues)
-    
-    legend<-match.arg(legend)
-    whCl<-getClusterIndex(x,whichClusters=whichClusters,noMatch="throwError")
-    if(leafType=="clusters" && whCl!=x@dendro_index){
-      warning("if leafType=='clusters', 'whichClusters' must match the clusters that created the dendrogram. Changing 'leafType' to 'samples'")
-      leafType<-"samples"
-    }
-    if(leafType=="clusters" & length(whCl)>1) stop("If leafType equal to 'clusters' 'whichClusters' must be of length 1 (i.e. single cluster).")
-    if(missing(main)) main<-ifelse(leafType=="samples","Dendrogram of samples", "Dendrogram of clusters")
-    if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[dendroClusterIndex(x)],"', cluster index ",dendroClusterIndex(x),sep="")
+  legend<-match.arg(legend)
+  whCl<-getClusterIndex(x,whichClusters=whichClusters,
+    noMatch="throwError")
+  if(leafType=="clusters" && whCl!=x@dendro_index){
+    warning("if leafType=='clusters', 'whichClusters' must match the clusters that created the dendrogram. Changing 'leafType' to 'samples'")
+    leafType<-"samples"
+  }
+  if(leafType=="clusters" & length(whCl)>1) stop("If leafType equal to 'clusters' 'whichClusters' must be of length 1 (i.e. single cluster).")
+  if(missing(main)) main<-ifelse(leafType=="samples","Dendrogram of samples", "Dendrogram of clusters")
+  if(missing(sub)) sub<-paste("Dendrogram made with '",clusterLabels(x)[dendroClusterIndex(x)],"', cluster index ",dendroClusterIndex(x),sep="")
 
 	#This grabs the labels and moves them to node and tip labels
-	convertedDends<-.setNodeLabels(x,labelType="name",useMergeClusters=FALSE,overrideExistingNode=FALSE,singletonCluster=c("sample"))
-	dend<- switch(leafType,"samples"=convertedDends$dendro_samples,"clusters"=convertedDends$dendro_clusters)
+	convertedDends<-.setNodeLabels(x,labelType="name",
+    useMergeClusters=FALSE,overrideExistingNode=FALSE,
+    singletonCluster=c("sample"))
+	dend<- switch(leafType,
+    "samples"=convertedDends$dendro_samples,
+    "clusters"=convertedDends$dendro_clusters)
     
-    #---
-    #make color matrix
-    #---
-    cl<-switch(leafType,"samples"=clusterMatrix(x)[,whCl,drop=FALSE],"clusters"=NULL)
-		
-		if(leafType=="samples" & plotType=="colorblock"){
-	    sData<-.pullColData(x,colData) #returns data.frame
-	    #identify which numeric and remove
-	    if(!is.null(sData)){
-				whCont<-which(sapply(seq_len(ncol(sData)),function(ii){is.numeric(sData[,ii])}))
-				if(length(whCont)>0){
-					warning("argument 'colData' implies using columns of colData that are continuous, which is not handled by plotDendrogram. Those columns will be ignored")
-					if(length(whCont)< ncol(sData)) sData<-sData[,-whCont,drop=FALSE]
-					else sData<-NULL
-				}
-	    	
-	    }
-		}
-		else{
-			if(!is.null(colData)) 
-				warning("argument colData only used if leafType='samples' and plotType='colorblock'. Ignoring input to colData.")
-			sData<-NULL
-		}
-		if(!is.null(sData)){
-		  sClusterLegend<-.makeColors(sData,colors=massivePalette,distinctColors=TRUE,matchClusterLegend = clusterLegend,matchTo="name")
-			sNames<-colnames(sData)
-			sData<-sClusterLegend$numClusters
-      colnames(sData)<-sNames
-			cl<-cbind(cl,sData)
-			
-		}
-    if(!is.null(clusterLegend) || !is.null(sData)){
-      #preserve those in given clusterLegend that don't match colData (could go with features/rows)
-      if(is.list(clusterLegend)){ #could be single vector, but in that case, will loose them
-        whKeep<-names(clusterLegend)[which(!names(clusterLegend)%in% names(sClusterLegend$colorList  ))]
-        clusterLegend<-c(sClusterLegend$colorList,clusterLegend[whKeep])
-      }
-      else clusterLegend<-sClusterLegend$colorList
-    }
-		
-    if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else
-		.makeSampleNames(seq_len(ncol(x)))
-    if(length(whCl)==1 & is.null(sData)){
-      leg<-clusterLegend(x)[[whCl]]
-      if(plotType=="id") leg[,"name"]<-leg[,"clusterIds"]		
-    }
-    else{
-      leg<-clusterLegend(x)[whCl]
-      if(plotType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
-			if(!is.null(sData)){
-				leg<-c(leg,clusterLegend)
+  #---
+  #make color matrix
+  #---
+  cl<-switch(leafType,
+    "samples"=clusterMatrix(x)[,whCl,drop=FALSE],
+    "clusters"=NULL)
+	
+	if(leafType=="samples" & plotType=="colorblock"){
+    sData<-.pullColData(x,colData) #returns data.frame
+    #identify which numeric and remove
+    if(!is.null(sData)){
+			whCont<-which(sapply(seq_len(ncol(sData)),function(ii){is.numeric(sData[,ii])}))
+			if(length(whCont)>0){
+				warning("argument 'colData' implies using columns of colData that are continuous, which is not handled by plotDendrogram. Those columns will be ignored")
+				if(length(whCont)< ncol(sData)) sData<-sData[,-whCont,drop=FALSE]
+				else sData<-NULL
 			}
+    	
     }
-    label<-switch(plotType,"name"="name","colorblock"="colorblock","ids"="name")
-    #   mergePlotType=NULL,mergeMethod=NULL,mergeOutput=NULL, 
-    
-    
-    if(is.na(x@merge_dendrocluster_index)) mergeInfo<-"none"
-    if(mergeInfo=="none"){
-      mergeInfo<-NULL
-      mergeMethod<-NULL
+	}
+	else{
+		if(!is.null(colData)) 
+			warning("argument colData only used if leafType='samples' and plotType='colorblock'. Ignoring input to colData.")
+		sData<-NULL
+	}
+	if(!is.null(sData)){
+	  sClusterLegend<-.makeColors(sData,
+      colors=massivePalette,distinctColors=TRUE,
+      matchClusterLegend = clusterLegend,matchTo="name")
+		sNames<-colnames(sData)
+		sData<-sClusterLegend$numClusters
+    colnames(sData)<-sNames
+		cl<-cbind(cl,sData)
+		
+	}
+  if(!is.null(clusterLegend) || !is.null(sData)){
+    #preserve those in given clusterLegend that don't match colData (could go with features/rows)
+    if(is.list(clusterLegend)){ #could be single vector, but in that case, will loose them
+      whKeep<-names(clusterLegend)[which(!names(clusterLegend)%in% 
+        names(sClusterLegend$colorList  ))]
+      clusterLegend<-c(sClusterLegend$colorList,clusterLegend[whKeep])
     }
-    else if(!is.na(x@merge_dendrocluster_index)){ #has node prop info, even if no merge cluster
-      if(mergeInfo=="mergeMethod"){
-        if(is.na(x@merge_index)){
-          warning("Cannot plot merge method because there is none. Plotting all")
-          mergeInfo<-"all"
-        }
-        else{
-          mergeMethod<-x@merge_method
-        }
-      }
-      else if(mergeInfo==x@merge_method ) mergeMethod<-x@merge_method #only do dotted lines if matches saved merged method -- is this good default or no? not sure .plotDendro works otherwise from ClusterExperiment object
-      else mergeMethod<-"none"
-    } else{
-      warning("There is no information about merging -- will ignore input to 'mergeInfo'")
-    }
-    
-    phyloOut<-.plotDendro(dendro=dend,leafType=leafType,mergeMethod=mergeMethod,mergePlotType=mergeInfo,mergeOutput=nodeMergeInfo(x),clusterLegendMat=leg,clObj=cl,plotType=label,main=main,sub=sub,removeOutbranch=removeOutbranch,legend=legend,clusterLabelAngle=clusterLabelAngle,...)
+    else clusterLegend<-sClusterLegend$colorList
+  }
+	
+  if(leafType=="samples") rownames(cl)<-if(!is.null(colnames(x))) colnames(x) else
+	.makeSampleNames(seq_len(ncol(x)))
+  if(length(whCl)==1 & is.null(sData)){
+    leg<-clusterLegend(x)[[whCl]]
+    if(plotType=="id") leg[,"name"]<-leg[,"clusterIds"]		
+  }
+  else{
+    leg<-clusterLegend(x)[whCl]
+    if(plotType=="id") leg<-lapply(leg,function(x){x[,"name"]<-x[,"clusterIds"]; return(x)})	
+		if(!is.null(sData)){
+			leg<-c(leg,clusterLegend)
+		}
+  }
+  label<-switch(plotType,
+    "name"="name",
+    "colorblock"="colorblock",
+    "ids"="name")
+  
+  
+  if(mergeInfo!="none"){
+    if(!all(c("mergeMethod","mergePlotType","mergeOutput") 
+      %in% names(mergeInfoList))) stop("invalid values for mergeInfoList")
+    mergeInfoList<-mergeInfo
+  }
+  else{
+    mergeInfoList<-list(mergeMethod=NULL,
+      mergeInfo=NULL,mergeOutput=NULL)
+  }
+  phyloOut<-.plotDendro(dendro=dend,leafType=leafType,
+      mergeMethod=mergeInfoList$mergeMethod,
+      mergePlotType=mergeInfoList$mergeInfo,
+      mergeOutput=mergeInfoList$mergeOutput,
+      clusterLegendMat=leg,clObj=cl,plotType=label,
+      main=main,sub=sub,removeOutbranch=removeOutbranch,
+      legend=legend,clusterLabelAngle=clusterLabelAngle,...)
     
     if(!is.null(nodeColors)){
       if(is.null(names(nodeColors))) warning("Must give names to node colors, ignoring argument nodeColors")
