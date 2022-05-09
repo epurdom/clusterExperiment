@@ -14,10 +14,6 @@ if(ncol(simData) != 300) {
   #get all kinds of annoyances because using old version.
   #Can delete this once package is stabilized.
 }
-## make sure the tests are reproducible
-## This code uses old version of sampling to match what was used. Will give warning. 
-# suppressWarnings(RNGversion("3.5.0"))
-# set.seed(23)
 
 #################################
 ###Simple, trivial sized objects for testing:
@@ -98,6 +94,6 @@ clusterExperiment:::filterStats(sceSimDataDimRed,type=c("Filter1","Filter2"))<-m
 ## Create hdf5 SCE version
 ## Note is matrix of doubles....
 #####################
-hdfSCE<-HDF5Array::saveHDF5SummarizedExperiment(sceSimDataDimRed, dir="sceRedDem.h5", replace=TRUE)
-hdfObj<-HDF5Array::saveHDF5SummarizedExperiment(sceSimData, dir="sce.h5", replace=TRUE)
+# hdfSCE<-HDF5Array::saveHDF5SummarizedExperiment(sceSimDataDimRed, dir="sceRedDem.h5", replace=TRUE)
+# hdfObj<-HDF5Array::saveHDF5SummarizedExperiment(sceSimData, dir="sce.h5", replace=TRUE)
 

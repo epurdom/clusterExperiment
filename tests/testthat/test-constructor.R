@@ -57,6 +57,7 @@ test_that("`getClusterIndex` works", {
 	expect_error(getSingleClusterIndex(ccSE,whichCluster="dendro"),"There is no dendrogram")
 	
 	# Test gets one wanted
+    vec<-sample(1:4,size=nSamples(ccSE),replace=TRUE)
   expect_silent(ccM <- addClusterings(ccSE, vec,clusterTypes="mySpecialLabel"))
   expect_silent(ccM <- addClusterings(ccM, vec,clusterTypes="new"))
 	expect_silent(indCM<-getClusterIndex(ccM,wh=c("User")))

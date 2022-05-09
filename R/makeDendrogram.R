@@ -51,14 +51,11 @@
 #' @export
 #' @seealso makeFilterStats, makeReducedDims
 #' @examples
-#' data(simData)
-#'
-#' #create a clustering, for 8 clusters (truth was 3)
-#' cl <- clusterSingle(simData, subsample=FALSE,
-#' sequential=FALSE, mainClusterArgs=list(clusterFunction="pam", clusterArgs=list(k=8)))
+#' # load ClusterExperiment Object
+#' data(simCEData)
 #'
 #' #create dendrogram of clusters:
-#' hcl <- makeDendrogram(cl)
+#' hcl <- makeDendrogram(ceSimData)
 #' plotDendrogram(hcl)
 #' plotDendrogram(hcl, leafType="samples",plotType="colorblock")
 #'
