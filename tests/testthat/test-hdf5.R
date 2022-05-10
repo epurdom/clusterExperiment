@@ -81,3 +81,8 @@ test_that("plotting works with hdf5 assays objects",{
 	
 
 })
+
+test_that("`plotHeatmap` works with hdf5 objects", {
+    expect_silent(plotHeatmap(hdfObj))
+
+})

@@ -59,10 +59,7 @@ test_that("`plotHeatmap` works with matrix objects", {
 })
 
 
-test_that("`plotHeatmap` works with hdf5 objects", {
-    expect_silent(plotHeatmap(hdfObj))
 
-})
 test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment objects", {
   
   expect_silent(plotHeatmap(cc))
