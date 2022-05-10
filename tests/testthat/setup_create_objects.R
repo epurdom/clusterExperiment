@@ -31,6 +31,7 @@ colnames(mat)<-paste("Sample",1:ncol(mat))
 rownames(mat)<-paste("Gene",1:nrow(mat))
 set.seed(2325)
 se <- simSEObject(mat)
+gData<-rowData(se)
 #dissMat<-as.matrix(dist(t(mat)))
 
 # Create matrix of clusters:
@@ -75,7 +76,7 @@ smSimSE <- seSimData[1:20,whSamp]
 
 #################################
 ###Make reduce dimensions and filters
-###... needed for creation of hdf5 object
+###... needed for creation of hdf5 object AND testing reducedDims
 #################################
 sce<-as(se,"SingleCellExperiment")
 sceFull<-sce

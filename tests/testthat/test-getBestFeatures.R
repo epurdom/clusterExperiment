@@ -127,52 +127,7 @@ test_that("'Dendro' contrasts works for ClusterExperiment object in `getBestFeat
     neqcolsCE<-sapply(c("InternalName"), grep,colnames(dendC1))
     expect_equal(dend1, dendC1[,-neqcolsCE])
 
-  #check whole mergeDendrogram thing at least runs!
-  expect_silent(cl1 <- clusterSingle(smSimData, 
-                       subsample=FALSE, sequential=FALSE,
-                       mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)), 
-											 isCount=FALSE)
-											 )
-  expect_silent(clustWithDendro <- makeDendrogram(cl1))
-  expect_message(clustMerged <- mergeClusters(clustWithDendro, mergeMethod="adjP",plotInfo="none",plot=FALSE,calculateAll=FALSE, DEMethod="limma"),"Merging will be done on")
-  expect_silent(getBestFeatures(clustMerged, contrastType="Dendro",DEMethod="limma"))
 
-})
-test_that("`getBestFeatures` works with HDF5 assay slot",{
-    expect_silent(cl1 <- clusterSingle(hdfObj, 
-            subsample=FALSE, sequential=FALSE,
-			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
-			isCount=FALSE))
-    expect_silent(getBestFeatures(cl1,DEMethod="limma"))
-								
-	
-})
-test_that("`plotContrastHeatmap` works", {
-	expect_silent(ceSimData<-renameClusters(ceSimData,whichCluster=1,val=letters[1:nClusters(ceSimData)[1]]))
-    expect_silent(topC2 <- getBestFeatures(ceSimData, contrastType="Pairs", DEMethod="limma"))
-	expect_silent(plotContrastHeatmap(ceSimData,signifTable=topC2))
-
-	expect_silent(topCOne <- getBestFeatures(ceSimData, contrastType="OneAgainstAll", DEMethod="limma"))
-	expect_silent(plotContrastHeatmap(ceSimData,signifTable=topCOne,plot=plotAll))
-	  
-    dendro <- makeDendrogram(ceSimData, whichCluster=primaryClusterIndex(ceSimData))
-	# > 	phylobase::nodeLabels(dendro@dendro_clusters)
-# 	      5       6       7
-# 	"Node1" "Node2" "Node3"
-	topCD <- getBestFeatures(dendro, contrastType="Dendro", DEMethod="limma")
-	plotContrastHeatmap(dendro,signifTable=topCD,plot=plotAll)
-	
-    top1 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="F",
-                          DEMethod="limma")
-	expect_error(plotContrastHeatmap(dendro,signifTable=top1),"signifTable must have columns 'IndexInOriginal' and 'Contrast'")
-						  
-	#test name replacement:
-	plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
-	plotContrastHeatmap(ceSimData,signifTable=topCOne,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
-	plotContrastHeatmap(ceSimData,signifTable=topCD,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
-	expect_error(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=c(1,2)),"must identify only a single clustering")
-	expect_error(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=50),"Invalid value for 'whichCluster'. Must be integer between")
-	
 })
 
 test_that("`getBestFeatures` works with weights", {
@@ -216,16 +171,36 @@ test_that("`getBestFeatures` works with weights", {
 	expect_silent(outW_C2<-getBestFeatures(ceSimCountW,DEMethod="edgeR",contrastType="Pairs"))
 	expect_equal(outW_C2,outW_C)
 	
-	##Test mergeClusters
-	expect_silent(ceSimCountW<-makeDendrogram(ceSimCountW))
-	expect_message(mergeClusters(ceSimCountW,DEMethod="edgeR"),"Merging will be done on")
-	expect_message(mergeClusters(ceSimCountW,DEMethod="edgeR",weights=NULL,forceCalculate=TRUE),"Merging will be done on")
-	
-	##Test RSEC
-	expect_message(RSEC(ceSimCountW,sequential=FALSE,subsample=FALSE,ks=4:15,isCount=TRUE,stopOnError=TRUE),"merging with these parameters did not result in any clusters being merged")
-	
-	sceCountData<-SingleCellExperiment(simCount)
-	reducedDims(sceCountData) <- reducedDims(sceSimDataDimRed)	
-	expect_message(RSEC(sceCountData,sequential=TRUE,subsample=FALSE,clusterFunction="pam",k0s=4:15,isCount=TRUE, stopOnError=TRUE),"Merging will be done on")
+
 	
 })
+
+test_that("`plotContrastHeatmap` works", {
+	expect_silent(ceSimData<-renameClusters(ceSimData,whichCluster=1,val=letters[1:nClusters(ceSimData)[1]]))
+    expect_silent(topC2 <- getBestFeatures(ceSimData, contrastType="Pairs", DEMethod="limma"))
+	expect_silent(plotContrastHeatmap(ceSimData,signifTable=topC2))
+
+	expect_silent(topCOne <- getBestFeatures(ceSimData, contrastType="OneAgainstAll", DEMethod="limma"))
+	expect_silent(plotContrastHeatmap(ceSimData,signifTable=topCOne,plot=plotAll))
+	  
+    dendro <- makeDendrogram(ceSimData, whichCluster=primaryClusterIndex(ceSimData))
+	# > 	phylobase::nodeLabels(dendro@dendro_clusters)
+# 	      5       6       7
+# 	"Node1" "Node2" "Node3"
+	topCD <- getBestFeatures(dendro, contrastType="Dendro", DEMethod="limma")
+	plotContrastHeatmap(dendro,signifTable=topCD,plot=plotAll)
+	
+    top1 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="F",
+                          DEMethod="limma")
+	expect_error(plotContrastHeatmap(dendro,signifTable=top1),"signifTable must have columns 'IndexInOriginal' and 'Contrast'")
+						  
+	#test name replacement:
+	plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
+	plotContrastHeatmap(ceSimData,signifTable=topCOne,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
+	plotContrastHeatmap(ceSimData,signifTable=topCD,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
+	expect_error(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=c(1,2)),"must identify only a single clustering")
+	expect_error(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=50),"Invalid value for 'whichCluster'. Must be integer between")
+	
+})
+
+

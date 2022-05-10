@@ -5,19 +5,16 @@ context("Non-heatmap related plot functions")
 test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
 
     #test matrix version
-    x<-plotClusters(object=clusterMatrix(ceSimCount))
+    expect_silent(x<-plotClusters(object=clusterMatrix(ceSimCount)))
     expect_equal(dim(clusterMatrix(ceSimCount)),dim(x$colors))
     expect_equal(dim(clusterMatrix(ceSimCount)),dim(x$aligned))
     expect_equal(length(x$clusterLegend),ncol(clusterMatrix(ceSimCount)))
 
     #test CE version
-    x<-plotClusters(ceSimCount)
+    expect_silent(x<-plotClusters(ceSimCount))
     expect_is(x,"ClusterExperiment")
     expect_equal( x,ceSimCount)
 
-    xx<-plotClusters(ceSimCount,whichClusters="clusterMany")
-    xx2<-plotClusters(object=ceSimCount,whichClusters="workflow") #only clusterMany values so should be the same
-    expect_equal(xx2,xx)
 
     #check reset -- should add combinations of resetColors and resetNames to make sure works independently.
     par(mfrow=c(1,2)) #so can visually check if desired.
@@ -41,11 +38,6 @@ test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
     #test -1
     plotClusters(ceSimCount)
 
-    #CE object with mixture of workflow and other types
-    x1<-plotClusters(object=ceSimCount,whichClusters="workflow",resetColors=TRUE)
-    x2<-plotClusters(object=removeClusterings(ceSimCount,"User"),resetColors=TRUE)
-    whP<-getClusterIndex(ceSimCount,"workflow")
-    expect_equal(clusterLegend(x2),clusterLegend(x1)[whP])
 
     #test specifying indices
     wh<-c(3,4,NCOL(clusterMatrix(ceSimCount)))
