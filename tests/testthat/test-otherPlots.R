@@ -1,122 +1,4 @@
-context("Non-heatmap related plot functions")
-
-
-
-test_that("`plotClusters` works with matrix, ClusterExperiment objects", {
-
-    #test matrix version
-    expect_silent(x<-plotClusters(object=clusterMatrix(ceSimCount)))
-    expect_equal(dim(clusterMatrix(ceSimCount)),dim(x$colors))
-    expect_equal(dim(clusterMatrix(ceSimCount)),dim(x$aligned))
-    expect_equal(length(x$clusterLegend),ncol(clusterMatrix(ceSimCount)))
-
-    #test CE version
-    expect_silent(x<-plotClusters(ceSimCount))
-    expect_is(x,"ClusterExperiment")
-    expect_equal( x,ceSimCount)
-
-
-    #check reset -- should add combinations of resetColors and resetNames to make sure works independently.
-    par(mfrow=c(1,2)) #so can visually check if desired.
-    xx3<-plotClusters(ceSimCount,resetOrderSamples=TRUE,resetColors=TRUE,resetNames=TRUE)
-    plotClusters(xx3,existingColors="all")
-    expect_false(isTRUE(all.equal(xx2,xx3))) #not a great test. Doesn't really say whether does it right, just whether it does something!
-
-    nm<-as.numeric(unlist(lapply(clusterLegend(xx3),function(x){x[,"name"]})))
-    col<-(unlist(lapply(clusterLegend(xx3),function(x){x[,"color"]})))
-    wh<-which(col %in% c("white","grey"))
-    expect_equal(match(col[-wh],bigPalette),nm[-wh])
-    nmOld<-as.numeric(unlist(lapply(clusterLegend(ceSimCount),function(x){x[,"name"]})))
-    expect_false(isTRUE(all.equal(nm,nmOld)))
-    idOld<-as.numeric(unlist(lapply(clusterLegend(ceSimCount),function(x){x[,"clusterIds"]})))
-    idNew<-as.numeric(unlist(lapply(clusterLegend(xx3),function(x){x[,"clusterIds"]})))
-    expect_equal(idOld,idNew)
-
-    #check existing colors
-    x2<-plotClusters(ceSimCount,existingColors="all")
-
-    #test -1
-    plotClusters(ceSimCount)
-
-
-    #test specifying indices
-    wh<-c(3,4,NCOL(clusterMatrix(ceSimCount)))
-    x3<-plotClusters(ceSimCount,whichClusters=wh,axisLine=-2,resetColors=TRUE)
-    x4<-plotClusters(ceSimCount,whichClusters=wh[c(3,2,1)],axisLine=-2,resetColors=TRUE)
-    expect_false(isTRUE(all.equal(x3,x4)))
-
-    par(mfrow=c(1,1)) #otherwise will affect other tests.
-})
-
-
-
-test_that("`plotClusters` rerun above tests with colData included", {
-
-    #test matrix version
-    expect_silent(x<-plotClusters(object=clusterMatrix(ceSimCount),
-        colData=as.data.frame(colData(ceSimCount))))
-    expect_equal(ncol(clusterMatrix(ceSimCount))+ncol(colData(ceSimCount)),
-        ncol(x$colors))
-    expect_equal(ncol(clusterMatrix(ceSimCount))+ncol(colData(ceSimCount)),
-        ncol(x$aligned))
-    expect_equal(length(x$clusterLegend),
-        ncol(clusterMatrix(ceSimCount))+ncol(colData(ceSimCount)))
-
-    #---    
-    #test CE version
-    #---    
-    
-    #no colData in test
-    expect_silent( test<- clusterMany(simCount,
-        reduceMethod="PCA", verbose=FALSE,
-        nReducedDims=c(5,10,50), isCount=TRUE, makeMissingDiss=TRUE,
-        clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE)
-    ) )
-    expect_error(plotClusters(test,
-        colData=as.data.frame(colData(ceSimCount))),
-        "no colData for object data")
-    expect_error(plotClusters(ceSimCount,
-        colData=as.data.frame(colData(ceSimCount))),
-        "invalid values for pulling sample data from colData of object")
-    expect_silent(plotClusters(ceSimCount,colData="all"))
-    par(mfrow=c(1,2))
-    expect_silent(x2<-plotClusters(ceSimCount,colData="all",resetColors=TRUE))
-    expect_silent(x1<-plotClusters(ceSimCount,resetColors=TRUE))
-
-
-    #check NAs
-    naSim<-ceSimCount
-    colData(naSim)[sample(size=10,x=1:nrow(naSim)),c("A","B")]<-NA
-    expect_silent(plotClusters(naSim,colData=c("A","B")))
-
-    #test the new TRUE option for colData
-    expect_silent(plotClusters(naSim,colData=TRUE))
-
-  #this is not working because first one puts -1/-2 last and second puts them first, and so then assigns different colors to the groups
-#  expect_equal(x1,x2)
-#   par(mfrow=c(1,2))
-#   x2<-plotClusters(ceSimCount,colData="all",resetColors=FALSE)
-#   x1<-plotClusters(ceSimCount,resetColors=FALSE)
-    par(mfrow=c(1,1))
-
-})
-
-
-test_that("plotClustersWorkflow", {
-	expect_silent(cc<-clusterMany(mat, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),reduceMethod=c("none","PCA","var"),clusterFunction="pam",
-	                       subsample=FALSE, sequential=FALSE,run=TRUE,verbose=FALSE,
-	                       isCount=FALSE))
-	expect_silent(cc<-makeConsensus(cc,proportion=.7,whichClusters = "clusterMany"))
-	expect_silent(plotClustersWorkflow(cc))
-	expect_silent(plotClustersWorkflow(cc,clusterManyLabels=FALSE))
-	expect_silent(plotClustersWorkflow(cc,sortBy="clusterMany"))
-	expect_silent(plotClustersWorkflow(cc,sortBy="clusterMany",highlightOnTop=FALSE))
-	expect_silent(plotClustersWorkflow(cc,highlightOnTop=FALSE))
-	expect_silent(plotClustersWorkflow(cc,clusterManyLabels=FALSE,clusterLabels="test"))
-	expect_error(plotClustersWorkflow(cc,clusterManyLabels=c("1","2"),clusterLabels="test"),"number of cluster labels given in clusterManyLabels")
-	expect_error(plotClustersWorkflow(cc,clusterManyLabels=TRUE,clusterLabels=c("A","test")),"number of cluster labels given in clusterLabels")
-
-})
+context("Plotting Functions")
 
 
 test_that("plotting helpers", {
@@ -134,8 +16,6 @@ test_that("plotting helpers", {
   expect_silent(showPalette())
   expect_silent(showPalette(massivePalette))
 })
-
-
 
 test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
 
@@ -166,9 +46,6 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
     #plotBarplot(ceSimCount,whichClusters="primaryCluster")
 
 })
-
-
-
 
 test_that("plotReducedDims works",{
 	expect_silent(cl <- clusterMany(simData, 
@@ -283,23 +160,3 @@ test_that("plotFeatureScatter works",{
 
 })
 
-test_that("plotting works with hdf5 assays objects",{
-	##plotClusters
-    expect_silent(cl1 <- clusterSingle(hdfSCE, reduceMethod="PCA",
-            subsample=FALSE, sequential=FALSE,
-			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
-			isCount=FALSE))
-	expect_silent(plotClusters(cl1))
-	
-	##plotBarplot
-	expect_silent(plotBarplot(cl1))
-	
-	##plotReducedDims
-	expect_silent(plotReducedDims(cl1,legend="bottomright"))
-
-	##plotFeatureBoxplot
-	expect_silent(plotFeatureBoxplot(object=cl1,feature=1))
-
-	
-
-})

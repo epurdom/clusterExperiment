@@ -60,3 +60,24 @@ test_that("`getBestFeatures` works with HDF5 assay slot",{
 								
 	
 })
+
+test_that("plotting works with hdf5 assays objects",{
+	##plotClusters
+    expect_silent(cl1 <- clusterSingle(hdfSCE, reduceMethod="PCA",
+            subsample=FALSE, sequential=FALSE,
+			mainClusterArgs=list(clusterFunction="pam",clusterArgs=list(k=6)),
+			isCount=FALSE))
+	expect_silent(plotClusters(cl1))
+	
+	##plotBarplot
+	expect_silent(plotBarplot(cl1))
+	
+	##plotReducedDims
+	expect_silent(plotReducedDims(cl1,legend="bottomright"))
+
+	##plotFeatureBoxplot
+	expect_silent(plotFeatureBoxplot(object=cl1,feature=1))
+
+	
+
+})
