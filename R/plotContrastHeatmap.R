@@ -100,7 +100,7 @@ setMethod(
     if(!is.null(whichCluster)){
       ## Assign colors to the contrasts 
       ## (only if contrast is oneAgainstAll)
-	  whichCluster<-getSingleClusterIndex(object,
+	  	whichCluster<-getSingleClusterIndex(object,
           whichCluster,passedArgs=list(...))
       cl<-clusterMatrix(object)[,whichCluster]
       clMat<-clusterLegend(object)[[whichCluster]]
@@ -108,10 +108,11 @@ setMethod(
       ### If the contrast is one against all, should have name of cluster so give color
       ### Note that need to use InternalId, in case the names are not unique?
       internalNames<-gsub("Cl","",internalNames)
-      # This can give warnings for NAs, and if option(warn=2) create error...
-      internalNames<-try(sort(as.numeric(internalNames)),silent=TRUE)
+			### This is messy. Basically as.numeric will give NAs 
+      # This can give warnings for NAs, and if option(warn=2) create error...so have suppressWarnings
+      internalNames<-try(sort(suppressWarnings(as.numeric(internalNames))),silent=TRUE)
       if(inherits(internalNames, "try-error") ||
-          any(is.na(internalNames))) isOneVAll<-FALSE
+          any(is.na(internalNames))) isOneVAll<-FALSE ## I'm not clear that anything gets here...
       else isOneVAll<-TRUE
       clIds<-unname(sort(as.numeric(clMat[,"clusterIds"])))
       if(is.null(contrastColors) && isOneVAll &&

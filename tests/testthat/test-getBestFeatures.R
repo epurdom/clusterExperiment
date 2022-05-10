@@ -177,27 +177,27 @@ test_that("`getBestFeatures` works with weights", {
 
 test_that("`plotContrastHeatmap` works", {
 	expect_silent(ceSimData<-renameClusters(ceSimData,whichCluster=1,val=letters[1:nClusters(ceSimData)[1]]))
-    expect_silent(topC2 <- getBestFeatures(ceSimData, contrastType="Pairs", DEMethod="limma"))
+  expect_silent(topC2 <- getBestFeatures(ceSimData, contrastType="Pairs", DEMethod="limma"))
 	expect_silent(plotContrastHeatmap(ceSimData,signifTable=topC2))
 
 	expect_silent(topCOne <- getBestFeatures(ceSimData, contrastType="OneAgainstAll", DEMethod="limma"))
 	expect_silent(plotContrastHeatmap(ceSimData,signifTable=topCOne,plot=plotAll))
 	  
-    dendro <- makeDendrogram(ceSimData, whichCluster=primaryClusterIndex(ceSimData))
+  expect_silent(dendro <- makeDendrogram(ceSimData, whichCluster=primaryClusterIndex(ceSimData)))
 	# > 	phylobase::nodeLabels(dendro@dendro_clusters)
 # 	      5       6       7
 # 	"Node1" "Node2" "Node3"
-	topCD <- getBestFeatures(dendro, contrastType="Dendro", DEMethod="limma")
-	plotContrastHeatmap(dendro,signifTable=topCD,plot=plotAll)
+	expect_silent(topCD <- getBestFeatures(dendro, contrastType="Dendro", DEMethod="limma"))
+	expect_silent(plotContrastHeatmap(dendro,signifTable=topCD,plot=plotAll))
 	
-    top1 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="F",
-                          DEMethod="limma")
+  expect_silent(top1 <- getBestFeatures(simData, primaryCluster(ceSimData), contrastType="F",
+                          DEMethod="limma"))
 	expect_error(plotContrastHeatmap(dendro,signifTable=top1),"signifTable must have columns 'IndexInOriginal' and 'Contrast'")
 						  
 	#test name replacement:
-	plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
-	plotContrastHeatmap(ceSimData,signifTable=topCOne,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
-	plotContrastHeatmap(ceSimData,signifTable=topCD,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)
+	expect_silent(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)) #pairs "a-c"
+	expect_silent(plotContrastHeatmap(ceSimData,signifTable=topCOne,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)) # one "a"
+	expect_silent(plotContrastHeatmap(ceSimData,signifTable=topCD,whichCluster=primaryClusterIndex(ceSimData),plot=plotAll)) #dendro "NodeId1"
 	expect_error(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=c(1,2)),"must identify only a single clustering")
 	expect_error(plotContrastHeatmap(ceSimData,signifTable=topC2,whichCluster=50),"Invalid value for 'whichCluster'. Must be integer between")
 	

@@ -16,6 +16,8 @@ Tests working (clusterExperiment):
 * test-constructor
 * test-dendrogram
 * test-dimReduce
+* test-getBestFeatures
+* test-hdf5
 * test-heatmaps (slowest!)
 * test-otherPlots
 * test-plotClusters
