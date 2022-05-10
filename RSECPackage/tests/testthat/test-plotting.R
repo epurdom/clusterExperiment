@@ -2,9 +2,17 @@ context("Test Plotting from ClusterExperiment")
 
 test_that("`plotClusters` works with RSECClass objects", {
   ## Check workflow
-  xx<-plotClusters(ceSimCount,whichClusters="clusterMany")
-  xx2<-plotClusters(object=ceSimCount,whichClusters="workflow") #only clusterMany values so should be the same
+  expect_silent(xx<-plotClusters(ceSimCount,
+    whichClusters="clusterMany"))
+  expect_silent(xx2<-plotClusters(object=ceSimCount,
+    whichClusters="workflow")) #only clusterMany values so should be the same
   expect_equal(xx2,xx)
+
+  par(mfrow=c(1,2)) #so can visually check if desired.
+  expect_silent(xx3<-plotClusters(ceSimCount,
+    resetOrderSamples=TRUE,resetColors=TRUE,resetNames=TRUE))
+  plotClusters(xx3,existingColors="all")
+  expect_false(isTRUE(all.equal(xx2,xx3))) #not a great test. Doesn't really say whether does it right, just whether it does something!
   
   
   #RSEC object with mixture of workflow and other types
@@ -14,6 +22,17 @@ test_that("`plotClusters` works with RSECClass objects", {
     resetColors=TRUE)
   whP<-getClusterIndex(ceSimCount,"workflow")
   expect_equal(clusterLegend(x2),clusterLegend(x1)[whP])
+  
+  #no colData in test
+  expect_silent( test<- clusterMany(simCount,
+      reduceMethod="PCA", verbose=FALSE,
+      nReducedDims=c(5,10,50), isCount=TRUE, makeMissingDiss=TRUE,
+      clusterFunction="pam",ks=2:4,findBestK=c(TRUE,FALSE)
+  ) )
+  expect_error(plotClusters(test,
+      colData=as.data.frame(colData(ceSimCount))),
+      "no colData for object data")
+  
 })
 
 

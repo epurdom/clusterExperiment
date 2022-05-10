@@ -89,9 +89,6 @@
 #' @details All arguments of the matrix version can be passed to the
 #'   \code{ClusterExperiment} version. As noted above, however, some arguments
 #'   have different interpretations.
-#' @details If \code{whichClusters = "workflow"}, then the workflow clusterings
-#'   will be plotted in the following order: final, mergeClusters, makeConsensus,
-#'   clusterMany.
 #' @return If \code{clusters} is a \code{\link{ClusterExperiment}} Object, then
 #'   \code{plotClusters} returns an updated \code{ClusterExperiment} object,
 #'   where the \code{clusterLegend} and/or \code{orderSamples} slots have been
@@ -208,169 +205,167 @@
 setMethod(
   f = "plotClusters",
   signature = signature(object = "ClusterExperiment"),
-  definition = function(object, whichClusters, 
+  definition = function(object, whichClusters="all", 
   	existingColors=c("ignore","all","firstOnly"),
-    resetNames=FALSE, resetColors=FALSE, resetOrderSamples=FALSE, colData=NULL, clusterLabels=NULL,...)
+    resetNames=FALSE, resetColors=FALSE, resetOrderSamples=FALSE, 
+    colData=NULL, clusterLabels=NULL,...)
   {
-	if(missing(whichClusters)){
-	  if(!is.null(workflowClusterDetails(object))) whichClusters<-"workflow"
-	  else whichClusters<-"all"	  	
-	}
+	
 	whichClusters<-getClusterIndex(object,whichClusters=whichClusters,noMatch="throwError")
-    existingColors<-match.arg(existingColors)
-    args<-list(...)    
-		checkIgnore<-.depricateArgument(passedArgs=args,"colData","sampleData") #06/2018 added in BioC 3.8
-		if(!is.null(checkIgnore)){
-			args<-checkIgnore$passedArgs
-			colData<-checkIgnore$val
-		}
-    colData<-.pullColData(object,colData,fixNA="unassigned")
-    if(is.null(clusterLabels)) clusterLabels<-clusterLabels(object)[whichClusters]
-    if(existingColors!="ignore") useExisting<-TRUE else useExisting<-FALSE
-    if(useExisting){ #using existing colors in some way:
-      plotArg<-TRUE #the default
-      if("plot" %in% names(args) ){
-        whPlot<-which(names(args)=="plot")
-        plotArg<-args[[whPlot]]
-        if(length(args)>length(whPlot)){
-          args<-args[-whPlot]
-        }
-        else{
-          args<-NULL
-        }
+  existingColors<-match.arg(existingColors)
+  args<-list(...)    
+	checkIgnore<-.depricateArgument(passedArgs=args,"colData","sampleData") #06/2018 added in BioC 3.8
+	if(!is.null(checkIgnore)){
+		args<-checkIgnore$passedArgs
+		colData<-checkIgnore$val
+	}
+  colData<-.pullColData(object,colData,fixNA="unassigned")
+  if(is.null(clusterLabels)) clusterLabels<-clusterLabels(object)[whichClusters]
+  if(existingColors!="ignore") useExisting<-TRUE else useExisting<-FALSE
+  if(useExisting){ #using existing colors in some way:
+    plotArg<-TRUE #the default
+    if("plot" %in% names(args) ){
+      whPlot<-which(names(args)=="plot")
+      plotArg<-args[[whPlot]]
+      if(length(args)>length(whPlot)){
+        args<-args[-whPlot]
       }
+      else{
+        args<-NULL
+      }
+    }
       
-      #if firstRow, add greys to the color palette for the first row so don't "use" up good colors on those
-      colPaletteArg<-massivePalette #the default
-      if("colPalette" %in% names(args) ){
-        whPlot<-which(names(args)=="colPalette")
-        colPaletteArg<-args[[whPlot]]
-        if(length(args)>length(whPlot)){
-          args<-args[-whPlot]
-        }
-        else{
-          args<-NULL
-        }
+    #if firstRow, add greys to the color palette for the first row so don't "use" up good colors on those
+    colPaletteArg<-massivePalette #the default
+    if("colPalette" %in% names(args) ){
+      whPlot<-which(names(args)=="colPalette")
+      colPaletteArg<-args[[whPlot]]
+      if(length(args)>length(whPlot)){
+        args<-args[-whPlot]
       }
-      colPalGood<-colPaletteArg
-      if(existingColors=="firstOnly"){
-        nadd<-nrow(clusterLegend(object)[[whichClusters[[1]]]])
-        addgreys<-gray(seq(0.01,.99,length=nadd))
-        colPaletteArg<-c(addgreys,colPaletteArg)
+      else{
+        args<-NULL
       }
+    }
+    colPalGood<-colPaletteArg
+    if(existingColors=="firstOnly"){
+      nadd<-nrow(clusterLegend(object)[[whichClusters[[1]]]])
+      addgreys<-gray(seq(0.01,.99,length=nadd))
+      colPaletteArg<-c(addgreys,colPaletteArg)
+    }
       
-      #------------
-      #align the samples, but don't plot them.
-      #------------
-      outval<-do.call(plotClusters, c(list(object=clusterMatrix(object)[,whichClusters,drop=FALSE], input="clusters", plot=FALSE, colData=colData,colPalette=colPaletteArg),args))
-      #------------
-      #make new color matrix with existing Colors
-      #------------
-      if(existingColors=="all"){
-        newColorMat<-convertClusterLegend(object, whichClusters=whichClusters, output="matrixColors")
-      }
-      if(existingColors=="firstOnly"){
-        #pre-existing colors for first clustering
-        firstRow<-as.vector(convertClusterLegend(object, whichClusters=whichClusters[1], output="matrixColors"))
-        #current assignment of colors all clusters:
-        newColorMat<-outval$colors
-        
-        #integer values that match across the clusterings
-        #note could skip this matrix, but just in case the colors are not unique, this guarantees don't change all of them....
-        alignCl<-outval$alignedClusterIds[,1]
-        firstCl<-clusterMatrix(object)[,whichClusters[1]]
-        valsToChange<-unique(alignCl[firstCl>0]) #don't mess with assignment of -1/-2
-        #match them and make them the existing color
-        unusedColors<-colPalGood[!colPalGood %in% c(as.vector(newColorMat),firstRow)]
-        ###Note: Need to update color legend in out val because used if resetColors
-        ###Also, dimensions of outval matrices may be bigger than that of whichClusters because colData was added...
-        for(val in valsToChange){
-          wh<-which(alignCl==val)
-          newCol<-unique(firstRow[wh])
-          if(length(newCol)!=1) stop("internal coding error in existingColors='first'")
-          #make sure not the same as existing color	
-          if(any(newColorMat==newCol)){
-            newColorMat[newColorMat==newCol]<-unusedColors[1]
-            unusedColors<-tail(unusedColors,-1)
-          }
-          #alignedClusterIds aligns to a number even if -1/-2)
-          newColorMat[outval$alignedClusterIds==val & !outval$origClusters%in% c("-1","-2")]<-newCol
+    #------------
+    #align the samples, but don't plot them.
+    #------------
+    outval<-do.call(plotClusters, c(list(object=clusterMatrix(object)[,whichClusters,drop=FALSE], input="clusters", plot=FALSE, colData=colData,colPalette=colPaletteArg),args))
+    #------------
+    #make new color matrix with existing Colors
+    #------------
+    if(existingColors=="all"){
+      newColorMat<-convertClusterLegend(object, whichClusters=whichClusters, output="matrixColors")
+    }
+    if(existingColors=="firstOnly"){
+      #pre-existing colors for first clustering
+      firstRow<-as.vector(convertClusterLegend(object, whichClusters=whichClusters[1], output="matrixColors"))
+      #current assignment of colors all clusters:
+      newColorMat<-outval$colors
+      
+      #integer values that match across the clusterings
+      #note could skip this matrix, but just in case the colors are not unique, this guarantees don't change all of them....
+      alignCl<-outval$alignedClusterIds[,1]
+      firstCl<-clusterMatrix(object)[,whichClusters[1]]
+      valsToChange<-unique(alignCl[firstCl>0]) #don't mess with assignment of -1/-2
+      #match them and make them the existing color
+      unusedColors<-colPalGood[!colPalGood %in% c(as.vector(newColorMat),firstRow)]
+      ###Note: Need to update color legend in out val because used if resetColors
+      ###Also, dimensions of outval matrices may be bigger than that of whichClusters because colData was added...
+      for(val in valsToChange){
+        wh<-which(alignCl==val)
+        newCol<-unique(firstRow[wh])
+        if(length(newCol)!=1) stop("internal coding error in existingColors='first'")
+        #make sure not the same as existing color	
+        if(any(newColorMat==newCol)){
+          newColorMat[newColorMat==newCol]<-unusedColors[1]
+          unusedColors<-tail(unusedColors,-1)
         }
-        outval$colors<-newColorMat
-        ###make new clusterLegend from color matrix
-        temp<-lapply(seq_len(ncol(outval$alignedClusterIds)),function(ii){
-          oldMat<-outval$clusterLegend[[ii]]
-          alignMat<-unique(cbind(alignedClusterIds=as.character(outval$alignedClusterIds[,ii]),color=newColorMat[,ii]))
-          m<-match(oldMat[,"alignedClusterIds"],alignMat[,"alignedClusterIds"])
-          if(any(is.na(m))) stop("internal coding error in make new clusterLegend")
-          alignMat<-alignMat[m,]
-          oldMat[,"color"]<-alignMat[,"color"]
-          return(oldMat)
-        })
-        names(temp)<-names(outval$clusterLegend)
-        outval$clusterLegend<-temp
-        # $PublishedClusters
-        #       clusterIds alignedClusterIds color     name
-        #  [1,] "-2"       "1"               "black"   "1"
-        #  [2,] "1"        "2"               "#161616" "2"
-        #  [3,] "10"       "3"               "#292929" "3"
-        #  [4,] "11"       "4"               "#3C3C3C" "4"
-        
+        #alignedClusterIds aligns to a number even if -1/-2)
+        newColorMat[outval$alignedClusterIds==val & !outval$origClusters%in% c("-1","-2")]<-newCol
       }
-      #------------
-      #now plot them
-      #------------
-      if(plotArg) do.call(plotClusters,c(list(object=newColorMat[outval$orderSamples,], input="colors", clusterLabels=clusterLabels,colData=colData), args))
+      outval$colors<-newColorMat
+      ###make new clusterLegend from color matrix
+      temp<-lapply(seq_len(ncol(outval$alignedClusterIds)),function(ii){
+        oldMat<-outval$clusterLegend[[ii]]
+        alignMat<-unique(cbind(alignedClusterIds=as.character(outval$alignedClusterIds[,ii]),color=newColorMat[,ii]))
+        m<-match(oldMat[,"alignedClusterIds"],alignMat[,"alignedClusterIds"])
+        if(any(is.na(m))) stop("internal coding error in make new clusterLegend")
+        alignMat<-alignMat[m,]
+        oldMat[,"color"]<-alignMat[,"color"]
+        return(oldMat)
+      })
+      names(temp)<-names(outval$clusterLegend)
+      outval$clusterLegend<-temp
+      # $PublishedClusters
+      #       clusterIds alignedClusterIds color     name
+      #  [1,] "-2"       "1"               "black"   "1"
+      #  [2,] "1"        "2"               "#161616" "2"
+      #  [3,] "10"       "3"               "#292929" "3"
+      #  [4,] "11"       "4"               "#3C3C3C" "4"
       
     }
-    else{
-			outval<-do.call(plotClusters,c(list(object=clusterMatrix(object)[,whichClusters,drop=FALSE],input="clusters",colData=colData,clusterLabels=clusterLabels), args))
-    }
-    if(resetColors | resetNames){
-      ## recall, everything from outval is in the order of whichClusters!
-      ## also includes values from colData, which are always at the bottom, so don't affect anything.
-      oldClMat<-clusterMatrix(object)[,whichClusters]
-      newClMat<-outval$alignedClusterIds
-      #make both colors switch to aligned values (but keep name the same!)
-      #can't convert the cluster ids because then wouldn't be consecutive numbers... but can give them names that match.
-      convertAlignedColorLegend<-function(ii){
-        oldColMat<-clusterLegend(object)[whichClusters][[ii]]
-        newColMat<-outval$clusterLegend[[ii]]
-        #weird space introduced in plotCluster to clusterIds
-        newColMat[,"clusterIds"]<-as.character(as.numeric(newColMat[,"clusterIds"]))
-        if(nrow(newColMat)!=nrow(oldColMat)) stop("error in aligning colorLegend") #just to make sure
-        #update colors
-        if(resetColors){
-          m<-match(oldColMat[,"clusterIds"],newColMat[,"clusterIds"])
-          oldColMat[,"color"]<-newColMat[m,"color"]
-        }
-        #convert from old to new names
-        if(resetNames){
-          
-          newCl<-newClMat[,ii]
-          oldCl<-oldClMat[,ii]
-          oldNew<-unique(cbind(old=oldCl,new=newCl))
-          if(nrow(oldNew)!=nrow(oldColMat)) stop("error in converting colorLegend from plotClusters output")
-          #update clusterIds -- can't do
-          m<-match(oldColMat[,"clusterIds"],oldNew[,"old"])
-          oldColMat[,"name"]<-oldNew[m,"new"]
-          if(any(oldColMat[,"clusterIds"] %in% c(-1,-2))){
-            whNeg<-which(oldColMat[,"clusterIds"] %in% c(-1,-2))
-            oldColMat[whNeg,"name"]<-as.character(oldColMat[whNeg,"clusterIds"])
-          }
-        }
-        return(oldColMat)
-      }
-      newClLegend<-lapply(seq_len(NCOL(oldClMat)),convertAlignedColorLegend)
-      names(newClLegend)<-colnames(oldClMat)
-      clusterLegend(object)[whichClusters]<-newClLegend
-      ch<-.checkClusterLegend(object)
-      if(!is.logical(ch)) stop(ch)
-    }
-    if(resetOrderSamples) orderSamples(object)<-outval$orderSamples
-    invisible(object)
+    #------------
+    #now plot them
+    #------------
+    if(plotArg) do.call(plotClusters,c(list(object=newColorMat[outval$orderSamples,], input="colors", clusterLabels=clusterLabels,colData=colData), args))
     
-  })
+  }
+  else{
+		outval<-do.call(plotClusters,c(list(object=clusterMatrix(object)[,whichClusters,drop=FALSE],input="clusters",colData=colData,clusterLabels=clusterLabels), args))
+  }
+  if(resetColors | resetNames){
+    ## recall, everything from outval is in the order of whichClusters!
+    ## also includes values from colData, which are always at the bottom, so don't affect anything.
+    oldClMat<-clusterMatrix(object)[,whichClusters]
+    newClMat<-outval$alignedClusterIds
+    #make both colors switch to aligned values (but keep name the same!)
+    #can't convert the cluster ids because then wouldn't be consecutive numbers... but can give them names that match.
+    convertAlignedColorLegend<-function(ii){
+      oldColMat<-clusterLegend(object)[whichClusters][[ii]]
+      newColMat<-outval$clusterLegend[[ii]]
+      #weird space introduced in plotCluster to clusterIds
+      newColMat[,"clusterIds"]<-as.character(as.numeric(newColMat[,"clusterIds"]))
+      if(nrow(newColMat)!=nrow(oldColMat)) stop("error in aligning colorLegend") #just to make sure
+      #update colors
+      if(resetColors){
+        m<-match(oldColMat[,"clusterIds"],newColMat[,"clusterIds"])
+        oldColMat[,"color"]<-newColMat[m,"color"]
+      }
+      #convert from old to new names
+      if(resetNames){
+        
+        newCl<-newClMat[,ii]
+        oldCl<-oldClMat[,ii]
+        oldNew<-unique(cbind(old=oldCl,new=newCl))
+        if(nrow(oldNew)!=nrow(oldColMat)) stop("error in converting colorLegend from plotClusters output")
+        #update clusterIds -- can't do
+        m<-match(oldColMat[,"clusterIds"],oldNew[,"old"])
+        oldColMat[,"name"]<-oldNew[m,"new"]
+        if(any(oldColMat[,"clusterIds"] %in% c(-1,-2))){
+          whNeg<-which(oldColMat[,"clusterIds"] %in% c(-1,-2))
+          oldColMat[whNeg,"name"]<-as.character(oldColMat[whNeg,"clusterIds"])
+        }
+      }
+      return(oldColMat)
+    }
+    newClLegend<-lapply(seq_len(NCOL(oldClMat)),convertAlignedColorLegend)
+    names(newClLegend)<-colnames(oldClMat)
+    clusterLegend(object)[whichClusters]<-newClLegend
+    ch<-.checkClusterLegend(object)
+    if(!is.logical(ch)) stop(ch)
+  }
+  if(resetOrderSamples) orderSamples(object)<-outval$orderSamples
+  invisible(object)
+  
+})
 
 
 
