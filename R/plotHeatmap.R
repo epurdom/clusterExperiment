@@ -437,6 +437,8 @@ setMethod(
     #---
     #Get clusterings
     #---
+	  test<-try( match.arg(whichClusters), silent=TRUE)
+		if(!inherits(test,"try-error")){ whichClusters<-test}
     whCl<-getClusterIndex(data,whichClusters=whichClusters,noMatch="silentlyRemove")
     #
     if(length(whCl)>0){

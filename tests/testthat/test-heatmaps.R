@@ -4,6 +4,7 @@ context("Heatmap functions")
 
 plotAll<-FALSE #set to true to actually SEE the plots; otherwise for TravisCI, where no visual, runs quicker with FALSE
 ###Note some are still run with plot=TRUE to check that works with aheatmap. Only a fraction not plotted.
+###Still quite slow...
 test_that("`setBreaks`", {
 	setBreaks(smSimData)
 	setBreaks(smSimData,breaks=0.99)
@@ -64,13 +65,6 @@ test_that("`plotHeatmap` works with ClusterExperiment and SummarizedExperiment o
   
   expect_silent(plotHeatmap(cc))
   expect_silent(plotHeatmap(cc,whichClusters="none"))
-  expect_warning(plotHeatmap(cc,whichClusters="workflow",
-      plot=plotAll) ,
-      "whichClusters value does not match any clusters") #there are no workflow for this one
-  
-  expect_warning(plotHeatmap(smSimCE,whichClusters="workflow",
-      overRideClusterLimit=TRUE),
-      "More than 10 annotations/clusterings can result in incomprehensible errors in aheamap")
   expect_warning(plotHeatmap(smSimCE,whichClusters=15:20,
       plot=plotAll),
       "given whichClusters value does not match any clusters")
@@ -142,7 +136,7 @@ test_that("`plotHeatmap` visualization choices/feature choices all work", {
     # even if visualizeData="orginal, still clsuter on transformed. Should make unit test out of below that get same:
     expect_silent(plotHeatmap(smSimCE, 
       visualizeData="transformed", clusterSamplesData="hclust", 
-    plot=plotAll))
+    	plot=plotAll))
     orderSamples(smSimCE)<-sample(1:nSamples(smSimCE))
     expect_silent(plotHeatmap(smSimCE, 
       visualizeData="transformed",
@@ -247,35 +241,4 @@ test_that("`makeBlankData` works", {
     expect_silent(plotHeatmap(smSimCE,clusterFeaturesData=gps,breaks=.99))
 })
 
-test_that("`plotCoClustering` works", {
-    expect_error(plotCoClustering(smSimCE),"coClustering slot is empty")
-    #following gives all -1, but creates coClustering
-    expect_silent(smMin1<-
-        makeConsensus(smSimCE,whichClusters=10:13,proportion=.99))
-    #  smMin1<-makeConsensus(smSimCE,whichClusters=1:8,proportion=.95) #use to give all -1, but creates coClustering but something changed -- couldn't figure it out!!!
-    expect_silent(plotCoClustering(smMin1,clusterSamplesData="hclust"))
-    ## Have changed so now changes it internally to primary cluster then hclust
-    expect_warning( plotCoClustering(smMin1, 
-        clusterSamplesData="dendrogramValue", plot=plotAll), 
-        "cannot make dendrogram from 'data'")
-    expect_silent(sm<-makeConsensus(smSimCE,whichClusters=1:4,proportion=.5))
-    expect_silent(plotCoClustering(sm,clusterSamplesData="dendrogramValue"))
 
-    # ## Test on object that has a merge done on it
-    # ## FIXME:
-    # ## This has surprising error and warning due to phylo conversion
-    # ##    -- need to go back to it
-    # ## (also error on release version!)
-    # expect_silent(clustNothing <- clusterMany(mat,
-    #     ks=c(3,4),clusterFunction="pam",
-    #     subsample=FALSE, sequential=FALSE,
-    #     isCount=FALSE,verbose=FALSE))
-    # expect_silent(clustNothing<-makeConsensus(clustNothing,
-    #     proportion=1,minSize=1,whichClusters = "clusterMany"))
-    # expect_silent(clustNothing <- makeDendrogram(clustNothing))
-    # expect_message(clustNothing<- mergeClusters(clustNothing,
-    #     DEMethod="limma",
-    #     mergeMethod="adjP",plotInfo="none"),
-    #     "Note: Merging will be done on")
-    # expect_silent(plotCoClustering(clustNothing))
-})

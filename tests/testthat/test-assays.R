@@ -1,13 +1,13 @@
 context("Assays")
 
-## Construct ClusterExperiment with multiple named assays
-suppressMessages(multi_se <- SummarizedExperiment(
-    assays = list(counts = simCount,
-    logcounts = log1p(simCount)))
-    )
-suppressMessages(multi_cc <- ClusterExperiment(multi_se, trueCluster))
 
 test_that("plotting works wih non default assays", {
+	## Construct ClusterExperiment with multiple named assays
+	suppressMessages(multi_se <- SummarizedExperiment(
+	    assays = list(counts = simCount,
+	    logcounts = log1p(simCount)))
+	    )
+	suppressMessages(multi_cc <- ClusterExperiment(multi_se, trueCluster))
   expect_silent(plotFeatureBoxplot(object=multi_cc,
       feature=1,whichAssay=1))
   expect_silent(plotFeatureBoxplot(object=multi_cc,
