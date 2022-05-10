@@ -10,9 +10,9 @@ Existing problems (FIXME):
 
 * Problem with dataGeneration that uses RSECPackage -- will create class of RSECClass and not a CE. Need to fix
 * plotHeatmap and plotContrastHeatmap have problems problems (test-assays and test-getBestFeatures)
-* plotClusters: relies on workflowClusterDetails... need to remove.
 
 Tests working (clusterExperiment):
 * test-constructor
 * test-dendrogram
 * test-dimReduce
+* test-otherPlots

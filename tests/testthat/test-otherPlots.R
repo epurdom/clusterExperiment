@@ -20,7 +20,8 @@ test_that("plotting helpers", {
 test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
 
     #test numeric matrix version
-    expect_silent(plotBarplot(object=clusterMatrix(ceSimCount)[,1:2]))
+    expect_silent(plotBarplot(object=
+      clusterMatrix(ceSimCount)[,1:2]))
     #test vector version
     expect_silent(plotBarplot(object=clusterMatrix(ceSimCount)[,1]))
     #check error
@@ -28,18 +29,20 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
 
     #test CE version with no defaults
     expect_silent(plotBarplot(ceSimCount))
-    #test CE version whichClusters arguments
-    expect_silent(plotBarplot(ceSimCount,whichClusters="workflow"))
-    expect_silent(plotBarplot(ceSimCount,whichClusters="primaryCluster"))
+    expect_silent(plotBarplot(ceSimCount,
+      whichClusters="primaryCluster"))
     expect_silent(plotBarplot(ceSimCount))
 
 
     test<-ceSimCount
-    expect_silent(clusterLegend(test)[[1]][,"name"]<-LETTERS[1:nrow(clusterLegend(ceSimCount)[[1]])])
+    expect_silent(clusterLegend(test)[[1]][,"name"]<-
+      LETTERS[1:nrow(clusterLegend(ceSimCount)[[1]])])
     #test character matrix version
-    expect_silent(plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1:2]))
+    expect_silent(plotBarplot(object=convertClusterLegend(test,
+      output="matrixNames")[,1:2]))
     #test character vector version
-    expect_silent(plotBarplot(object=convertClusterLegend(test,output="matrixNames")[,1]))
+    expect_silent(plotBarplot(object=convertClusterLegend(test,
+      output="matrixNames")[,1]))
     #test labels argument
     expect_silent(plotBarplot(test,whichClusters=1:2,labels="id"))
     expect_silent(plotBarplot(test,whichClusters=1:2,labels="name"))
@@ -48,20 +51,33 @@ test_that("`plotBarplot` works with matrix, ClusterExperiment objects", {
 })
 
 test_that("plotReducedDims works",{
-	expect_silent(cl <- clusterMany(simData, 
-        nReducedDims=c(5, 10, 50), reduceMethod="PCA",
-	    clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
-	    removeSil=c(TRUE,FALSE), 
-        verbose=FALSE,makeMissingDiss=TRUE))
+  #----
+  # create CE with existing reduced dims
+  #----
+  set.seed(78923)
+  expect_silent(cl<-
+    ClusterExperiment(sceSimDataDimRed,
+    cluster=sample(1:4,ncol(sceSimDataDimRed),replace=TRUE)))
+  cl<-addClusterings(cl,
+    sample(1:4,ncol(sceSimDataDimRed),replace=TRUE),
+    clusterLabel="cluster2")
+  
+  # expect_silent(cl <- clusterMany(simData,
+  #       nReducedDims=c(5, 10, 50), reduceMethod="PCA",
+  #       clusterFunction="pam", ks=2:4, findBestK=c(TRUE,FALSE),
+  #       removeSil=c(TRUE,FALSE),
+  #       verbose=FALSE,makeMissingDiss=TRUE))
 	expect_silent(plotReducedDims(cl,legend="bottomright"))
 	expect_silent(plotReducedDims(cl,legend=TRUE))
 	expect_silent(plotReducedDims(cl,legend=FALSE))
-    whCl<-grep("k=4,nReducedDims=10,findBestK=FALSE,removeSil=TRUE",
-        clusterLabels(cl))
-    expect_true(length(whCl)==1)
-    whCl<-clusterLabels(cl)[whCl] #so is character value, to test.
-	expect_silent(clusterLegend(cl)[[whCl]][,"name"]<-LETTERS[1:5])
-	expect_silent(plotReducedDims(cl, whichCluster = whCl, legend=TRUE))
+
+  # change which cluster use
+  whCl<-grep("cluster2", clusterLabels(cl))
+  expect_true(length(whCl)==1)
+  whCl<-clusterLabels(cl)[whCl] #so is character value, to test.
+	expect_silent(clusterLegend(cl)[[whCl]][,"name"]<-LETTERS[1:4])
+	expect_silent(plotReducedDims(cl, 
+    whichCluster = whCl, legend=TRUE))
 
 	#test on object that doesn't have saved:
 	expect_warning(clD<-plotReducedDims(ceSimData,reducedDim="PCA"),
@@ -75,7 +91,7 @@ test_that("plotReducedDims works",{
         legend=TRUE,whichDims=158:200),
         "Invalid value for whichDims: larger than row or column")
 	#force it to recalculate:
-	expect_warning(plotReducedDims(cl,whichCluster=whCl,legend=TRUE,
+	expect_warning(plotReducedDims(clD,legend=TRUE,
         whichDims=51:58),"will be run on the FIRST assay")
 
 
@@ -83,13 +99,7 @@ test_that("plotReducedDims works",{
 })
 
 test_that("plotFeatureBoxplot works",{
-	expect_silent(cl <- clusterMany(simData, 
-        nReducedDims=c(5, 10, 50), reducedDim="PCA",
-		clusterFunction="pam", ks=2:4, 
-        findBestK=c(TRUE,FALSE), verbose=FALSE,
-		removeSil=c(TRUE,FALSE), makeMissingDiss=TRUE))
-	expect_silent(clusterLegend(cl)[[1]][,"name"] <- 
-        letters[1:nClusters(cl,ignoreUnassigned =FALSE)[1]])
+  cl<-ceSimData
 	expect_silent(plotFeatureBoxplot(object=cl,feature=1))
 	expect_silent(plotFeatureBoxplot(cc,feature=rownames(cc)[2]))
 	expect_silent(plotFeatureBoxplot(cc,
@@ -105,8 +115,7 @@ test_that("plotFeatureBoxplot works",{
 })
 
 test_that("plotClustersTable works",{
-    skip_on_os("windows")
-	#test where should be diagonal
+  #test where should be diagonal
 	expect_silent(plotClustersTable(cc,whichClusters=c(1,2)))
 	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,margin=2))
 	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,margin=0))
@@ -115,13 +124,25 @@ test_that("plotClustersTable works",{
 
 	
 	#the following gives a wicked output which ignoreUnassigned=TRUE: zero overlap because some in one cluster are all -1 in makeConsensus so NaN value in proportion and only single cluster in makeConsensus
-	expect_silent(cc<-clusterMany(mat, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),reduceMethod=c("none","PCA","var"),clusterFunction="pam",
-	                       subsample=FALSE, sequential=FALSE,run=TRUE,verbose=FALSE,
-	                       isCount=FALSE))
-	expect_message(cc<-makeConsensus(cc,proportion=0.7),"no clusters specified to combine")
-	expect_error(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE) ,"Cannot create heatmap when there is only 1 column or row in the table")
-	expect_silent(plotClustersTable(cc,whichClusters=c(1,2),ignoreUnassigned=TRUE,plotType="bubble")) #gives a 
+  # expect_silent(cc<-clusterMany(mat, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),reduceMethod=c("none","PCA","var"),clusterFunction="pam",
+  #                        subsample=FALSE, sequential=FALSE,run=TRUE,verbose=FALSE,
+  #                        isCount=FALSE))
+  # expect_message(cc<-makeConsensus(cc,proportion=0.7),"no clusters specified to combine")
+  newCluster<-rep(6,nSamples(cc))
+  cc1<-addClusterings(cc,newCluster,clusterLabel="Cluster3")
+	expect_error(plotClustersTable(cc1,whichClusters=c(1,3),ignoreUnassigned=TRUE) ,"Cannot create heatmap when there is only 1 column or row in the table")
+	expect_silent(plotClustersTable(cc1,whichClusters=c(1,3),ignoreUnassigned=TRUE,plotType="bubble")) #gives a 
 	
+  newCluster<-clusterMatrix(cc)[,1]
+  newCluster[newCluster<0 -1]<- 6
+  newCluster[newCluster>0 & newCluster != 6]<- -1
+  cc1<-addClusterings(cc1,newCluster,clusterLabel="Cluster4")
+	expect_error(plotClustersTable(cc1,
+    whichClusters=c(1,4),ignoreUnassigned=TRUE) ,
+    "Cannot create heatmap when there is only 1 column or row in the table")
+  # FIXME: Note that the following creates warnings and no plot, haven't sorted it out yet:
+  # expect_silent(plotClustersTable(cc1,
+  #  whichClusters=c(1,4),ignoreUnassigned=TRUE,plotType="bubble"))
 	
 	#test more complicated
 	#so different numbers of clusters in the two clusters
@@ -143,15 +164,26 @@ test_that("plotClustersTable works",{
 })
 
 test_that("plotFeatureScatter works",{
-	expect_silent(plotFeatureScatter(object=cc,features=c(1,2),whichCluster=1,pch=19))
-	expect_silent(plotFeatureScatter(object=cc,features=c(1,2,3),whichCluster=1,pch=19))
-	expect_error(plotFeatureScatter(object=cc,features=c("Gene1","Gene4"),whichCluster=1),"not all of features match one")
+	expect_silent(plotFeatureScatter(object=cc,features=c(1,2),
+    whichCluster=1,pch=19))
+	expect_silent(plotFeatureScatter(object=cc,features=c(1,2,3),
+    whichCluster=1,pch=19))
+	expect_error(plotFeatureScatter(object=cc,
+    features=c("Gene1","Gene4"),whichCluster=1),
+    "not all of features match one")
 
-	expect_silent(plotFeatureScatter(object=cc,features=c("Gene 1","Gene 4"),whichCluster=1,pch=19))
-	expect_silent(plotFeatureScatter(object=cc,features=c("Gene 1","Gene 4","Gene 10"),whichCluster=1,pch=19))
+	expect_silent(plotFeatureScatter(object=cc,
+    features=c("Gene 1","Gene 4"),whichCluster=1,pch=19))
+	expect_silent(plotFeatureScatter(object=cc,
+    features=c("Gene 1","Gene 4","Gene 10"),whichCluster=1,pch=19))
 
-	expect_silent(plotFeatureScatter(object=cc,features=c("Gene 1","Gene 4","Gene 10"),whichCluster=1,pch=19,plotUnassigned=FALSE))
-	expect_silent(plotFeatureScatter(object=cc,features=c("Gene 1","Gene 4"),unassignedColor="black",whichCluster=1,pch=19,legend="topright"))
+	expect_silent(plotFeatureScatter(object=cc,
+    features=c("Gene 1","Gene 4","Gene 10"),
+    whichCluster=1,pch=19,plotUnassigned=FALSE))
+	expect_silent(plotFeatureScatter(object=cc,
+    features=c("Gene 1","Gene 4"),
+    unassignedColor="black",whichCluster=1,pch=19,
+    legend="topright"))
 
 	cc2<-cc
 	rownames(cc2)<-NULL

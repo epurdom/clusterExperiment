@@ -33,8 +33,13 @@ test_that("`plotClusters` works with RSECClass objects", {
       colData=as.data.frame(colData(ceSimCount))),
       "no colData for object data")
   
+
 })
 
+test_that("plotBarplot", {
+  #test CE version whichClusters arguments
+  expect_silent(plotBarplot(ceSimCount,whichClusters="workflow"))
+}
 
 test_that("plotClustersWorkflow", {
 	expect_silent(cc<-clusterMany(mat, ks=c(3,4),nFilterDims=c(10,15),nReducedDims=c(3,4),reduceMethod=c("none","PCA","var"),clusterFunction="pam",

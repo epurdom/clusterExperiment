@@ -156,7 +156,8 @@ test_that("getReducedData works as promised",{
   expect_silent(clustNothing <- ClusterExperiment(sceSimData,
     cluster=sample(1:4,ncol(sceSimData),replace=TRUE)))  	
   #dimReduce
-  expect_silent(out1<-getReducedData(clustNothing,reduceMethod="PCA"))
+  expect_silent(out1<-getReducedData(clustNothing,
+    reduceMethod="PCA"))
   expect_true("PCA" %in% reducedDimNames(out1))
   expect_equal(colData(out1),colData(clustNothing))
   expect_equal(rownames(out1),rownames(clustNothing))
@@ -190,7 +191,8 @@ test_that("getReducedData works as promised",{
   # create CE with existing reduced dims
   #----
   set.seed(90846)
-  expect_silent(clustNothingDimRed<-ClusterExperiment(sceSimDataDimRed,
+  expect_silent(clustNothingDimRed<-
+    ClusterExperiment(sceSimDataDimRed,
     cluster=sample(1:4,ncol(sceSimDataDimRed),replace=TRUE)))
   expect_warning(getReducedData(clustNothingDimRed,reduceMethod="PCA"),
     "will not add reduced dataset to object because already exists method with that name")
