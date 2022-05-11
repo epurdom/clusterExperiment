@@ -8,12 +8,11 @@
 
 Existing problems (FIXME):
 
-* Problem with dataGeneration that uses RSECPackage -- will create class of RSECClass and not a CE. Need to fix; requires RSECPackage to have option that removes the unused parts of ClusterExperiment...
-* ClusterExperiment doesn't have an option for data.frame or DataFrame as input for clusters matrix. (vignette)
+* Need a "as.ClusterExperiment" function in RSECPackage to have option that removes the unused parts of ClusterExperiment (or is that built in??)
 * vignette:
 - When I do `plotBarplot` in vignette (plotBarplot(ceFluidigm,whichClusters=c("Published2" ,"Published1"))) not getting the colors correctly.
 - Probably need a transformation in creating my clusterExperiment object. 
-- Subsetting changing -1 values into cluster values! 
+- Subsetting changing -1 values into cluster values! (vignette) Maybe because have name that isn't "-1"?
 
 clusterMatrix(smallCe)
 clusterMatrix(ceFluidigm)[1:10,]
