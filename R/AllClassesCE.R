@@ -193,6 +193,23 @@ setMethod(
     clusters <- as.character(clusters)
     ClusterExperiment(object,clusters,...)
   })
+#' @rdname ClusterExperiment-class
+setMethod(
+  f = "ClusterExperiment",
+  signature = signature("SingleCellExperiment","data.frame"),
+  definition = function(object, clusters,...){
+    clusters <- as.matrix(clusters)
+    ClusterExperiment(object,clusters,...)
+  })
+#' @rdname ClusterExperiment-class
+setMethod(
+  f = "ClusterExperiment",
+  signature = signature("SingleCellExperiment","DataFrame"),
+  definition = function(object, clusters,...){
+		clusters <- as.data.frame(clusters)
+    ClusterExperiment(object,clusters,...)
+  })
+
 #'@rdname ClusterExperiment-class
 #'@param clusterTypes a string describing the nature of the clustering. The
 #'  values `clusterSingle`, `clusterMany`, `mergeClusters`, `makeConsensus` are

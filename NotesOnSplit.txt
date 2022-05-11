@@ -9,7 +9,16 @@
 Existing problems (FIXME):
 
 * Problem with dataGeneration that uses RSECPackage -- will create class of RSECClass and not a CE. Need to fix; requires RSECPackage to have option that removes the unused parts of ClusterExperiment...
-* plotHeatmap and plotContrastHeatmap have problems problems (test-assays and test-getBestFeatures)
+* ClusterExperiment doesn't have an option for data.frame or DataFrame as input for clusters matrix. (vignette)
+* vignette:
+- When I do `plotBarplot` in vignette (plotBarplot(ceFluidigm,whichClusters=c("Published2" ,"Published1"))) not getting the colors correctly.
+- Probably need a transformation in creating my clusterExperiment object. 
+- Subsetting changing -1 values into cluster values! 
+
+clusterMatrix(smallCe)
+clusterMatrix(ceFluidigm)[1:10,]
+
+*
 
 Tests working (clusterExperiment):
 * test-assays
