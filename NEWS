@@ -1,3 +1,8 @@
+Changes in version 2.17.3 (Release date: May 12, 2022)
+==============
+* Fixed error in `plotBarplot` in handling non-assigned (-1) when comparing two clusterings (colors to clusters would be incorrect)
+* Fixed error in subsetting of `ClusterExperiment` object if the unassigned cluster category (-1) was given a label in `clusterLegend` different than "-1" (would make those samples regular cluster). 
+
 Changes in version 2.7.3 (Release date: April 27, 2020)
 ==============
 * Changes to clustering internals (`mainClustering`, `seqCluster`, `subsampleClustering`) and `clusterSingle`. 

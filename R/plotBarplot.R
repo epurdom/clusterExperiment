@@ -190,12 +190,12 @@ setMethod(
         wh<-c(whAltNotAssigned,whAltMissing)
         x<-rbind(x[-wh,,drop=FALSE],x[wh,,drop=FALSE])
         rownames(x)<-c(nm[-wh],nm[wh]) #annoying, but otherwise still loose the names
+        colPalette<-c(colPalette[-wh],colPalette[wh])
       }
       if(any(length(whRefNotAssigned)>0 | length(whRefMissing)>0)){
         nm<-colnames(x)
         wh<-c(whRefNotAssigned,whRefMissing)
         x<-cbind(x[,-wh,drop=FALSE],x[,wh,drop=FALSE])
-        colPalette<-c(colPalette[-wh],colPalette[wh])
         colnames(x)<-c(nm[-wh],nm[wh]) #annoying, but otherwise still loose the names
       }
       if(is.null(legNames)){
