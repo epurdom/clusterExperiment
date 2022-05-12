@@ -209,6 +209,9 @@ setMethod(
         
         #pull names out so can match it to the clusterLegend. 
         subMat<-clusterMatrixNamed(x)[j, ,drop=FALSE]
+				#pull out integers incase have changed the "-1"/"-2" to have different names. 
+        intMat<-clusterMatrix(x)[j,,drop=FALSE]
+				intMat<-.makeIntegerClusters(as.matrix(intMat))
         
         #danger if not unique names
         whNotUniqueNames<-vapply(clusterLegend(x),
@@ -226,7 +229,8 @@ setMethod(
             
             ## Fix clusterLegend slot, in case now lost a level and to match new integer values
             ## shouldn't need give colors, but function needs argument
-            out<-.makeColors(clMat=subMat, distinctColors=FALSE,colors=massivePalette,                           matchClusterLegend=clusterLegend(x),matchTo="name") 
+            out<-.makeColors(clMat=subMat, clNumMat=intMat, distinctColors=FALSE,colors=massivePalette,
+							matchClusterLegend=clusterLegend(x),matchTo="name") 
             newMat<-out$numClusters
             colnames(newMat)<-nms
             newClLegend<-out$colorList
