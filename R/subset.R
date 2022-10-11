@@ -208,8 +208,11 @@ setMethod(
         #need to subset cluster matrix and convert to consecutive integer valued clusters:
         
         #pull names out so can match it to the clusterLegend. 
-        subMat<-clusterMatrixNamed(x)[j, ,drop=FALSE]
-				#pull out integers incase have changed the "-1"/"-2" to have different names. 
+#        subMat<-clusterMatrixNamed(x)[j, ,drop=FALSE] 
+				
+        subMat<-clusterMatrixNamed(x, whichClusters=1:nClusterings(x))[j, ,drop=FALSE] #changed from default "all" because "all" puts primary cluster first so changes order...
+        
+        #pull out integers incase have changed the "-1"/"-2" to have different names. 
         intMat<-clusterMatrix(x)[j,,drop=FALSE]
 				intMat<-.makeIntegerClusters(as.matrix(intMat))
         
@@ -229,6 +232,7 @@ setMethod(
             
             ## Fix clusterLegend slot, in case now lost a level and to match new integer values
             ## shouldn't need give colors, but function needs argument
+            browser()
             out<-.makeColors(clMat=subMat, clNumMat=intMat, distinctColors=FALSE,colors=massivePalette,
 							matchClusterLegend=clusterLegend(x),matchTo="name") 
             newMat<-out$numClusters
