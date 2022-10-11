@@ -232,7 +232,6 @@ setMethod(
             
             ## Fix clusterLegend slot, in case now lost a level and to match new integer values
             ## shouldn't need give colors, but function needs argument
-            browser()
             out<-.makeColors(clMat=subMat, clNumMat=intMat, distinctColors=FALSE,colors=massivePalette,
 							matchClusterLegend=clusterLegend(x),matchTo="name") 
             newMat<-out$numClusters
