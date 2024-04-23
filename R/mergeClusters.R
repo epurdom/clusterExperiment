@@ -1,4 +1,4 @@
-.availMergeMethods<-c("adjP", "locfdr", "MB", "JC","PC","Storey")
+.availMergeMethods<-c("adjP", "locfdr", "JC","PC","Storey")
 #' @title Merge clusters based on dendrogram
 #'
 #' @description Takes an input of hierarchical clusterings of clusters and
@@ -81,10 +81,10 @@
 #'   December 16, 2015
 #'   (http://www.stat.cmu.edu/~jiashun/Research/software/NullandProp/). "locfdr"
 #'   refers to the method of Efron (2004) and is implemented in the package
-#'   \code{\link{locfdr}}. "MB" refers to the method of Meinshausen and Buhlmann
-#'   (2005) and is implemented in the package \code{\link{howmany}}. "adjP"
+#'   \code{\link{locfdr}}.  "adjP"
 #'   refers to the proportion of genes that are found significant based on a FDR
-#'   adjusted p-values (method "BH") and a cutoff of 0.05.
+#'   adjusted p-values (method "BH") and a cutoff of 0.05. Previous versions offered the method "MB", a method of Meinshausen and Buhlmann
+#'   (2005), but the package  \code{howmany} is no longer supported for its implementation.
 #' @details \strong{Control of Plotting} If \code{mergeMethod} is not equal to
 #'   'none' then the plotting will indicate where the clusters will be merged by
 #'   making dotted lines of edges that are merged together (assuming
@@ -199,14 +199,13 @@
 #' tableClusters(merged,whichClusters=c("mergeClusters","clusterSingle"))
 #'
 #' @export
-#' @importFrom howmany howmany lowerbound
 #' @importFrom locfdr locfdr
 #' @rdname mergeClusters
 setMethod(
     f = "mergeClusters",
     signature = signature(x = "matrixOrHDF5"),
     definition = function(x, cl, dendro=NULL,
-                          mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "MB", "JC"),
+                          mergeMethod=c("none", "Storey","PC","adjP", "locfdr", "JC"), #"MB" removed,
                           plotInfo="none",
                           nodePropTable=NULL, calculateAll=TRUE, showWarnings=FALSE,
                           cutoff=0.05, plot=TRUE,DEMethod, logFCcutoff=0, weights=NULL,...){
@@ -290,14 +289,14 @@ setMethod(
             sigByNode <- by(sigTable, sigTable$ContrastName, function(x) {
                 storey<-if("Storey" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_Storey,showWarnings=showWarnings) else NA
                 pc <-if("PC" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_PC,showWarnings=showWarnings) else NA
-                mb <-if("MB" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_MB,showWarnings=showWarnings) else NA
+                # mb <-if("MB" %in% whMethodCalculate)  .myTryFunc(pvalues=x$P.Value, FUN=.m1_MB,showWarnings=showWarnings) else NA
                 locfdr <-if("locfdr" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_locfdr,showWarnings=showWarnings) else NA
                 
                 jc <-if("JC" %in% whMethodCalculate)  .myTryFunc(tstats=x$t, FUN=.m1_JC,showWarnings=showWarnings) else NA
                 
                 adjP<-if("adjP" %in% whMethodCalculate)
                     .myTryFunc(FUN=.m1_adjP,adjPvalues=x$adj,logFC=x$logFC, logFCcutoff=0,showWarnings=showWarnings) else NA
-                out<-c("Storey"=storey,"PC"=pc,"adjP"=adjP, "locfdr"=locfdr, "MB"=mb,"JC"=jc)
+                out<-c("Storey"=storey,"PC"=pc,"adjP"=adjP, "locfdr"=locfdr, "JC"=jc) #"MB"=mb,
                 if(!is.null(adjPFCMethod) && adjPFCMethod %in% whMethodCalculate){
                     adjPFC<-.myTryFunc(FUN=.m1_adjP,adjPvalues=x$adj,logFC=x$logFC, logFCcutoff=logFCcutoff,showWarnings=showWarnings)
                     out<-c(out,adjPFC)
@@ -890,10 +889,10 @@ setMethod(
 
 }
 
-.m1_MB<-function(pvalues){
-  nCorrect<-max(howmany::lowerbound(howmany::howmany(pvalues))) #the most you can call correctly
-  return(nCorrect/length(pvalues))
-}
+# .m1_MB<-function(pvalues){
+#   nCorrect<-max(howmany::lowerbound(howmany::howmany(pvalues))) #the most you can call correctly
+#   return(nCorrect/length(pvalues))
+# }
 .m1_adjP<-function(adjPvalues,logFC,logFCcutoff){
 	if(length(adjPvalues)!=length(logFC)) stop("coding error -- adjPvalues and logFC must be of same length")
    sum(adjPvalues<=0.05 & abs(logFC)>=logFCcutoff)/length(adjPvalues)

@@ -22,7 +22,7 @@
   x,
   cl,
   dendro = NULL,
-  mergeMethod = c("none", "Storey", "PC", "adjP", "locfdr", "MB", "JC"),
+  mergeMethod = c("none", "Storey", "PC", "adjP", "locfdr", "JC"),
   plotInfo = "none",
   nodePropTable = NULL,
   calculateAll = TRUE,
@@ -265,10 +265,10 @@ Takes an input of hierarchical clusterings of clusters and
   December 16, 2015
   (http://www.stat.cmu.edu/~jiashun/Research/software/NullandProp/). "locfdr"
   refers to the method of Efron (2004) and is implemented in the package
-  \code{\link{locfdr}}. "MB" refers to the method of Meinshausen and Buhlmann
-  (2005) and is implemented in the package \code{\link{howmany}}. "adjP"
+  \code{\link{locfdr}}.  "adjP"
   refers to the proportion of genes that are found significant based on a FDR
-  adjusted p-values (method "BH") and a cutoff of 0.05.
+  adjusted p-values (method "BH") and a cutoff of 0.05. Previous versions offered the method "MB", a method of Meinshausen and Buhlmann
+  (2005), but the package  \code{howmany} is no longer supported for its implementation.
 
 \strong{Control of Plotting} If \code{mergeMethod} is not equal to
   'none' then the plotting will indicate where the clusters will be merged by

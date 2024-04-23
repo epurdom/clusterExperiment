@@ -27,7 +27,9 @@ ClusterExperiment(object, clusters, ...)
 \S4method{ClusterExperiment}{SingleCellExperiment,matrix}(
   object,
   clusters,
-  transformation = function(x) {     x },
+  transformation = function(x) {
+     x
+ },
   primaryIndex = 1,
   clusterTypes = "User",
   clusterInfo = NULL,

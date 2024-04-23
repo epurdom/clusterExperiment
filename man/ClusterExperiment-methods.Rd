@@ -70,7 +70,7 @@
 
 \S4method{transformation}{ClusterExperiment}(x)
 
-\S4method{transformation}{ClusterExperiment,`function`}(object) <- value
+\S4method{transformation}{ClusterExperiment,function}(object) <- value
 
 \S4method{nClusterings}{ClusterExperiment}(x)
 

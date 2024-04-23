@@ -12,7 +12,7 @@ internalFunctionCheck(clusterFUN, inputType, algorithmType, outputType)
 
 ClusterFunction(clusterFUN, ...)
 
-\S4method{ClusterFunction}{`function`}(
+\S4method{ClusterFunction}{function}(
   clusterFUN,
   inputType,
   outputType,
