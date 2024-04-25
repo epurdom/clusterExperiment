@@ -174,7 +174,7 @@
     
     #deal with possible FC
     baseMergeMethod<-sapply(strsplit(object@merge_method,"_"),.subset2,1)
-    if(!baseMergeMethod %in% .availMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.availMergeMethods,collapse=",")," (with possibility of fold-change added to method name for 'adjP')"))
+    if(!baseMergeMethod %in% .validMergeMethods) return(paste("merge_method must be one of available merge methods:", paste(.validMergeMethods,collapse=",")," (with possibility of fold-change added to method name for 'adjP')"))
     allowMergeColumns<-c('Contrast','isMerged','mergeClusterId','NodeId')
     if(!identical(sort(colnames(object@merge_nodeMerge)),sort(allowMergeColumns)) ) {
       return(paste("merge_nodeMerge must have 5 columns and column names equal to:",paste(allowMergeColumns,collapse=",")))
@@ -208,6 +208,7 @@
     whFC<-grep("adjP_",allCnames)
     whNode<-which(allCnames %in% c("NodeId","Contrast"))
     namesToCheck<-if(length(whFC)>0) allCnames[-whFC] else allCnames
+    if(!all(requireColumns %in% namesToCheck))
     if(!identical(sort(namesToCheck),sort(requireColumns)) ) 
       return(paste("merge_nodeProp must be data.frame with at least",length(requireColumns),"columns that have column names equal to:",paste(requireColumns,sep="",collapse=",")))
     

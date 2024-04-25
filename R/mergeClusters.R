@@ -1,4 +1,6 @@
 .availMergeMethods<-c("adjP", "locfdr", "JC","PC","Storey")
+.validMergeMethods<-c("adjP", "locfdr", "MB","JC","PC","Storey") #back compatibility with old "MB"
+
 #' @title Merge clusters based on dendrogram
 #'
 #' @description Takes an input of hierarchical clusterings of clusters and
