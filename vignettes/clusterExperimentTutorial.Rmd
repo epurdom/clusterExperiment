@@ -1771,7 +1771,7 @@ nodeMergeInfo(ce)
 If we want to rerun `mergeClusters` with a different method, we can do that instead.
 
 ```{r mergeClusters_redo}
-ce<-mergeClusters(ce,cutoff=0.15,mergeMethod="JS",
+ce<-mergeClusters(ce,cutoff=0.15,mergeMethod="Storey",
                   clusterLabel="mergeClusters,v3",plot=FALSE)
 ce
 ```
