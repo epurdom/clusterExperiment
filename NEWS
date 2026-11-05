@@ -1,3 +1,7 @@
+Changes in version 2.33.1 (Release date: November 5, 2026)
+==============
+* `getBestFeatures` with `DEMethod="limma-voom"` (and functions that call it, such as `mergeClusters` and `RSEC` with count data) now uses `limma::voomLmFit` instead of `voom` followed by `lmFit`, following the limma authors' recommendation of `voomLmFit` over `voom`. `voomLmFit` reduces the residual degrees of freedom for genes that have zero counts in all of the samples in a cluster, so results for such genes can be noticeably different (typically less significant) than in previous versions. Because the shared variance estimates are affected, the results of other genes in the same analysis can also change. If no gene has zero counts in all of the samples of a cluster, results are the same as in previous versions. Requires limma (>= 3.99.3).
+
 Changes in version 2.23.1 (Release date: April 23, 2024)
 ==============
 * Removed option "MB" for argument `mergeMethod` for the function `mergeClusters`. This was a method of Meinshausen and Buhlmann

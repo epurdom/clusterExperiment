@@ -147,7 +147,14 @@ getBestFeatures returns the top ranked features corresponding to a
   "edgeR", the transformation slot will be ignored and only the counts data
   (as specified by the \code{whichAssay} slot) will be passed to the
   programs. Note that for "limma-voom" this implies that the data will be
-  transformed by voom with the function log2(x+0.5). If \code{weights} is not
+  transformed by voom with the function log2(x+0.5). Since version 2.33.1 of
+  \code{clusterExperiment}, the "limma-voom" option is implemented with
+  \code{\link[limma]{voomLmFit}} (which is now recommended by the limma
+  authors over \code{voom} followed by \code{lmFit}, as was done in previous
+  versions). \code{voomLmFit} reduces the residual degrees of freedom for
+  genes that have zero counts in all of the samples in a cluster, so the
+  results for such genes can be noticeably different (typically less
+  significant) than in previous versions. If \code{weights} is not
   \code{NULL}, and \code{DEMethod="edgeR"}, then the function
   \code{glmWeightedF} from the \code{zinbwave} package is run; otherwise
   \code{glmLRT} from \code{edgeR}.
