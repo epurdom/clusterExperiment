@@ -276,7 +276,9 @@
 #' @rdname plotHeatmap
 #' @aliases plotHeatmap,SingleCellExperiment-method
 #' @importFrom stats hclust dist
-#' @importFrom NMF aheatmap
+# NMF is deliberately not imported: its .onLoad attaches Biobase, so importing
+# it would change the search path whenever this namespace is loaded. All NMF
+# functions are called with NMF:: instead.
 setMethod(
   f = "plotHeatmap",
   signature = signature(data = "SingleCellExperiment"),
